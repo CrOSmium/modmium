@@ -18,3 +18,7 @@ copy-pasted from discussion with dmd and carbon in crosbreaker dev:
 > obviously this is all just conceptual, not even psuedocode, but that's the outline for how it'll work imo
 > any suggestions, critiques, or otherwise?
 (there was no response)
+
+### Notes from DMD:
+> The project will likely have instructions, or even automate getting your device into DevFW, and modmium will able to spoof the rest whilst keeping developer features (like what murkmod does)
+## I have confirmed that booting verified with DevFW does report still `Verified` in GAC.. for some reason.
