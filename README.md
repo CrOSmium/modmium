@@ -1,5 +1,8 @@
-for now, this will be a *conceptual* overview of the project.
-copy-pasted from discussion with dmd and carbon in crosbreaker dev:
+for now, this will be a *conceptual* overview of the project.**
+
+** we will be slowly adding features into this, before actually making it, and early parts of this will be developed on top of pre-existing murkmod standards
+
+#### copy-pasted from discussion with dmd and carbon in crosbreaker dev:
 
 ### maria:
 > people using it should be unenrolled with WP off.
