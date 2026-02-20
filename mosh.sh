@@ -4,20 +4,12 @@
 
 # -- { DO NOT MODIFY } --
 selected_index=0
-writeprotect=$(flashrom --wp-status | grep disabled)
-factoryserial=$(vpd -i RO_VPD -g "factory_serial_number")
 # MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' ) # this was removed because it was getting the shims version lmao
-if [[ "$factoryserial" == "" ]]; then
-factorysaved="1"
-fi
 # -----------------------
 
 
 # -- TESTING FLAGS :3 --
 # MILESTONE=143
-# BROKER_ENABLED="false" 
-# writeprotect=enabled
-
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
@@ -189,11 +181,7 @@ tput sc
    menu_logo
 
 
-if [[ "$writeprotect" == *"disabled"* ]]; then
-  echo -e "You currently have Firmware Write Protection set to ${R}(DISABLED)${N}!"
-  else
-  echo -e "You currently have Firmware Write Protection set to ${G}(ENABLED)${N}, you will be ${R}unable${N} to use any features requiring FWWP to be DISABLED[${G}https://crosmium.dev/FWWP${N}]!"
-fi
+
 if [[ "$MILESTONE" == "" ]]; then
 echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
 else
