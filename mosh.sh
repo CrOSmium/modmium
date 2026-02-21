@@ -33,11 +33,14 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Policy Editor" "5) Update Modmium [NOT CHROMEOS]" "6) Exit")
+options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Policy Editor" "5) Soft-Disable Extentions" "6) Update Modmium [NOT CHROMEOS]" "7) Exit")
 num_options=${#options[@]}
 }
 
 menu_reset
+
+
+
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
@@ -93,6 +96,16 @@ get_fixed_dst_drive() {
 	echo "${dev}"
 }
 
+softext() {
+clear
+menu_logo
+echo ""
+echo "Extensions will be disabled until you press CTRL-C or close this tab"
+while true; do
+kill -9 $(pgrep -f "\-\-extension\-process") 2>/dev/null
+sleep 0.5
+done
+}
 
 selector() {
 if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
@@ -131,7 +144,13 @@ sleep 3
 menu_reset
 full_menu
 fi
-if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
+if [[ "${options[$selected_index]}" == "5) Soft-Disable Extentions" ]]; then
+employ softext
+menu_reset
+full_menu
+fi
+
+if [[ "${options[$selected_index]}" == "6) Update Modmium [NOT CHROMEOS]" ]]; then
 tput cnorm
 echo -e "Nothing here yet! Sorry!"
 sleep 3
