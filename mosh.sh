@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Policy Editor" "5) Exit")
+options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Policy Editor" "5) Update Modmium [NOT CHROMEOS]" "6) Exit")
 num_options=${#options[@]}
 }
 
@@ -95,7 +95,7 @@ get_fixed_dst_drive() {
 
 
 selector() {
-if [[ "${options[$selected_index]}" == "5) Exit" ]]; then
+if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
 tput cnorm
 clear
 exit 0
@@ -131,7 +131,13 @@ sleep 3
 menu_reset
 full_menu
 fi
-
+if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
+tput cnorm
+echo -e "Nothing here yet! Sorry!"
+sleep 3
+menu_reset
+full_menu
+fi
 }
 full_menu() {
 clear
