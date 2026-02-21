@@ -1,6 +1,6 @@
 # variables
 
-# colors that i totally didn't steal from a previous project
+# colors that i totally didn't RIP OUT RUTHLESSLY FROM MOSH
 B='\033[1;36m' 
 G='\033[1;32m' 
 Y='\033[38;5;220m'
