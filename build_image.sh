@@ -23,8 +23,11 @@ get_flags(){
 	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i" 
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
-	FLAGS "$args" || exit $?
-	if ! [[ -z $FLAGS_image || ( -z $FLAGS_board || -z $FLAGS_version ) ]]; then
+	FLAGS $args || exit $?
+	if ! [[ 
+		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
+		( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image ) 
+	]]; then
     flags_help
     exit 1
 	fi
