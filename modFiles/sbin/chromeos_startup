@@ -33,6 +33,8 @@ fi
 
 
 # boot messages (we should add more)
+
+
 # multi-liners
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/block_devmode_virtual.txt
 ChromeOS is trying to kill itself.
@@ -43,6 +45,14 @@ cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
 i think carbon touched your system in a way that made it feel funny
 detouching system (repairing)
 EOF
+
+
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/enter_dev1_virtual.txt
+    Your system is transitioning :transgender_flag:
+    Local data has been cleared.
+    If you are seeing this message, you have already modified your system,
+    google is sad :(
+    To cancel, turn your computer off now.
 # auto repair message
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/anti_block_devmode_virtual.txt
 ChromeOS is trying to prevent Modmium from starting
@@ -50,12 +60,15 @@ Modmium is fighting ChromeOS to get your device to boot, wish it luck.
 Your system will boot in a few seconds...
 EOF
 
+
 # single-liners
 echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-assets/text/boot_messages/en/power_wash.txt
 
+echo "your firmware is updating!! if you see this, you are fucked." >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
 
-crossystem.old block_devmode=0 # prevent chromeos from comitting suicide
-vpd -i RW_VPD -s block_devmode=0 # same with vpd
+# chromeOS disenfuckinators
+crossystem.old block_devmode=0
+vpd -i RW_VPD -s block_devmode=0 
 
 
 

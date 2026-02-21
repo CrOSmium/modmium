@@ -139,7 +139,7 @@ mode_warn_dev() {
                                      |  |        |
                                        \         |
                                         \_______/
-                   Chrome OS verification is turned off.
+                   Carbon is touching your chromebook.
                      Press space to begin recovery.
   ' >"$STDOUT"
   # TODO(wad) Use the developer mode firmware image
