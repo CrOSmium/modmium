@@ -2,6 +2,7 @@
 
 # 99% of this was stolen from cr3nroll :3
 
+STABLEVERSIONS="135,132,134" # if you have tested a version, add the version's release number and a comma to seperate it from the others (132 and 134 havent actually been tested and are examples)
 
 # -- Root escalation --
 as_system() {
@@ -196,7 +197,11 @@ else
 if [[ "$MILESTONE" -le 130 ]]; then
 echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
 else
-echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium) --"
+if [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
+echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-stable) --"
+else
+echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-unstable) --"
+fi
 fi
 fi
 echo ""
