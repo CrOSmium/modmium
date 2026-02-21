@@ -42,7 +42,6 @@ checkFlagValidity(){
 		echo -e ""$R"Version not a natural number"$N", please provide chromeOS "$B"MILESTONE"$N" you want to build."
 		exit 1
 	fi
-	
 	if [[ -n $FLAGS_board ]]; then
 		local boardInList=0
 		for board in $boards; do
