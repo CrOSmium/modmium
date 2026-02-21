@@ -33,11 +33,31 @@ get_flags(){
 	fi
 }
 
+checkFlagValidity(){
+	if [[  -n $FLAGS_image  && ! ( -f $FLAGS_image ) ]]; then
+		echo -e ""$R"File not found"$N", please provide a path to an actual recovery image."
+		exit 1
+	fi
+	if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
+		echo -e ""$R"Version not a natural number"$N", please provide chromeOS "$B"MILESTONE"$N" you want to build."
+		exit 1
+	fi
+	
+	if [[ -n $FLAGS_board ]]; then
+		local boardInList=0
+		for board in $boards; do
+			if [[ "$FLAGS_board" == "$board" ]]; then
+				boardInList=1
+			fi
+		done
+		if [[ $boardInList != 1 ]]; then
+			echo -e ""$R"Invalid board name."$N" See "$B"https://dl.crosbreaker.dev/recovery-images"$N" for a complete list."
+			exit 1
+		fi
+	fi
+}
 remove_verity(){
 	local loopDev=$(losetup -Pf --show ${FLAGS_image})
 }
-
 get_flags
-echo $FLAGS_image
-echo $FLAGS_board
-echo $FLAGS_version
+checkFlagValidity
