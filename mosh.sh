@@ -2,9 +2,18 @@
 
 # 99% of this was stolen from cr3nroll :3
 
+
+# -- Root escalation --
+as_system() {
+# this bypasses permissions on /rootkey preventing ssh from working
+local ROOTKEY
+ROOTKEY=$(cat /rootkey)
+ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
+}
+
 # -- { DO NOT MODIFY } --
 selected_index=0
-# MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' )
+MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
 # -----------------------
 
 # TUI colors :D
@@ -150,12 +159,7 @@ employ() { # this named employ to scare carbon away
     trap '' INT
     clear
 }
-as_system() {
-# this bypasses permissions on /rootkey preventing ssh from working
-local ROOTKEY
-ROOTKEY=$(cat /rootkey)
-ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
-}
+
 menu_logo() {
     echo -ne "\033]0;MOSH\007"
  echo -e "Welcome to MOSH, the Modmium developer shell
