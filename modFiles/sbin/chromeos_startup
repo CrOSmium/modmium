@@ -1,1 +1,117 @@
-echo "example modfile that isn't actually useful yet"
+#!/bin/bash
+
+# Yes, SOME of this script was taken from murkmod, credit for that goes to rainestorme
+
+# stripped & rewritten by DMD for Modmium
+
+exec 1>>/startup_log 2>&1
+
+get_largest_cros_blockdev() {
+    local largest size dev_name tmp_size remo
+    size=0
+    for blockdev in /sys/block/*; do
+        dev_name="${blockdev##*/}"
+        echo "$dev_name" | grep -q '^\(loop\|ram\)' && continue
+        tmp_size=$(cat "$blockdev"/size)
+        remo=$(cat "$blockdev"/removable)
+        if [ "$tmp_size" -gt "$size" ] && [ "${remo:-0}" -eq 0 ]; then
+            case "$(sfdisk -l -o name "/dev/$dev_name" 2>/dev/null)" in
+                *STATE*KERN-A*ROOT-A*KERN-B*ROOT-B*)
+                    largest="/dev/$dev_name"
+                    size="$tmp_size"
+                    ;;
+            esac
+        fi
+    done
+    echo "$largest"
+}
+DST=$(get_largest_cros_blockdev)
+if [ -z $DST ]; then
+    DST=/dev/mmcblk0
+fi
+
+
+
+# boot messages (we should add more)
+# multi-liners
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/block_devmode_virtual.txt
+ChromeOS is trying to kill itself.
+ChromeOS detected developer mode and is trying to disable it to
+comply with FWMP. I sure do hope you like troubleshooting
+EOF
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
+i think carbon touched your system in a way that made it feel funny
+detouching system (repairing)
+EOF
+# auto repair message
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/anti_block_devmode_virtual.txt
+ChromeOS is trying to prevent Modmium from starting
+Modmium is fighting ChromeOS to get your device to boot, wish it luck.
+Your system will boot in a few seconds...
+EOF
+
+# single-liners
+echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-assets/text/boot_messages/en/power_wash.txt
+
+
+crossystem.old block_devmode=0 # prevent chromeos from comitting suicide
+vpd -i RW_VPD -s block_devmode=0 # same with vpd
+
+
+
+# THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
+# before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)
+if [ ! -f /sshd_staged ]; then
+    echo "Staging sshd..."
+    mkdir -p /ssh/root
+    chmod -R 777 /ssh/root
+
+    echo "Generating ssh keypair..."
+    ssh-keygen -f /ssh/root/key -N '' -t rsa >/dev/null
+    cp /ssh/root/key /rootkey
+    chmod 600 /ssh/root
+    chmod 644 /rootkey
+
+    echo "Creating config..."
+    cat >/ssh/config <<-EOF
+AuthorizedKeysFile /ssh/%u/key.pub
+StrictModes no
+HostKey /ssh/root/key
+Port 1337
+EOF
+
+    touch /sshd_staged
+    echo "Staged sshd."
+fi
+
+if [ -f /population_required ]; then
+    echo "Populating crossystem..."
+    /sbin/crossystem_boot_populator.sh # THIS FILE HAS NOT BEEN REWRITTEN YET! HURRY UP CARBON!
+    echo "Done. Setting check_enrollment..."
+    vpd -i RW_VPD -s check_enrollment=1
+    echo "Removing flag..."
+    rm -f /population_required
+fi
+
+echo "Launching sshd..."
+/usr/sbin/sshd -f /ssh/config &
+
+if [ -f /logkeys/active ]; then
+    echo "Found logkeys flag, launching..."
+    /usr/bin/logkeys -s -m /logkeys/keymap.map -o /mnt/stateful_partition/keylog
+fi
+
+if [ ! -f /stateful_unfucked ]; then
+    echo "Unfucking stateful..."
+    yes | mkfs.ext4 "${DST}p1"
+    touch /stateful_unfucked
+    echo "Done, rebooting..."
+    reboot
+else
+    echo "Handing startup back to ChromeOS"
+    if [ ! -f /new-startup ]; then
+        exec /sbin/chromeos_startup.sh.old
+    else 
+        exec /sbin/chromeos_startup.old
+    fi
+fi
