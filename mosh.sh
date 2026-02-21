@@ -7,6 +7,14 @@ selected_index=0
 # MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' ) # this was removed because it was getting the shims version lmao
 # -----------------------
 
+# TUI colors :D
+B='\033[1;36m' 
+G='\033[1;32m' 
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+N='\033[0m'    
+D='\033[1;90m'
+
 
 # -- TESTING FLAGS :3 --
 # MILESTONE=143
