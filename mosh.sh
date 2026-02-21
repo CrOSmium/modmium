@@ -105,16 +105,22 @@ fi
 if [[ "${options[$selected_index]}" == "1) Root Shell" ]]; then
 tput cnorm
 employ as_system bash
+menu_reset
+full_menu
 fi
 
 if [[ "${options[$selected_index]}" == "2) Chronos Shell" ]]; then
 tput cnorm
 employ as_system "cd /home/chronos; sudo -i -u chronos" 
+menu_reset
+full_menu
 fi
 
 if [[ "${options[$selected_index]}" == "3) Crosh" ]]; then
 tput cnorm
 employ /usr/bin/crosh.old 
+menu_reset
+full_menu
 fi
 }
 full_menu() {
