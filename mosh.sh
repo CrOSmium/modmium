@@ -4,7 +4,7 @@
 
 # -- { DO NOT MODIFY } --
 selected_index=0
-MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' ) # this was removed because it was getting the shims version lmao
+# MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' )
 # -----------------------
 
 # TUI colors :D
