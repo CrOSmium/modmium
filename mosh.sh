@@ -4,7 +4,7 @@
 
 # -- { DO NOT MODIFY } --
 selected_index=0
-# MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' ) # this was removed because it was getting the shims version lmao
+MILESTONE=$(cat /etc/lsb-release | grep MILESTONE | sed 's/^.*=//' ) # this was removed because it was getting the shims version lmao
 # -----------------------
 
 # TUI colors :D
@@ -82,17 +82,7 @@ get_fixed_dst_drive() {
 	fi
 	echo "${dev}"
 }
-CROS_DEV=$(get_largest_cros_blockdev)
-MNT=$(mktemp -d)
-for i in 3 5; do
-    mount -o ro "$(format_part_number "$CROS_DEV" "$i")" "$MNT" >/dev/null 2>&1 || continue
-    # end of stolen code!
-    NEW_MILESTONE=$(cat "$MNT/etc/lsb-release" | grep "CHROMEOS_RELEASE_CHROME_MILESTONE" | sed 's/^.*=//')
-    if [ ! -z "$NEW_MILESTONE" ]; then
-        MILESTONE=$NEW_MILESTONE
-    fi
-    umount "$MNT"
-done
+
 
 selector() {
 if [[ "${options[$selected_index]}" == "4) Exit" ]]; then
@@ -166,7 +156,6 @@ local ROOTKEY
 ROOTKEY=$(cat /rootkey)
 ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
 }
-
 menu_logo() {
     echo -ne "\033]0;MOSH\007"
  echo -e "Welcome to MOSH, the Modmium developer shell
