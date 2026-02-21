@@ -16,10 +16,13 @@ args=$@ # I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKA
 # end of checks
 
 # begin functions
-get_flags(){
+getFlags(){
 	load_shflags
 	# thanks sh1mmer wax.sh for teaching me how to use shflags lmao
-	FLAGS_HELP="Usage: $0 -i <path/to/recovery.bin> [flags] or $0 -b <board> [flags]"
+	FLAGS_HELP="Usage:
+$0 -i <path/to/recovery.bin> [flags] 
+OR
+$0 -b <board> -v <version> [flags]"
 	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i" 
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
@@ -55,8 +58,41 @@ checkFlagValidity(){
 		fi
 	fi
 }
-remove_verity(){
-	local loopDev=$(losetup -Pf --show ${FLAGS_image})
+removeVerity(){
+	tempDir=$(mktemp -d)
+	newImage="$tempDir"/modmium-$(basename $FLAGS_image)
+	echo "Copying image to /tmp, this may take a while..."
+	cp $FLAGS_image $newImage
+	sync
+	echo "Setting up loop device..."
+	loopDev=$(losetup -Pf --show $newImage) 
+	echo "Disabling verity..."
+	build-utils/ssd_util.sh -i $loopDev -r 
+	echo "Cleaning up kernel backups..."
+	rm -rf cros_sign_backups
 }
-get_flags
+dropModFiles(){
+	echo -e ""$G"Mounting loop device..."$N""
+	mount "$loopDev"p3 mnt --mkdir
+	modDirs=$(find modFiles -maxdepth 1 -name "*" | tail -n +2)
+	echo -e ""$G"Dropping modfiles..."$N""
+	for dir in $modDirs; do
+		cp -r $dir mnt
+	done # yes i know this overwrites things and doesn't move conflicting files to file.old yet, but it's nearly 1am and i am tired. i will figure that out tomorrow
+	
+	# cleanup time!
+	echo -e ""$G"Cleaning up..."$N""
+	umount mnt
+	losetup -d $loopDev
+	echo -e ""$G"Moving image from RAM to modmium.bin in current directory..."$N""
+	mv $newImage modmium.bin
+	sync
+	rm -rf $tempDir mnt
+	echo -e ""$G"Finished!"$N""
+}
+getFlags
 checkFlagValidity
+if [[ -n $FLAGS_image ]]; then
+	removeVerity
+	dropModFiles
+fi
