@@ -48,11 +48,13 @@ EOF
 
 
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/enter_dev1_virtual.txt
-    Your system is transitioning :transgender_flag:
-    Local data has been cleared.
-    If you are seeing this message, you have already modified your system,
-    google is sad :(
-    To cancel, turn your computer off now.
+Your system is transitioning :transgender_flag:
+Local data has been cleared.
+If you are seeing this message, you have already modified your system,
+so google is sad :(
+To cancel, turn your computer off now.
+EOF
+
 # auto repair message
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/anti_block_devmode_virtual.txt
 ChromeOS is trying to prevent Modmium from starting
