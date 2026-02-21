@@ -42,8 +42,8 @@ ChromeOS detected developer mode and is trying to disable it to
 comply with FWMP. I sure do hope you like troubleshooting
 EOF
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
-i think carbon touched your system in a way that made it feel funny
-detouching system (repairing)
+carbon touched your system in a way that made it feel funny
+detouching system (repairing system)
 EOF
 
 
@@ -62,11 +62,17 @@ Modmium is fighting ChromeOS to get your device to boot, wish it luck.
 Your system will boot in a few seconds...
 EOF
 
+# leave dev message
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/leave_dev.txt
+You are trying to disable developer mode.
+Please ensure that you have DevFW enabled, otherwise ChromeOS WILL NOT BOOT.
+Your device will attempt to boot in DevFW verified in 30 seconds...
+EOF
 
 # single-liners
 echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-assets/text/boot_messages/en/power_wash.txt
 
-echo "your firmware is updating!! if you see this, you are fucked." >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
+echo "your firmware is updating!! (if you see this message, report an issue ASAP) " >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
 
 # chromeOS disenfuckinators
 crossystem.old block_devmode=0

@@ -212,13 +212,8 @@ mode_enter_dev() {
 }
 # Prints message when leaving developer mode
 
-# MODIFIED FOR MODMIUM
 mode_leave_dev() {
   show_assets_message_image "leave_dev"
-  echo "WARNING:" >>"${TTY}"
-  echo "You are trying to disable developer mode." >>"${TTY}"
-  echo "Please ensure that you have DevFW enabled, otherwise ChromeOS WILL NOT BOOT." >>"${TTY}"
-  echo "Your device will attempt to boot in DevFW verified in 30 seconds..." >>"${TTY}"
   sleep 30
 }
 
@@ -232,8 +227,8 @@ mode_update_firmware() {
     Please do not turn it off.
   " >"$STDOUT"
 }
-# Prints message before starting to erase stateful partition (wipe).
-# Argument: (optional) file for splash image to show
+
+
 mode_wipe() {
   local splash_file="$1"
   if [ -s "$splash_file" ] && type ply-image >/dev/null 2>&1; then
