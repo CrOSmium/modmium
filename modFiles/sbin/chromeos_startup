@@ -39,7 +39,7 @@ fi
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/block_devmode_virtual.txt
 ChromeOS is trying to kill itself.
 ChromeOS detected developer mode and is trying to disable it to
-comply with FWMP. I sure do hope you like troubleshooting
+comply with FWMP. If auto-repair fails, boot some kind of code exec and run "vpd -i RW_VPD -s block_devmode=0 && crossystem block_devmode=0."
 EOF
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
 carbon touched your system in a way that made it feel funny
