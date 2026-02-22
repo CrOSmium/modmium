@@ -40,6 +40,9 @@ checkFlagValidity(){
 	if [[  -n $FLAGS_image  && ! ( -f $FLAGS_image ) ]]; then
 		echo -e ""$R"File not found"$N", please provide a path to an actual recovery image."
 		exit 1
+	elif [[ -n $FLAGS_image && ( $FLAGS_image == "modmium.bin" ) ]]; then
+		echo -e ""$R"Input image cannot have the same name as output image."$N" Rename it to something other than "$B"modmium.bin"$N""
+		exit 1
 	fi
 	if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
 		echo -e ""$R"Version not a natural number"$N", please provide chromeOS "$B"MILESTONE"$N" you want to build."
@@ -61,25 +64,32 @@ checkFlagValidity(){
 removeVerity(){
 	tempDir=$(mktemp -d)
 	newImage="$tempDir"/modmium-$(basename $FLAGS_image)
-	echo "Copying image to /tmp, this may take a while..."
+	echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
 	cp $FLAGS_image $newImage
 	sync
-	echo "Setting up loop device..."
+	echo -e ""$G"Setting up loop device..."$N""
 	loopDev=$(losetup -Pf --show $newImage) 
-	echo "Disabling verity..."
+	echo -e ""$G"Disabling verity..."$N""
 	build-utils/ssd_util.sh -i $loopDev -r 
-	echo "Cleaning up kernel backups..."
+	echo -e ""$G"Cleaning up kernel backups..."$N""
 	rm -rf cros_sign_backups
 }
 dropModFiles(){
 	echo -e ""$G"Mounting loop device..."$N""
 	mount "$loopDev"p3 mnt --mkdir
-	modDirs=$(find modFiles -maxdepth 1 -name "*" | tail -n +2)
+	modFiles=$(find modFiles -mindepth 1 -name "*")
 	echo -e ""$G"Dropping modfiles..."$N""
-	for dir in $modDirs; do
-		cp -r $dir mnt
-	done # yes i know this overwrites things and doesn't move conflicting files to file.old yet, but it's nearly 1am and i am tired. i will figure that out tomorrow
-	
+	for file in $modFiles; do
+		if [[ -d $file ]]; then
+			:
+		elif [[ -f $file ]]; then
+			oldFile=$(echo $file | sed 's/modFiles/mnt/')
+			mv $oldFile "$oldFile".old
+			cp $file $oldFile
+			chmod 777 $oldFile
+		fi
+	done
+
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""
 	umount mnt
