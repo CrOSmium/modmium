@@ -19,6 +19,7 @@ source ./build-utils/common_modmium.sh
 # end of checks
 
 # begin functions
+# begin flag functions
 getFlags(){
 	load_shflags
 	# thanks sh1mmer wax.sh for teaching me how to use shflags lmao
@@ -38,7 +39,6 @@ $0 -b <board> -v <version> [flags]"
     exit 1
 	fi
 }
-
 checkFlagValidity(){
 	if [[  -n $FLAGS_image  && ! ( -f $FLAGS_image ) ]]; then
 		echo -e ""$R"File not found"$N", please provide a path to an actual recovery image."
@@ -64,12 +64,20 @@ checkFlagValidity(){
 		fi
 	fi
 }
+# end flag functions
+
+# begin build functions
 removeVerity(){
-	tempDir=$(mktemp -d)
-	newImage="$tempDir"/modmium-$(basename $FLAGS_image)
-	echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
-	cp $FLAGS_image $newImage
-	sync
+	if [[ -n $FLAGS_image ]]
+		tempDir=$(mktemp -d)
+		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
+		echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
+		cp $FLAGS_image $newImage
+		sync
+	else
+		newImage=modmium.bin
+		mv $downloadedImage $newImage
+	fi
 	echo -e ""$G"Setting up loop device..."$N""
 	loopDev=$(losetup -Pf --show $newImage) 
 	echo -e ""$G"Disabling verity..."$N""
@@ -99,15 +107,33 @@ dropModFiles(){
 	echo -e ""$G"Cleaning up..."$N""
 	umount mnt
 	losetup -d $loopDev
-	echo -e ""$G"Moving image from RAM to modmium.bin in current directory..."$N""
-	mv $newImage modmium.bin
-	sync
-	rm -rf $tempDir mnt
+	if [[ -n $FLAGS_image ]]; then
+		echo -e ""$G"Moving image from RAM to modmium.bin in current directory..."$N""
+		mv $newImage modmium.bin
+		sync
+		rm -rf $tempDir mnt
+	else
+		rm -rf mnt
+	fi
 	echo -e ""$G"Finished!"$N""
 }
-getFlags $@
-checkFlagValidity
-if [[ -n $FLAGS_image ]]; then
-	removeVerity
-	dropModFiles
-fi
+# end build functions
+
+# begin downloading functions
+downloadImage(){
+	jsonLink="https://raw.githubusercontent.com/crosbreaker/chromeos-releases-data/refs/heads/main/data.json"
+}
+# end downloading functions
+
+main(){
+	getFlags $@
+	checkFlagValidity
+	if [[ -n $FLAGS_image ]]; then
+		removeVerity
+		dropModFiles
+	elif [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
+		downloadImage
+		removeVerity
+		dropModFiles
+	fi
+}
