@@ -68,7 +68,7 @@ checkFlagValidity(){
 
 # begin build functions
 removeVerity(){
-	if [[ -n $FLAGS_image ]]
+	if [[ -n $FLAGS_image ]]; then
 		tempDir=$(mktemp -d)
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
 		echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
@@ -122,6 +122,17 @@ dropModFiles(){
 # begin downloading functions
 downloadImage(){
 	jsonLink="https://raw.githubusercontent.com/crosbreaker/chromeos-releases-data/refs/heads/main/data.json"
+	recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $FLAGS_board --arg ver $FLAGS_version '
+		.[$board].images // []
+		| map(select(
+			.channel == "stable-channel" and
+			(.chrome_version | startswith($ver + "."))
+		))
+		| sort_by(.last_modified)
+		| last
+		| .url // empty
+	')
+	echo $recoveryUrl
 }
 # end downloading functions
 
@@ -133,7 +144,9 @@ main(){
 		dropModFiles
 	elif [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
 		downloadImage
-		removeVerity
-		dropModFiles
+		#removeVerity
+		#dropModFiles
 	fi
 }
+
+main $@
