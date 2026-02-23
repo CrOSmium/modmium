@@ -122,6 +122,7 @@ dropModFiles(){
 # begin downloading functions
 downloadImage(){
 	jsonLink="https://raw.githubusercontent.com/crosbreaker/chromeos-releases-data/refs/heads/main/data.json"
+	echo -e ""$G"Checking crosbreaker/chromeos-releases-data for recovery image URL..."$N""
 	recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $FLAGS_board --arg ver $FLAGS_version '
 		.[$board].images // []
 		| map(select(
@@ -131,8 +132,22 @@ downloadImage(){
 		| sort_by(.last_modified)
 		| last
 		| .url // empty
-	')
-	echo $recoveryUrl
+	')	
+	if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
+		echo -e ""$G"Recovery URL found!"$N""
+	else
+		echo -e ""$R"Recovery URL not found or invalid :(
+Exiting..."$N""
+		exit 1
+	fi
+	echo -e ""$G"Downloading image..."$N""
+	wget --show-progress -O recovery.zip $recoveryUrl
+	echo -e ""$G"Unzipping image..."$N""
+	7z x recovery.zip
+	downloadedImage=$(basename $(find -name "chromeos*.bin"))
+	echo -e ""$G"Removing zip file..."$N""
+	rm -rf recovery.zip
+	echo -e ""$G"Done! Continuing to build..."$N""
 }
 # end downloading functions
 
@@ -144,8 +159,8 @@ main(){
 		dropModFiles
 	elif [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
 		downloadImage
-		#removeVerity
-		#dropModFiles
+		removeVerity
+		dropModFiles
 	fi
 }
 
