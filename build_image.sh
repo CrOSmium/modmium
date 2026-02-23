@@ -12,7 +12,10 @@ if [[ $EUID -ne 0 ]]; then
 	 exit $?
 fi
 source ./build-utils/common_modmium.sh
-args=$@ # I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
+# args=$@ 
+# I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
+# after a day of thinking i realize it's because $@ is the arguments passed into the function, of which there are none unless i did something like getFlags($@). i think. lemme test it.
+# yep that was it. just gonna remove this variable because it's redudant now. these comments are staying because it's funny though xD
 # end of checks
 
 # begin functions
@@ -26,7 +29,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i" 
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
-	FLAGS $args || exit $?
+	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
 		( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image ) 
@@ -84,7 +87,9 @@ dropModFiles(){
 			:
 		elif [[ -f $file ]]; then
 			oldFile=$(echo $file | sed 's/modFiles/mnt/')
-			mv $oldFile "$oldFile".old
+			if [[ -f $oldFile ]]; then
+				mv $oldFile "$oldFile".old
+			fi
 			cp $file $oldFile
 			chmod 777 $oldFile
 		fi
@@ -100,7 +105,7 @@ dropModFiles(){
 	rm -rf $tempDir mnt
 	echo -e ""$G"Finished!"$N""
 }
-getFlags
+getFlags $@
 checkFlagValidity
 if [[ -n $FLAGS_image ]]; then
 	removeVerity
