@@ -75,7 +75,7 @@ echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-a
 echo "your firmware is updating!! (if you see this message, report an issue ASAP) " >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
 
 # chromeOS disenfuckinators
-crossystem.old block_devmode=0
+# crossystem.old block_devmode=0
 vpd -i RW_VPD -s block_devmode=0 
 
 
