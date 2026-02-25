@@ -105,31 +105,19 @@ EOF
     echo "Staged sshd."
 fi
 
-if [ -f /population_required ]; then
-    echo "Populating crossystem..."
-    /sbin/crossystem_boot_populator.sh # THIS FILE HAS NOT BEEN REWRITTEN YET! HURRY UP CARBON!
-    echo "Done. Setting check_enrollment..."
-    vpd -i RW_VPD -s check_enrollment=1
-    echo "Removing flag..."
-    rm -f /population_required
-fi
+# if [ -f /population_required ]; then
+#    echo "Populating crossystem..."
+#    /sbin/crossystem_boot_populator.sh # THIS FILE HAS NOT BEEN REWRITTEN YET! HURRY UP CARBON!
+#    echo "Done. Setting check_enrollment..."
+#    vpd -i RW_VPD -s check_enrollment=1
+#    echo "Removing flag..."
+#    rm -f /population_required
+# fi
 
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 
-if [ -f /logkeys/active ]; then
-    echo "Found logkeys flag, launching..."
-    /usr/bin/logkeys -s -m /logkeys/keymap.map -o /mnt/stateful_partition/keylog
-fi
-
-if [ ! -f /stateful_unfucked ]; then
-    echo "Unfucking stateful..."
-    yes | mkfs.ext4 "${DST}p1"
-    touch /stateful_unfucked
-    echo "Done, rebooting..."
-    reboot
-else
-    echo "Handing startup back to ChromeOS"
+    echo "Handing startup back to ChromeOS :D"
     if [ ! -f /new-startup ]; then
         exec /sbin/chromeos_startup.sh.old
     else 
