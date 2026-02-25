@@ -210,7 +210,7 @@ display_menu() {
     if [[ "$MILESTONE" == "" ]]; then
         echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
     else
-        if [[ "$MILESTONE" -le 130 ]]; then
+        if [[ "$MILESTONE" -le 128 ]]; then
             echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
         else
             if [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
