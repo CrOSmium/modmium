@@ -118,9 +118,5 @@ echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 
     echo "Handing startup back to ChromeOS :D"
-    if [ ! -f /new-startup ]; then
-        exec /sbin/chromeos_startup.sh.old
-    else 
-        exec /sbin/chromeos_startup.old
-    fi
+    exec /sbin/chromeos_startup.old
 fi
