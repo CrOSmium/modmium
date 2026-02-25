@@ -121,7 +121,7 @@ dropModFiles(){
 
 # begin downloading functions
 downloadImage(){
-	jsonLink="https://raw.githubusercontent.com/crosbreaker/chromeos-releases-data/refs/heads/main/data.json"
+	jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
 	echo -e ""$G"Checking crosbreaker/chromeos-releases-data for recovery image URL..."$N""
 	recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $FLAGS_board --arg ver $FLAGS_version '
 		.[$board].images // []
