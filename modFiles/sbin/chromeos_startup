@@ -109,6 +109,5 @@ fi
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 
-    echo "Handing startup back to ChromeOS :D"
-    exec /sbin/chromeos_startup.old
-fi
+echo "Handing startup back to ChromeOS :D"
+exec /sbin/chromeos_startup.old

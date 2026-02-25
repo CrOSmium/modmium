@@ -82,9 +82,38 @@ removeVerity(){
 	echo -e ""$G"Setting up loop device..."$N""
 	loopDev=$(losetup -Pf --show $newImage) 
 	echo -e ""$G"Disabling verity..."$N""
-	build-utils/ssd_util.sh -i $loopDev -r 
-	echo -e ""$G"Cleaning up kernel backups..."$N""
-	rm -rf cros_sign_backups
+	build-utils/ssd_util.sh -i $loopDev -r --partitions 2
+	build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
+	kernGUID=$(blkid -s PARTUUID -o value ${loopDev}p4)
+	for part in 2 4; do
+    echo -e ""$G"Dumping and modifying kernel ${part} commandline..."$N""
+		futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
+		[ $part -eq 2 ] && sed -i "s|cros_recovery||g" config_2.txt
+		if [ $part -eq 4 ]; then
+			sed -i "
+				s|cros_secure|cros_secure cros_recovery|g
+				s|kern_guid=%U|kern_guid=$KERN_GUID|g
+				s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g
+			" config_4.txt
+		fi
+		sed -i "s|  | |g" config_${part}.txt # fix double spacing
+
+		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
+    vbutil_kernel --repack ${loopDev}p$part \
+        --keyblock build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
+        --signprivate build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
+        --version 6 \
+        --config config_${part}.txt \
+        --oldblob ${loopDev}p$part
+	done
+
+	echo -e ""$G"Setting correct priorities on kernels..."$N""
+	cgpt add ${loopDev} -i 2 -P 5 -T 1 -S 1
+	cgpt add ${loopDev} -i 4 -P 10 -T 15 -S 0
+	
+	echo -e ""$G"Cleaning up kernel backups and configs..."$N""
+	rm -rf cros_sign_backups config*
 }
 dropModFiles(){
 	echo -e ""$G"Mounting loop device..."$N""
@@ -109,8 +138,8 @@ dropModFiles(){
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
-		echo -e ""$G"Moving image from RAM to modmium.bin in current directory..."$N""
-		mv $newImage modmium.bin
+		echo -e ""$G"Moving image from RAM to $(basename $newImage) in current directory..."$N""
+		mv $newImage $(basename $newImage)
 		sync
 		rm -rf $tempDir mnt
 	else
