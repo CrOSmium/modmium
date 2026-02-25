@@ -139,7 +139,7 @@ mode_warn_dev() {
                                      |  |        |
                                        \         |
                                         \_______/
-                   Carbon is touching your chromebook.
+                   Fanxql is touching your chromebook.
                      Press space to begin recovery.
   ' >"$STDOUT"
   # TODO(wad) Use the developer mode firmware image

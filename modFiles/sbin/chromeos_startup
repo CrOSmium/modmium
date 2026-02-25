@@ -42,7 +42,7 @@ ChromeOS detected developer mode and is trying to disable it to
 comply with FWMP. If auto-repair fails, boot some kind of code exec and run "vpd -i RW_VPD -s block_devmode=0 && crossystem block_devmode=0"
 EOF
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
-carbon touched your system in a way that made it feel funny
+fanxql touched your system in a way that made it feel funny
 detouching system (repairing system)
 EOF
 
@@ -105,14 +105,6 @@ EOF
     echo "Staged sshd."
 fi
 
-# if [ -f /population_required ]; then
-#    echo "Populating crossystem..."
-#    /sbin/crossystem_boot_populator.sh # THIS FILE HAS NOT BEEN REWRITTEN YET! HURRY UP CARBON!
-#    echo "Done. Setting check_enrollment..."
-#    vpd -i RW_VPD -s check_enrollment=1
-#    echo "Removing flag..."
-#    rm -f /population_required
-# fi
 
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
