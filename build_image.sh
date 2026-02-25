@@ -52,6 +52,7 @@ checkFlagValidity(){
 		exit 1
 	fi
 	if [[ -n $FLAGS_board ]]; then
+		FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
 		local boardInList=0
 		for board in $boards; do
 			if [[ "$FLAGS_board" == "$board" ]]; then
@@ -121,7 +122,6 @@ dropModFiles(){
 
 # begin downloading functions
 downloadImage(){
-	FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
 	jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
 	echo -e ""$G"Checking crosbreaker/chromeos-releases-data for recovery image URL..."$N""
 	recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $FLAGS_board --arg ver $FLAGS_version '
