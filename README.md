@@ -17,9 +17,6 @@
 > similar to mrchromebox script in that regard.
 > it'll also set disable dev request to 1.
 > from there readme will say to reboot and enroll in verified mode, plug in the usb, then curl the script again (we can have it check the fw type [normal or developer]) to back up the policy file to the usb
-### carbon:
-> Is this a image or is it local tho
-> I am confuse
 ### maria:
 > this is setup before building the image
 > once you have the policy file, you can get the policy json from chrome://policy, and put that on the usb too
