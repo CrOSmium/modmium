@@ -2,7 +2,7 @@
 # once again, a conceptual overview for now, seeing as we don't want to write a bunch of code for nothing if ts gets serverside patched by the big Goog :fanxql:
 
 # pre-flight checklist
-if [ "$(basename $(echo $PWD))" != "modmium" ]; then
+if [ "$(basename $PWD)" != "modmium" ]; then
 	echo "Please run this script in the cloned directory (modmium/)"
 	exit 1
 fi
@@ -84,26 +84,24 @@ removeVerity(){
 	echo -e ""$G"Disabling verity..."$N""
 	build-utils/ssd_util.sh -i $loopDev -r --partitions 2
 	build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
-	kernGUID=$(blkid -s PARTUUID -o value ${loopDev}p4)
 	for part in 2 4; do
     echo -e ""$G"Dumping and modifying kernel ${part} commandline..."$N""
 		futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
-		[ $part -eq 2 ] && sed -i "s|cros_recovery||g" config_2.txt
+		[ $part -eq 2 ] && sed -i "s|cros_recovery|cros_debug|g" config_2.txt
 		if [ $part -eq 4 ]; then
 			sed -i "
-				s|cros_secure|cros_secure cros_recovery|g
-				s|kern_guid=%U|kern_guid=$KERN_GUID|g
+				s|cros_secure|cros_secure cros_recovery cros_debug|g
 				s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g
 			" config_4.txt
 		fi
-		sed -i "s|  | |g" config_${part}.txt # fix double spacing
+		sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
 
 		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
     vbutil_kernel --repack ${loopDev}p$part \
         --keyblock build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
         --signprivate build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
-        --version 6 \
         --config config_${part}.txt \
         --oldblob ${loopDev}p$part
 	done
@@ -129,6 +127,7 @@ dropModFiles(){
 				mv $oldFile "$oldFile".old
 			fi
 			cp $file $oldFile
+			chown 0:0 $oldFile
 			chmod 777 $oldFile
 		fi
 	done

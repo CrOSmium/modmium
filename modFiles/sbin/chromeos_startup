@@ -4,8 +4,6 @@
 
 # stripped & rewritten by DMD for Modmium
 
-exec 1>>/startup_log 2>&1
-
 get_largest_cros_blockdev() {
     local largest size dev_name tmp_size remo
     size=0
@@ -30,10 +28,7 @@ if [ -z $DST ]; then
     DST=/dev/mmcblk0
 fi
 
-
-
 # boot messages (we should add more)
-
 
 # multi-liners
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/block_devmode_virtual.txt
@@ -80,6 +75,24 @@ vpd -i RW_VPD -s block_devmode=0
 
 
 
+# CHECKING IF WE SHOULD FORCE START RECOVERY INSTEAD OF STARTING UP
+if grep -q "cros_recovery" /proc/cmdline; then
+	(
+		stop bootsplash
+		stop boot-splash
+		frecon --daemon --enable-vts --pre-create-vts --num-vts=4
+		sleep 2
+		echo "CMDLINE: $(cat /proc/cmdline)"
+		echo "Installing modmium to disk! Hopefully!! Please work alsdfnlakjdsgfnlakdjf"
+		chromeos-install --dst=$DST --yes --debug
+		echo "Installed! Waiting 5 seconds then rebooting..."
+		sleep 5
+		reboot -f
+	) 2>&1 | tee /recovery_log > /dev/ttyS0
+fi
+
+
+
 # THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
 # before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)
 if [ ! -f /sshd_staged ]; then
@@ -91,7 +104,8 @@ if [ ! -f /sshd_staged ]; then
     ssh-keygen -f /ssh/root/key -N '' -t rsa >/dev/null
     cp /ssh/root/key /rootkey
     chmod 600 /ssh/root
-    chmod 644 /rootkey
+ 		chmod 600 /ssh/root/key
+		chmod 644 /rootkey
 
     echo "Creating config..."
     cat >/ssh/config <<-EOF
