@@ -76,20 +76,18 @@ vpd -i RW_VPD -s block_devmode=0
 
 
 # CHECKING IF WE SHOULD FORCE START RECOVERY INSTEAD OF STARTING UP
-if grep -q "cros_recovery" /proc/cmdline; then
-	(
-		stop bootsplash
-		stop boot-splash
-		frecon --daemon --enable-vts --pre-create-vts --num-vts=4
-		sleep 2
-		echo "CMDLINE: $(cat /proc/cmdline)"
-		echo "Installing modmium to disk! Hopefully!! Please work alsdfnlakjdsgfnlakdjf"
-		chromeos-install --dst=$DST --yes --debug
-		echo "Installed! Waiting 5 seconds then rebooting..."
-		sleep 5
-		reboot -f
-	) 2>&1 | tee /recovery_log > /dev/ttyS0
-fi
+#if grep -q "cros_recovery" /proc/cmdline; then
+#	(
+#		stop bootsplash
+#		stop boot-splash
+#		echo "CMDLINE: $(cat /proc/cmdline)"
+#		echo "Installing modmium to disk! Hopefully!! Please work alsdfnlakjdsgfnlakdjf"
+#		/usr/sbin/chromeos-recovery
+#		echo "Installed! Waiting 5 seconds then rebooting..."
+#		sleep 5
+#		reboot -f
+#	) 2>&1 | tee /recovery_log > /run/frecon/vt0
+#fi
 
 
 
@@ -119,6 +117,14 @@ EOF
     echo "Staged sshd."
 fi
 
+if [ ! -f /.policyedit_staged ]; then
+	echo "Staging policyedit..."
+	sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
+	echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
+	echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
+	touch /.policyedit_staged
+	echo "Done"
+fi
 
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &

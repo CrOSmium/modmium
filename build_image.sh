@@ -89,27 +89,22 @@ removeVerity(){
 	for part in 2 4; do
     echo -e ""$G"Dumping and modifying kernel ${part} commandline..."$N""
 		futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
-		[ $part -eq 2 ] && sed -i "s|cros_recovery|cros_debug|g" config_2.txt
+		[ $part -eq 2 ] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
 		if [ $part -eq 4 ]; then
 			sed -i "
-				s|cros_secure|cros_secure cros_recovery cros_debug|g
-				s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g
+				s|cros_secure|cros_secure cros_debug|g
 			" config_4.txt
 		fi
 		sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
 
 		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
     vbutil_kernel --repack ${loopDev}p$part \
-        --keyblock build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
-        --signprivate build-utils/keys/$( [ $part -eq 4 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
+        --keyblock build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
+        --signprivate build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
         --config config_${part}.txt \
         --oldblob ${loopDev}p$part
 	done
 
-	echo -e ""$G"Setting correct priorities on kernels..."$N""
-	cgpt add ${loopDev} -i 2 -P 5 -T 1 -S 1
-	cgpt add ${loopDev} -i 4 -P 10 -T 15 -S 0
-	
 	echo -e ""$G"Cleaning up kernel backups and configs..."$N""
 	rm -rf cros_sign_backups config*
 }
@@ -130,6 +125,7 @@ dropModFiles(){
 			chown 0:0 $oldFile
 			chmod 777 $oldFile
 		fi
+		rm -rf mnt/root/.force_update_firmware
 	done
 
 	# cleanup time!
