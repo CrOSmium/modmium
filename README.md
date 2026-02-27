@@ -1,3 +1,29 @@
+## (unfinished) usage instructions:
+0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info)
+1. Build the image
+```sh
+git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recursive because we'll add nectar as a *submodule* instead of just copy-pasting the files
+# if you want to download an image and autobuild
+./build_image.sh -b <board> -v <version>
+# if you want to use a local image (non-destructive)
+./build_image.sh -i /path/to/image.bin
+# note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
+```
+2. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to)
+3. Enter devmode recovery
+4. Plug in the disk with modmium
+5. Let it recover, then reboot (keep the USB in!)
+6. Hit Ctrl+D
+7. Connect to internet in the quick settings (bottom right), then open vt2 **[Ctrl+Alt+F2]** and login as `root`
+8. run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` (doesn't exist yet, but will be a script to make sure WP is off, flash gbb flags, and back up the firmware. btw make_dev_firmware also has flags to not change the HWID and specify output directory, we *will* be using those because it's convenient asf. it'll also run `crossystem disable_dev_request=1` if successful, so a reboot should suffice)
+9. If WP is disabled, the script will prompt you for a USB to back up the firmware to. ALL DATA ON IT WILL BE WIPED. Select the USB you want to back up to, then press enter.
+10. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
+11. When you're ready, run `reboot` and you'll be taken to verified mode (this is how your school will see you're on verified mode instead of developer).
+12. After it reboots, go through OOBE as normal and you'll be enrolled.
+You still have access to VT's even in verified, and how rootfs verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootfs's.
+
+After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, a policy editor (WIP), extension disabler, and modmium updater (NOTE, will curl repo locally [we'll make a release and it'll curl the latest release's source code]), and install modFiles to rootfs. i can code that later). 
+
 ## REPO LAYOUT
 
 (thank you mariah!)
