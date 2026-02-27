@@ -73,24 +73,6 @@ echo "your firmware is updating!! (if you see this message, report an issue ASAP
 crossystem block_devmode=0
 vpd -i RW_VPD -s block_devmode=0 
 
-
-
-# CHECKING IF WE SHOULD FORCE START RECOVERY INSTEAD OF STARTING UP
-#if grep -q "cros_recovery" /proc/cmdline; then
-#	(
-#		stop bootsplash
-#		stop boot-splash
-#		echo "CMDLINE: $(cat /proc/cmdline)"
-#		echo "Installing modmium to disk! Hopefully!! Please work alsdfnlakjdsgfnlakdjf"
-#		/usr/sbin/chromeos-recovery
-#		echo "Installed! Waiting 5 seconds then rebooting..."
-#		sleep 5
-#		reboot -f
-#	) 2>&1 | tee /recovery_log > /run/frecon/vt0
-#fi
-
-
-
 # THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
 # before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)
 if [ ! -f /sshd_staged ]; then
