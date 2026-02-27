@@ -2,7 +2,7 @@
 
 # 99% of this was stolen from cr3nroll :3
 
-STABLEVERSIONS="135,132,134" # if you have tested a version, add the version's release number and a comma to seperate it from the others (132 and 134 havent actually been tested and are examples)
+STABLEVERSIONS="132,134,135,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others (132 and 134 havent actually been tested and are examples)
 
 # -- Root escalation --
 as_system() {
