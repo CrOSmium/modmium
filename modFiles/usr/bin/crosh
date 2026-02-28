@@ -6,9 +6,9 @@ STABLEVERSIONS="132,134,135,140" # if you have tested a version, add the version
 
 # -- Root escalation --
 as_system() {
-    # this bypasses permissions on /rootkey preventing ssh from working
+    # this bypasses permissions on /.rootkey preventing ssh from working
     local ROOTKEY
-    ROOTKEY=$(cat /rootkey)
+    ROOTKEY=$(cat /.rootkey)
     ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
 }
 

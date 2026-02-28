@@ -75,17 +75,17 @@ vpd -i RW_VPD -s block_devmode=0
 
 # THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
 # before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)
-if [ ! -f /sshd_staged ]; then
+if [ ! -f /.sshd_staged ]; then
     echo "Staging sshd..."
     mkdir -p /ssh/root
     chmod -R 777 /ssh/root
 
     echo "Generating ssh keypair..."
     ssh-keygen -f /ssh/root/key -N '' -t rsa >/dev/null
-    cp /ssh/root/key /rootkey
+    cp /ssh/root/key /.rootkey
     chmod 600 /ssh/root
  		chmod 600 /ssh/root/key
-		chmod 644 /rootkey
+		chmod 644 /.rootkey
 
     echo "Creating config..."
     cat >/ssh/config <<-EOF
@@ -95,7 +95,7 @@ HostKey /ssh/root/key
 Port 1337
 EOF
 
-    touch /sshd_staged
+    touch /.sshd_staged
     echo "Staged sshd."
 fi
 
@@ -105,6 +105,13 @@ if [ ! -f /.policyedit_staged ]; then
 	echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
 	echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
 	touch /.policyedit_staged
+	echo "Done"
+fi
+
+if [ ! -f /.updates_blocked ]; then
+	echo "Disabling auto-updates..."
+	sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
+	touch /.updates_blocked
 	echo "Done"
 fi
 

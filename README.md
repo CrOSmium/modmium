@@ -1,3 +1,5 @@
+murkmod walked, so we could fly
+
 ## (unfinished) usage instructions:
 0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info)
 1. Build the image
