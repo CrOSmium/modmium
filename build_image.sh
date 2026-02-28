@@ -30,6 +30,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i" 
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
+	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
@@ -61,6 +62,12 @@ checkFlagValidity(){
 		done
 		if [[ $boardInList != 1 ]]; then
 			echo -e ""$R"Invalid board name."$N" See "$B"https://dl.crosbreaker.dev/recovery-images"$N" for a complete list."
+			exit 1
+		fi
+	fi
+	if [[ -n $FLAGS_kernver ]]; then
+		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ ]]; then
+    	echo -e "${R}Kernver is not hex or contains leading \"0x\".${N}"
 			exit 1
 		fi
 	fi
@@ -96,12 +103,19 @@ removeVerity(){
 			" config_4.txt
 		fi
 		sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
+		
+		if [[ -n $FLAGS_kernver ]]; then
+			kernver=$FLAGS_kernver
+		else
+			kernver=$(futility show ${loopDev}p$part | grep "Kernel version" | sed 's/^.*:      //')
+		fi
 
 		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
     vbutil_kernel --repack ${loopDev}p$part \
         --keyblock build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
         --signprivate build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
         --config config_${part}.txt \
+				--version $kernver \
         --oldblob ${loopDev}p$part
 	done
 
