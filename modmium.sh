@@ -34,7 +34,7 @@ main() {
     sleep 0.1
     echo ""
     echo -e "This is Modmium's pre-install script!"
-    echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything (CAN BE OVERRIDEN FOR THOSE WITH KEYROLL PREVENTION)"
+    echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
     echo ""
     echo -e "This script is a huge WIP, let dmd cook ;D"
     sleep 1
@@ -59,17 +59,17 @@ main() {
 	read -r -n 2 -s -p "Double click Y to continue, or hold any other key to quit." confirmation
     if [[ "$confirmation" != "yy" ]]; then
         echo -e "Denied! exiting.."
-		exit 0
+				exit 0
     fi
 
-	echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
+		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
     echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
-	read -p "(D/P): " resp 
-    if [[ $resp == [Ee] ]]; then
+		read -p "(D/P): " resp 
+    if [[ $resp =~ ^[Dd]$ ]]; then
         echo -e "These are the drives connected to your device:"
         lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
         echo -e "What drive would you like write the backup onto? (THIS WILL ERASE THE DRIVE!!!!)"
-        read -p "Drive:" driveloc
+        read -p "Drive: " driveloc
         driveloc="${driveloc%/}"
         if [[ $driveloc == *"/dev/"* ]]; then
             mkfs.vfat -F 32 $driveloc
@@ -83,34 +83,36 @@ main() {
         DRIVEBACKUP=1
         sync
         BACKUPDIR=/tmp/backupdir
-        [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || exit 1 # exits if isn't writable (this is redundant but i am paranoid)
-    else
-    echo -e "What directory would you like to backup to?"
-    read -p "Dir: " BACKUPDIR
-    [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || exit 1 # exits if backup doesn't exist or isn't writable
-    echo -e "Valid directory!"
-    fi
+				[ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || (echo "unable to write to backup" && exit 1) # exits if isn't writable (this is redundant but i am paranoid)
+		elif [[ $resp =~ ^[Pp]$ ]]; then
+    		echo -e "What directory would you like to backup to?"
+    		read -p "Dir: " BACKUPDIR
+    		[ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || (echo "unable to write to backup" && exit 1) # exits if backup doesn't exist or isn't writable
+    		echo -e "Valid directory!"
+		else
+				echo "Invalid response, exiting..." && exit 1
+		fi
     sleep 1
     echo -e "Backup selection complete, flashing DevFW..."
     sleep 0.5
-        DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
-        if [[ $DEVFW != 1 ]]; then
-			# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
-            /usr/share/vboot/bin/set_gbb_flags.sh 0x80b1
-            /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUPDIR
-            sync # sync because I dont trust ChromeOS
-            vpd -i RO_VPD -s "dev_firmware"=1
-        else 
-        	echo -e "You are already using DevFW (Devkeys)! cancelling"
-            exit 1
-        fi
+    DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+    if [[ $DEVFW != 1 ]]; then
+		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
+    		/usr/share/vboot/bin/set_gbb_flags.sh 0x80b1
+        /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUPDIR
+        sync # sync because I dont trust ChromeOS
+        vpd -i RO_VPD -s "dev_firmware"=1
+    else 
+      echo -e "You are already using DevFW (Devkeys)! cancelling"
+      exit 1
+    fi
     sleep 0.5
     if [[ $DRIVEBACKUP == 1 ]]; then
-    umount /tmp/backupdir
+    	umount /tmp/backupdir
     fi
     echo -e "If everything succeeded, you are now running DevFW!"
     echo -e "It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place."
-    echo -e "Rebooting to verified Modmium in 30 seconds..."
+    echo -e "Rebooting to verified Modmium in 30 seconds, hit Ctrl+C to cancel..."
     crossystem disable_dev_request=1
     sleep 30
     reboot
