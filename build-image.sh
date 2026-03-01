@@ -125,13 +125,13 @@ removeVerity(){
 dropModFiles(){
 	echo -e ""$G"Mounting loop device..."$N""
 	mount "$loopDev"p3 mnt --mkdir
-	modFiles=$(find modFiles -mindepth 1 -name "*")
+	modFiles=$(find mod-files -mindepth 1 -name "*")
 	echo -e ""$G"Dropping modfiles..."$N""
 	for file in $modFiles; do
 		if [[ -d $file ]]; then
 			:
 		elif [[ -f $file ]]; then
-			oldFile=$(echo $file | sed 's/modFiles/mnt/')
+			oldFile=$(echo $file | sed 's/mod-files/mnt/')
 			if [[ -f $oldFile ]]; then
 				mv $oldFile "$oldFile".old
 			fi
