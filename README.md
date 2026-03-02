@@ -36,7 +36,7 @@ After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOS
 * `build_image.sh`
    * the actual image builder. autobuilding will be added later, since it'll be pretty trivial to implement.
 -------------
-#### copy-pasted from discussion with dmd and carbon in crosbreaker dev:
+#### copy-pasted from the discussion in crosbreaker dev:
 
 ### maria:
 > people using it should be unenrolled with WP off.

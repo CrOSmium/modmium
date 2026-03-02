@@ -184,7 +184,7 @@ full_menu() {
     selector
 }
 
-employ() { # this named employ to scare carbon away
+employ() { # this named employ to scare fanxql away
     clear
     trap 'kill -2 $! >/dev/null 2>&1' INT
     (
