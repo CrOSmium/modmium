@@ -72,6 +72,7 @@ echo "your firmware is updating!! (if you see this message, report an issue ASAP
 # chromeOS disenfuckinators
 crossystem block_devmode=0
 vpd -i RW_VPD -s block_devmode=0 
+device_management_client --action=remove_firmware_management_parameters
 
 # THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
 # before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)

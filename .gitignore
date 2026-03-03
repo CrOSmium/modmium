@@ -1,3 +1,4 @@
+chromeos_startup
 *.bin
 cros_sign_backups*
 *mount.sh

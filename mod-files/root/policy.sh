@@ -3,28 +3,40 @@
 # mostly written by lxrd
 # some QOL added by mariah carey
 
+# colors!
+B='\033[1;36m' 
+G='\033[1;32m' 
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+N='\033[0m'    
+D='\033[1;90m'
+
 # Root check
 if [ $(id -u) -ne 0 ]; then
     echo "Please run this script as root. You can do so by using 'sudo su'."
-    exit
+    exit 1
 fi
 
-echo "+##############################################+"
-echo "| Policy Test Tool                             |"
-echo "| -------------------------------------------- |"
-echo "| (WIP) Allows policy changes above 131        |"
-echo "+##############################################+"
-echo "WARNING. WILL PREVENT SCHOOL-MANDATED EXTENSIONS FROM INSTALLING."
-echo "Run this *before* signing into the target email (if it's already logged in, remove the account."
-echo "You can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\"."
-echo "Also, make sure you're connected to the internet before running this."
-echo "(Hit Ctrl+C to exit)"
+nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
+echo -e \
+"${G}(Running dev_install in the background, you may notice your chromebook getting warm...)
++##############################################+
+| Policy Test Tool                             |
+| -------------------------------------------- |
+| (WIP) Allows policy changes above 131        |
++##############################################+
+WARNING. WILL PREVENT SCHOOL-MANDATED EXTENSIONS FROM INSTALLING.
+Run this *before* signing into the target email (if it's already logged in, remove the account)
+You can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\".
+lso, make sure you're connected to the internet before running this.
+(Hit Ctrl+C to exit)${N}"
 
 sleep 3
 
-read -p "Enter your email: " email
+echo -ne "${G}Enter target email: ${N}"
+read -rep "" email
 
-cat > /usr/local/share/policy-test-tool/policies.json << EOF
+cat > /root/.policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
   "managed_users": ["*"],
@@ -68,15 +80,30 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
 }
 EOF
 
-echo ""
-echo "Policy file successfully written!"
-echo "Location: /usr/local/share/policy-test-tool/policies.json"
-echo "Configured for: $email"
+echo -e "${G}
+Policy file successfully written!
+Location: /root/.policy-test-tool/policies.json
+Configured for: ${email}${N}"
 
-echo "Installing python..."
-dev_install --only_bootstrap --yes || dev_install --only_bootstrap --reinstall # in case someone already has stuff there, overwrite instead of dying
-echo "Running fake_dmserver..."
-pushd /usr/local/share/policy-test-tool
-nohup python orchestrator.py policies.json > /dev/null 2>&1 &
-echo "Finished! Sign in with the target email (don't reboot until you do)"
-popd
+echo -e "${G}Waiting for python dependencies from dev_install...${N}"
+pythonGoogleInstalled=
+while [[ $pythonGoogleInstalled != "true" ]]; do
+	python -m google >.googleStatus 2>&1
+	output=$(cat .googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable because python is fucking retarded i hate python
+	if [[ $output == *"package"* ]]; then
+		pythonGoogleInstalled=true
+	fi
+	sleep 1
+done
+#cleaning up
+rm -rf .devinstall-log
+
+cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
+cd /usr/local/share/policy-test-tool 
+
+echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
+emerge chrome-binary-tests
+echo -e "${G}Running fake_dmserver in 3 seconds...
+(Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
+sleep 3
+python orchestrator.py policies.json
