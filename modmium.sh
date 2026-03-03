@@ -3,7 +3,7 @@
 # this is a modified version of MOSH 
 
 # -- FLAGS --
-menu_text="Modmium pre-install script!"
+menu_text="Modmium pre-enrollment script!"
 # -----------------------
 
 # TUI colors :D
@@ -33,11 +33,19 @@ main() {
     logo
     sleep 0.1
     echo ""
-    echo -e "This is Modmium's pre-install script!"
     echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
     echo ""
     echo -e "This script is a huge WIP, let dmd cook ;D"
     sleep 1
+	echo -e "Checking if Modmium is installed..."
+	MODMIUM=$(cat /.rootkey 2>/dev/null)
+	if [[ $MODMIUM == "" ]]; then
+		sleep 1
+		echo -e "You must have Modmium installed first to run this, please install Modmium via a recovery image."
+		sleep 2
+		exit 1
+	fi
+	sleep 1.5
 	echo -e "Checking for Firmware Write Protection..."
 	writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
 	if [[ $writeprotect == *"disabled"* ]]; then
@@ -48,7 +56,9 @@ main() {
 		wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
 		sleep 0.5
 		if [[ $wprange != "" ]]; then
-			echo -e "WP range is set to 0,0: continuing..."
+			echo -e "WP range is set to 0,0 you must fully disable FWWP before continuing."
+			sleep 1
+			exit 1
 		else
 			echo -e "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
 			sleep 1
