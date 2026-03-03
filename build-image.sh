@@ -132,16 +132,18 @@ dropModFiles(){
 			:
 		elif [[ -f $file ]]; then
 			oldFile=$(echo $file | sed 's/mod-files/mnt/')
+			dir=$(dirname $oldFile)
 			if [[ -f $oldFile ]]; then
 				mv $oldFile "$oldFile".old
 			fi
+			mkdir -p $dir
 			cp $file $oldFile
 			chown 0:0 $oldFile
 			chmod 777 $oldFile
 		fi
-		rm -rf mnt/root/.force_update_firmware
+		rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	done
-
+	sleep 0.5
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""
 	umount mnt
