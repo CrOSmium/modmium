@@ -35,8 +35,7 @@ main() {
     echo ""
     echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
     echo ""
-    echo -e "This script is a huge WIP, let dmd cook ;D"
-    sleep 1
+    sleep 0.5
 	echo -e "Checking if Modmium is installed..."
 	MODMIUM=$(cat /.rootkey 2>/dev/null)
 	if [[ $MODMIUM == "" ]]; then
