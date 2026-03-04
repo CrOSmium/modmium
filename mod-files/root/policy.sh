@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# mostly written by lxrd
-# some QOL added by mariah carey
+# written by lxrd and mariah carey
 
 # colors!
 B='\033[1;36m' 
@@ -25,9 +24,10 @@ echo -e \
 | -------------------------------------------- |
 | (WIP) Allows policy changes above 131        |
 +##############################################+
-${R}warning, will prevent school-mandated extensions from installing unelss you prepapred policy.json in mod-files/root (see readme).${N}
-Run this *before* signing into the target email (if it's already logged in, remove the account)
-You can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\".
+${R}warning, will prevent school-mandated extensions from installing unelss you prepapred policy.json in mod-files/root (see readme).
+warning, will not work if you've run chromeos-setdevpasswd${G}
+Run this *before* signing into the target email. 
+If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\".
 lso, make sure you're connected to the internet before running this.
 (Hit Ctrl+C to exit)${N}"
 
@@ -159,7 +159,13 @@ fi
 
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
+
+nohup /root/.chmod.sh >/dev/null 2>&1 & # disables extensions by default, can be turned back on in MOSH
+
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
 sleep 3
 python orchestrator.py policies.json
+
+echo -e "${G}Done! Cleaning up...${N}"
+kill -9 $(pgrep .chmod.sh)

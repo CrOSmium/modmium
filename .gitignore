@@ -3,3 +3,4 @@ chromeos_startup
 cros_sign_backups*
 *mount.sh
 verifykernels.sh
+policy.json
