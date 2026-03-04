@@ -25,7 +25,7 @@ echo -e \
 | -------------------------------------------- |
 | (WIP) Allows policy changes above 131        |
 +##############################################+
-WARNING. WILL PREVENT SCHOOL-MANDATED EXTENSIONS FROM INSTALLING.
+${R}warning, will prevent school-mandated extensions from installing unelss you prepapred policy.json in mod-files/root (see readme).${N}
 Run this *before* signing into the target email (if it's already logged in, remove the account)
 You can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\".
 lso, make sure you're connected to the internet before running this.
@@ -36,6 +36,7 @@ sleep 3
 echo -ne "${G}Enter target email: ${N}"
 read -rep "" email
 
+if [[ ! -f /root/policy.json ]]; then
 cat > /root/.policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
@@ -84,6 +85,7 @@ echo -e "${G}
 Policy file successfully written!
 Location: /root/.policy-test-tool/policies.json
 Configured for: ${email}${N}"
+fi
 
 echo -e "${G}Waiting for python dependencies from dev_install...${N}"
 pythonGoogleInstalled=
@@ -100,6 +102,60 @@ rm -rf .devinstall-log
 
 cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
 cd /usr/local/share/policy-test-tool 
+
+if [[ -f /root/policy.json ]]; then
+	echo -e "${B}Extracting extension list from policy.json...${N}"
+	python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
+	extList=$(cat extracted.json | grep Forcelist -A 99999 | sed '1,/],/!d' | sed 's/],/]/')
+cat > /usr/local/share/policy-test-tool/policies.json << EOF
+{
+  "policy_user": "$email",
+  "managed_users": ["*"],
+  "use_universal_signing_keys": true,
+  "user": {
+    "URLBlocklist": [],
+    "EditBookmarksEnabled": true,
+    "ChromeOsMultiProfileUserBehavior": "unrestricted",
+    "DeveloperToolsAvailability": 1,
+    "DefaultPopupsSetting": 1,
+    "AllowDeletingBrowserHistory": true,
+    "AllowDinosaurEasterEgg": true,
+    "IncognitoModeAvailability": 0,
+    "AllowScreenLock": true,
+    "PasswordManagerEnabled": true,
+    "TaskManagerEndProcessEnabled": true,
+    "ForceGoogleSafeSearch": false,
+    "ForceYouTubeRestrict": 0,
+    "EasyUnlockAllowed": true,
+    "DisableSafeBrowsingProceedAnyway": false,
+    "DeviceGuestModeEnabled": true,
+    "DefaultCookiesSetting": 1,
+    "VmManagementCliAllowed": true,
+    "WifiSyncAndroidAllowed": true,
+    "DeveloperToolsDisabled": false,
+    "InstantTetheringAllowed": true,
+    "NearbyShareAllowed": true,
+    "PrintingEnabled": true,
+    "SmartLockSigninAllowed": true,
+    "PhoneHubAllowed": true,
+    "DnsOverHttpsMode": "automatic",
+    "BrowserLabsEnabled": true,
+    "SafeSitesFilterBehavior": 0,
+    "SafeBrowsingProtectionLevel": 0,
+    "DownloadRestrictions": 0,
+    "NetworkPredictionOptions": 0,
+    "ArcPolicy": "{\"playStoreMode\":\"ENABLED\",\"playEmmApiInstallDisabled\":false,\"dpsInteractionsDisabled\":false}",
+    "UserBorealisAllowed": true,
+		$extList
+  },
+  "device": {}
+}
+EOF
+	echo -e "${G}
+Policy file successfully written!
+Location: /usr/local/share/policy-test-tool/policies.json
+Configured for: ${email}${N}"
+fi
 
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
