@@ -30,12 +30,12 @@ logo() {
 }
 
 main() { 
-    logo
-    sleep 0.1
-    echo ""
-    echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
-    echo ""
-    sleep 0.5
+  logo
+  sleep 0.1
+	echo ""
+  echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
+  echo ""
+	sleep 0.5
 	echo -e "Checking if Modmium is installed..."
 	MODMIUM=$(cat /.rootkey 2>/dev/null)
 	if [[ $MODMIUM == "" ]]; then
@@ -64,8 +64,12 @@ main() {
 			exit 1
 		fi
 	fi
+
+	device_management_client --action=remove_firmware_management_parameters 
+	device_management_client --action=set_firmware_management_parameters --flags=0x0000 # just in case
+
 	echo -e "Are you sure you want to flash DevFW firmware?"
-	read -r -n 2 -s -p "Double click Y to continue, or hold any other key to quit." confirmation
+	read -r -n 2 -s -p "Double click y to continue, or hold any other key to quit." confirmation # don't put Y if confirm wants y
     if [[ "$confirmation" != "yy" ]]; then
         echo -e "Denied! exiting.."
 				exit 0

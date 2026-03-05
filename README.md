@@ -11,7 +11,12 @@ git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recurs
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
 ```
-2. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to)
+2. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
+Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal, open vt2 **[Ctrl+Alt+F2]** and login as `root` then run the following commands:
+```bash
+device_management_client --action=remove_firmware_management_parameters 
+device_management_client --action=set_firmware_management_parameters --flags=0x0000
+```
 3. Enter devmode recovery
 4. Plug in the disk with modmium
 5. Let it recover, then reboot (keep the USB in!)
