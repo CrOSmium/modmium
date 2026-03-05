@@ -126,6 +126,15 @@ dropModFiles(){
 	echo -e ""$G"Mounting loop device..."$N""
 	mount "$loopDev"p3 mnt --mkdir
 	modFiles=$(find mod-files -mindepth 1 -name "*")
+	if [[ ! -f mod-files/root/policy.json ]]; then
+		echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
+		read -n 1 -r
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			exit 1
+		else
+			echo -e "${G}Continuing...${N}"
+		fi
+	fi
 	echo -e ""$G"Dropping modfiles..."$N""
 	for file in $modFiles; do
 		if [[ -d $file ]]; then
