@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 99% of this was stolen from cr3nroll :3
-kill -9 $(pgrep .chmod.sh) # just in case someone forgot to hit Ctrl+C
+kill -9 $(pgrep .chmod.sh) >/dev/null 2>&1 # just in case someone forgot to hit Ctrl+C
 
 STABLEVERSIONS="132,134,135,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others (132 and 134 havent actually been tested and are examples)
 
