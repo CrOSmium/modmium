@@ -24,12 +24,12 @@ echo -e \
 | -------------------------------------------- |
 | (WIP) Allows policy changes above 131        |
 +##############################################+
-${R}warning, will prevent school-mandated extensions from installing unelss you prepapred policy.json in mod-files/root (see readme).
-warning, will not work if you've run chromeos-setdevpasswd${G}
-Run this *before* signing into the target email. 
-If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing \"Remove account\".
-lso, make sure you're connected to the internet before running this.
-(Hit Ctrl+C to exit)${N}"
+${R}Warning: This will prevent school-mandated extensions from installing unless you prepared policy.json in mod-files/root (see readme).
+THIS WILL NOT WORK IF YOU'VE RUN 'chromeos-setdevpasswd'${G}
+${B}Run this *before* signing into the target email. ${N}
+If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N}. 
+also, make sure you're connected to the internet before running this.
+${D}(Hit Ctrl+C to exit)${N}"
 
 sleep 3
 
