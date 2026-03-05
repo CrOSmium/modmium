@@ -31,6 +31,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
+	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
@@ -70,6 +71,10 @@ checkFlagValidity(){
     	echo -e "${R}Kernver is not hex or contains leading \"0x\".${N}"
 			exit 1
 		fi
+	fi
+	if [[ -n $FLAGS_json && ! ( -f $FLAGS_json ) ]]; then
+		echo -e "${R}Policy json file doesn't exist.${N}"
+		exit 1
 	fi
 }
 # end flag functions
@@ -127,12 +132,27 @@ dropModFiles(){
 	mount "$loopDev"p3 mnt --mkdir
 	modFiles=$(find mod-files -mindepth 1 -name "*")
 	if [[ ! -f mod-files/root/policy.json ]]; then
-		echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
-		read -n 1 -r
-		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-			exit 1
+		if [[ -z $FLAGS_json ]]; then
+			echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
+			read -n 1 -r
+			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+				echo
+				echo -e "${G}Cleaning up...${N}"
+				umount mnt
+				losetup -d $loopDev
+				if [[ -n $FLAGS_image ]]; then
+					rm -rf $newImage mnt $tempDir
+				else
+					rm -rf $newImage mnt
+				fi
+				exit 1
+			else
+				echo
+				echo -e "${G}Continuing...${N}"
+			fi
 		else
-			echo -e "${G}Continuing...${N}"
+			echo -e "${B}Moving policy json to mod-files/root/policy.json...${N}"
+			mv $FLAGS_json mod-files/root/policy.json
 		fi
 	fi
 	echo -e ""$G"Dropping modfiles..."$N""
