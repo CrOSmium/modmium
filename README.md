@@ -12,7 +12,7 @@ git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recurs
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
 ```
 2. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
-Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal, open vt2 **[Ctrl+Alt+F2]** and login as `root` then run the following commands:
+Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal, open VT2 **[Ctrl+Alt+F2]** and login as `root` then run the following commands:
 ```bash
 device_management_client --action=remove_firmware_management_parameters 
 device_management_client --action=set_firmware_management_parameters --flags=0x0000
@@ -21,7 +21,7 @@ device_management_client --action=set_firmware_management_parameters --flags=0x0
 4. Plug in the disk with modmium
 5. Let it recover, then reboot (keep the USB in!)
 6. Hit Ctrl+D
-7. Connect to internet in the quick settings (bottom right), then open vt2 **[Ctrl+Alt+F2]** and login as `root`
+7. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
 8. run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` 
 9. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
 10. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
@@ -29,7 +29,7 @@ device_management_client --action=set_firmware_management_parameters --flags=0x0
 You still have access to VT's even in verified, and how rootfs verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootfs's.
 
 ## policy editor instructions
-0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it). (NOT IMPLEMENTED YET. WILL DO WHEN I GET HOME)
+0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
 1. Install and boot modmium in verified (see above instructions)
 2. Open VT2
 3. Run `bash policy.sh` and enter your school email when prompted.
