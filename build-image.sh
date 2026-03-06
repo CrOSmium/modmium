@@ -42,7 +42,7 @@ $0 -b <board> -v <version> [flags]"
 	fi
 }
 checkFlagValidity(){
-	if [[  -n $FLAGS_image  && ! ( -f $FLAGS_image ) ]]; then
+	if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
 		echo -e ""$R"File not found"$N", please provide a path to an actual recovery image."
 		exit 1
 	elif [[ -n $FLAGS_image && ( $FLAGS_image == "modmium.bin" ) ]]; then
@@ -72,7 +72,7 @@ checkFlagValidity(){
 			exit 1
 		fi
 	fi
-	if [[ -n $FLAGS_json && ! ( -f $FLAGS_json ) ]]; then
+	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
 		echo -e "${R}Policy json file doesn't exist.${N}"
 		exit 1
 	fi
@@ -85,7 +85,7 @@ removeVerity(){
 		tempDir=$(mktemp -d)
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
 		echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
-		cp $FLAGS_image $newImage
+		cp "$FLAGS_image" $newImage
 		sync
 	else
 		newImage=modmium.bin
@@ -152,7 +152,7 @@ dropModFiles(){
 			fi
 		else
 			echo -e "${B}Moving policy json to mod-files/root/policy.json...${N}"
-			mv $FLAGS_json mod-files/root/policy.json
+			mv "$FLAGS_json" mod-files/root/policy.json
 		fi
 	fi
 	echo -e ""$G"Dropping modfiles..."$N""
@@ -224,14 +224,11 @@ Exiting..."$N""
 main(){
 	getFlags $@
 	checkFlagValidity
-	if [[ -n $FLAGS_image ]]; then
-		removeVerity
-		dropModFiles
-	elif [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
+	if [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
 		downloadImage
-		removeVerity
-		dropModFiles
 	fi
+	removeVerity
+	dropModFiles
 }
 
 main $@

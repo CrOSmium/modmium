@@ -160,7 +160,7 @@ fi
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
 
-nohup /root/.chmod.sh >/dev/null 2>&1 & # disables extensions by default, can be turned back on in MOSH
+nohup bash /root/.chmod.sh >/dev/null 2>&1 & # disables extensions by default, can be turned back on in MOSH
 
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
@@ -168,4 +168,4 @@ sleep 3
 python orchestrator.py policies.json
 
 echo -e "${G}Done! Cleaning up...${N}"
-kill -9 $(pgrep .chmod.sh)
+kill -9 $(pgrep ax | grep bash | grep chmod.sh | awk '{print $1}')
