@@ -16,10 +16,12 @@ if [ $(id -u) -ne 0 ]; then
     exit 1
 fi
 
-nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
-echo -e \
-"${G}(Running dev_install in the background, you may notice your chromebook getting warm...)
-+##############################################+
+if [[ ! -d /usr/local/share/policy-test-tool ]]; then
+	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
+	echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
+fi
+echo -e "\
+${G}+##############################################+
 | Policy Test Tool                             |
 | -------------------------------------------- |
 | (WIP) Allows policy changes above 131        |
