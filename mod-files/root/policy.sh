@@ -170,4 +170,4 @@ sleep 3
 python orchestrator.py policies.json
 
 echo -e "${G}Done! Cleaning up...${N}"
-kill -9 $(pgrep ax | grep bash | grep chmod.sh | awk '{print $1}')
+kill -9 $(ps ax | grep bash | grep chmod.sh | awk '{print $1}')
