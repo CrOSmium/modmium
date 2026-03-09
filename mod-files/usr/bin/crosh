@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # 99% of this was stolen from cr3nroll :3
-kill -9 $(pgrep .chmod.sh) >/dev/null 2>&1 # just in case someone forgot to hit Ctrl+C
 
 STABLEVERSIONS="135,138,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others
 
 # -- Root escalation --
 as_system() {
     # this bypasses permissions on /.rootkey preventing ssh from working
+		# /.rootkey does have proper permissions now, so this shouldn't be necessary anymore ideally
     local ROOTKEY
     ROOTKEY=$(cat /.rootkey)
     ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
