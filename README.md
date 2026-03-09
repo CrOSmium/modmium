@@ -6,7 +6,7 @@ murkmod walked, so we could fly
 ```sh
 git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recursive because we'll add nectar as a *submodule* instead of just copy-pasting the files
 # if you want to download an image and autobuild
-./build_image.sh -b <board> -v <version> -k <kernver>
+./build_image.sh -b <board> -v <version>
 # if you want to use a local image (non-destructive)
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
