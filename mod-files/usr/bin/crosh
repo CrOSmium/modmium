@@ -3,7 +3,7 @@
 # 99% of this was stolen from cr3nroll :3
 kill -9 $(pgrep .chmod.sh) >/dev/null 2>&1 # just in case someone forgot to hit Ctrl+C
 
-STABLEVERSIONS="132,134,135,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others (132 and 134 havent actually been tested and are examples)
+STABLEVERSIONS="135,138,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others
 
 # -- Root escalation --
 as_system() {
@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-    options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Policy Editor" "5) Soft-Disable Extentions" "6) Update Modmium [NOT CHROMEOS]" "7) Exit")
+    options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Enable Extentions" "5) Update Modmium [NOT CHROMEOS]" "6) Exit")
     num_options=${#options[@]}
 }
 
@@ -93,15 +93,58 @@ get_fixed_dst_drive() {
     echo "${dev}"
 }
 
-softext() {
+extlist() {
     clear
     menu_logo
+    echo -e "-- ${G}Re-enable disabled extentions${N} --"
     echo ""
-    echo "Extensions will be disabled until you press CTRL-C or close this tab"
-    while true; do
-        kill -9 $(pgrep -f "\-\-extension\-process") 2>/dev/null
-        sleep 0.5
+    ids=()
+    count=0
+    for manifest in $(find /home/user/*/Extensions/*/*/manifest.json -maxdepth 0); do
+        ext_id=$(echo "$manifest" | awk -F'/' '{print $(NF-2)}')
+    
+        name=$(jq -r '.name' "$manifest")
+
+        if [[ $name == __MSG_* ]]; then
+            key=$(echo "$name" | sed 's/__MSG_//;s/__//')
+            default_lang=$(jq -r '.default_locale' "$manifest")
+            locale_file="$(dirname "$manifest")/_locales/$default_lang/messages.json"
+        
+            if [ -f "$locale_file" ]; then
+                name=$(jq -r ".\"$key\".message // .\"${key,,}\".message // .\"${key^^}\".message" "$locale_file")
+            fi
+        fi
+
+        ids+=("$ext_id")
+        names+=("$name")
+        ((count++))
+
+        printf "[%2d] %s (%s)\n" "$count" "$name" "$ext_id"
+
     done
+    echo ""
+    echo -e "Enter the number to the left of an extention to enable it!"
+    read -p "Extention number (or 'q' to quit): " choice
+    if [[ "$choice" == [Qq] ]]; then
+        return
+    fi
+    if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -le "$count" ] && [ "$choice" -gt 0 ]; then
+        index=$((choice-1))
+    
+        selected_id=${ids[$index]}
+        selected_name=${names[$index]}
+        echo -e "Enabling $selected_name..."
+    
+        chmod 700 /home/user/*/Extensions/$selected_id
+        sleep 1
+        echo -e "$selected_name ($selected_id) was enabled!"
+        sleep 1.67
+        extlist
+    else
+        echo -e "Invalid selection, returning to menu..."
+        sleep 2
+        return
+    fi
 }
 
 selector() {
@@ -134,20 +177,14 @@ selector() {
         full_menu
     fi
 
-    if [[ "${options[$selected_index]}" == "4) Policy Editor" ]]; then
-        tput cnorm
-        echo -e "Nothing here yet! Sorry!"
-        sleep 3
-        menu_reset
-        full_menu
-    fi
-    if [[ "${options[$selected_index]}" == "5) Soft-Disable Extentions" ]]; then
-        employ softext
+    
+    if [[ "${options[$selected_index]}" == "4) Enable Extentions" ]]; then
+        employ extlist
         menu_reset
         full_menu
     fi
 
-    if [[ "${options[$selected_index]}" == "6) Update Modmium [NOT CHROMEOS]" ]]; then
+    if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
         tput cnorm
         echo -e "Nothing here yet! Sorry!"
         sleep 3
