@@ -15,6 +15,7 @@ while :; do
 			chmod 000 $ext
 			if [[ $ext =~ *"Temp"* ]]; then
 				chmod 700 $ext
+			fi
 		done
 		exit 0
 	else
