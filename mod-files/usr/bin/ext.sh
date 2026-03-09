@@ -35,7 +35,8 @@ extlist() {
         fi
         checked[$ext_id]=1
         name=$(jq -r '.name' "$manifest")
-
+        extdir="/home/user/*/Extensions/$ext_id"
+        perms=$(stat -c "%a" $extdir 2>/dev/null | head -n 1)
         if [[ $name == __MSG_* ]]; then
             key=$(echo "$name" | sed 's/__MSG_//;s/__//')
             default_lang=$(jq -r '.default_locale' "$manifest")
@@ -45,15 +46,17 @@ extlist() {
                 name=$(jq -r ".\"$key\".message // .\"${key,,}\".message // .\"${key^^}\".message" "$locale_file")
             fi
         fi
-
         ids+=("$ext_id")
         names+=("$name")
         ((count++))
-
-        printf "[%2d] %s (%s)\n" "$count" "$name" "$ext_id"
-
+        
+        if [[ "$perms" == "0" ]]; then
+            printf "[%2d] ${D} %s (%s) ${R}[Disabled]${N}\n" "$count" "$name" "$ext_id"
+        else
+            printf "[%2d] ${G} %s (%s)${N}\n" "$count" "$name" "$ext_id"
+        fi
     done
-    echo ""
+    echo -e "${N}"
     echo -e "Enter the number to the left of an extention to enable it!"
     read -p "Extention number (or 'q' to quit): " choice
     if [[ "$choice" == [Qq] ]]; then
@@ -61,11 +64,9 @@ extlist() {
     fi
     if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -le "$count" ] && [ "$choice" -gt 0 ]; then
         index=$((choice-1))
-    
         selected_id=${ids[$index]}
         selected_name=${names[$index]}
         echo -e "Enabling $selected_name..."
-    
         chmod 700 /home/user/*/Extensions/$selected_id
         sleep 1
         echo -e "$selected_name ($selected_id) was enabled!"
