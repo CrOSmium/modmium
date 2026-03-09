@@ -31,9 +31,6 @@ You still have access to VT's even in verified, and how rootfs verification is d
 3. Run `bash policy.sh` and enter your school email when prompted.
 4. When the fake device management server starts, go back to VT1 and sign in with the same email.
 5. After you're logged in, go back to VT2 and hit Ctrl+C
-### device policy instructions (optional) (placeholder)
-1. Run `bash device.sh enable` (will remove kiosk apps until disabled)
-2. To undo, run `bash device.sh disable`
 
 After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, ~~a policy editor (WIP)~~ (moved to outside of MOSH due to technical limitations, see above), extension disabler, and modmium updater (NOTE, will curl repo locally [we'll make a release and it'll curl the latest release's source code]), and install modFiles to rootfs. i can code that later). 
 
