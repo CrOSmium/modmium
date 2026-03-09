@@ -169,5 +169,4 @@ echo -e "${G}Running fake_dmserver in 3 seconds...
 sleep 3
 python orchestrator.py policies.json
 
-echo -e "${G}Done! Cleaning up...${N}"
-kill -9 $(ps ax | grep bash | grep chmod.sh | awk '{print $1}')
+echo -e "${G}Done!${N}"
