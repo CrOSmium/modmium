@@ -179,7 +179,7 @@ selector() {
 
     
     if [[ "${options[$selected_index]}" == "4) Enable Extentions" ]]; then
-        employ extlist
+        employ as_system declare -f extlist; extlist
         menu_reset
         full_menu
     fi
