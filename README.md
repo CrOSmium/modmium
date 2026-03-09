@@ -1,8 +1,12 @@
 murkmod walked, so we could fly
 
-## (unfinished) usage instructions:
+## usage instructions:
 0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info)
-1. Build the image
+1. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
+2. run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` 
+3. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
+4. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
+5. Build the image
 ```sh
 git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recursive because we'll add nectar as a *submodule* instead of just copy-pasting the files
 # if you want to download an image and autobuild
@@ -11,17 +15,12 @@ git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recurs
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
 ```
-
-2. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
+6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal, open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk crosmium.dev/fwmp.sh)`.
-3. Enter devmode recovery
-4. Plug in the disk with modmium
-5. Let it recover, then reboot (keep the USB in!)
-6. Hit Ctrl+D
-7. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
-8. run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` 
-9. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
-10. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
+7. Enter devmode recovery
+8. Plug in the disk with modmium on it.
+9. Let it recover, then reboot.
+10. Return to secure mode.
 11. After it reboots, go through OOBE as normal and you'll be enrolled.
 You still have access to VT's even in verified, and how rootfs verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootfs's.
 
