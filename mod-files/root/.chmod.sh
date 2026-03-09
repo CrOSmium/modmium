@@ -7,7 +7,7 @@ while :; do
 		fi
 	done
 	if [[ $extsDownloading == true ]]; then
-		sleep 20 # extensions usually take about 10 seconds to install
+		sleep 20 # extensions usually take about 20 seconds to install
 		extsInstalled=true
 	fi
 	if [[ $extsInstalled == true ]]; then
