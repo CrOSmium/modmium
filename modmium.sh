@@ -36,15 +36,6 @@ main() {
   echo -e "This requires write protection to be disabled, and it will be checked before this script attempts anything"
   echo ""
 	sleep 0.5
-	echo -e "Checking if Modmium is installed..."
-	MODMIUM=$(cat /.rootkey 2>/dev/null)
-	if [[ $MODMIUM == "" ]]; then
-		sleep 1
-		echo -e "You must have Modmium installed first to run this, please install Modmium via a recovery image."
-		sleep 2
-		exit 1
-	fi
-	sleep 1.5
 	echo -e "Checking for Firmware Write Protection..."
 	writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
 	if [[ $writeprotect == *"disabled"* ]]; then
