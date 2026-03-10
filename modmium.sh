@@ -102,8 +102,7 @@ main() {
     DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
     if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
-    		# /usr/share/vboot/bin/set_gbb_flags.sh 0x80b1
-			futility gbb -s --flash --flags=0x80b1
+		/usr/share/vboot/bin/set_gbb_flags.sh 0x80b1 || futility gbb -s --flash --flags=0x80b1
         /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUPDIR
         sync # sync because I dont trust ChromeOS
         vpd -i RO_VPD -s "dev_firmware"=1
