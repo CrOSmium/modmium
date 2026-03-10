@@ -130,7 +130,6 @@ removeVerity(){
 dropModFiles(){
 	echo -e ""$G"Mounting loop device..."$N""
 	mount "$loopDev"p3 mnt --mkdir
-	modFiles=$(find mod-files -mindepth 1 -name "*")
 	if [[ ! -f mod-files/root/policy.json ]]; then
 		if [[ -z $FLAGS_json ]]; then
 			echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
@@ -155,6 +154,7 @@ dropModFiles(){
 			mv "$FLAGS_json" mod-files/root/policy.json
 		fi
 	fi
+	modFiles=$(find mod-files -mindepth 1 -name "*")
 	echo -e ""$G"Dropping modfiles..."$N""
 	for file in $modFiles; do
 		if [[ -d $file ]]; then
