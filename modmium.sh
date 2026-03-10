@@ -65,15 +65,19 @@ main() {
         echo -e "Denied! exiting.."
 				exit 0
     fi
+		
+		echo -e "Removing rootfs verification (to save 5 minutes when installing modmium)..."
+		# we make_dev_ssd to save 5 minutes on recovery
+		/usr/share/vboot/bin/make_dev_ssd.sh --force >/dev/null 2>&1
 
 		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
     echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
-		read -p "(D/P): " resp 
+		read -ep "(D/P): " resp 
     if [[ $resp =~ ^[Dd]$ ]]; then
         echo -e "These are the drives connected to your device:"
         lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
         echo -e "What drive would you like write the backup onto? (THIS WILL ERASE THE DRIVE!!!!)"
-        read -p "Drive: " driveloc
+        read -ep "Drive: " driveloc
         driveloc="${driveloc%/}"
         if [[ $driveloc == *"/dev/"* ]]; then
             mkfs.vfat -F 32 $driveloc
@@ -116,9 +120,8 @@ main() {
     fi
     echo -e "If everything succeeded, you are now running DevFW!"
     echo -e "It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place."
-    echo -e "Rebooting to verified Modmium in 30 seconds, hit Ctrl+C to cancel..."
-    crossystem disable_dev_request=1
-    sleep 30
+    echo -e "Rebooting in 10 seconds, hit Ctrl+C to cancel..."
+    sleep 10
     reboot
 }
 
