@@ -2,8 +2,8 @@
 
 # 99% of this was stolen from cr3nroll :3
 
-STABLEVERSIONS="135,138,140" # if you have tested a version, add the version's release number and a comma to seperate it from the others
-
+STABLEVERSIONS="135,138,140,144" # if you have tested a version, add the version's release number and a comma to seperate it from the others
+# ^^^ 144 seems to work perfectly fine, although Ive noticed that in the GAC modmium in general seems to not report OS version. Maybe its unrelated idk
 # -- Root escalation --
 as_system() {
     # this bypasses permissions on /.rootkey preventing ssh from working
