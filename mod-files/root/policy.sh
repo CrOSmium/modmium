@@ -146,6 +146,7 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "SafeBrowsingProtectionLevel": 0,
     "DownloadRestrictions": 0,
     "NetworkPredictionOptions": 0,
+	"ArcEnabled": true,
     "ArcPolicy": "{\"playStoreMode\":\"ENABLED\",\"playEmmApiInstallDisabled\":false,\"dpsInteractionsDisabled\":false}",
     "UserBorealisAllowed": true,
 		$extList
