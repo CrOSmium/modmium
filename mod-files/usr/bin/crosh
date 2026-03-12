@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Enable Extentions" "5) Update Modmium [NOT CHROMEOS]" "6) Remove User" "7) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Remove User" "6) Exit")
     num_options=${#options[@]}
 }
 
@@ -114,22 +114,15 @@ selector() {
         menu_reset
         full_menu
     fi
-
-    
-    if [[ "${options[$selected_index]}" == "4) Enable Extentions" ]]; then
-        employ as_system bash /usr/bin/ext.sh
-        menu_reset
-        full_menu
-    fi
-
-    if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
+ 
+    if [[ "${options[$selected_index]}" == "4) Update Modmium [NOT CHROMEOS]" ]]; then
         tput cnorm
         employ as_system bash /usr/bin/update-modmium.sh 
 				menu_reset
         full_menu
     fi
     
-		if [[ "${options[$selected_index]}" == "6) Remove User" ]]; then
+		if [[ "${options[$selected_index]}" == "5) Remove User" ]]; then
         tput cnorm
         clear
         employ as_system bash /usr/bin/remove-user.sh
@@ -137,7 +130,7 @@ selector() {
         full_menu
     fi
     
-		if [[ "${options[$selected_index]}" == "7) Exit" ]]; then
+		if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
         tput cnorm
         clear
         exit 0
