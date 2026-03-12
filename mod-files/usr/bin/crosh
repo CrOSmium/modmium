@@ -197,9 +197,9 @@ display_menu() {
             echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
         else
             if [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-                echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-stable) --"
+                echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-nightly) --"
             else
-                echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-unstable) --"
+                echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-nightly) -- Do note that this version hasn't been tested by devs, but will likely still work fine."
             fi
         fi
     fi
