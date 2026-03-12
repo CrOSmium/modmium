@@ -8,7 +8,7 @@ murkmod walked, so we could fly
 4. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
 5. Build the image
 ```sh
-git clone --recursive https://github.com/CrOSmium/modmium && cd modmium # recursive because we'll add nectar as a *submodule* instead of just copy-pasting the files
+git clone https://github.com/CrOSmium/modmium && cd modmium 
 # if you want to download an image and autobuild
 ./build_image.sh -b <board> -v <version>
 # if you want to use a local image (non-destructive)
