@@ -170,8 +170,8 @@ dropModFiles(){
 			chown 0:0 $oldFile
 			chmod 777 $oldFile
 		fi
-		rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	done
+	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""

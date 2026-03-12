@@ -10,7 +10,7 @@ as_system() {
 		# /.rootkey does have proper permissions now, so this shouldn't be necessary anymore ideally
     local ROOTKEY
     ROOTKEY=$(cat /.rootkey)
-    ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
+    ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\"" 
 }
 
 # -- { DO NOT MODIFY } --
@@ -144,16 +144,15 @@ selector() {
 
     if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
         tput cnorm
-        echo -e "Nothing here yet! Sorry!"
-        sleep 3
-        menu_reset
+        employ update_modmium 
+				menu_reset
         full_menu
     fi
     
 		if [[ "${options[$selected_index]}" == "6) Remove User" ]]; then
         tput cnorm
         clear
-        employ as_system remove_user
+        employ remove_user
         menu_reset
         full_menu
     fi
@@ -163,6 +162,10 @@ selector() {
         clear
         exit 0
     fi
+}
+
+update_modmium() {
+	employ as_system /usr/bin/update-modmium.sh
 }
 
 full_menu() {
