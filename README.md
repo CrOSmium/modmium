@@ -34,6 +34,9 @@ You still have access to VT's even in verified, and how rootfs verification is d
 
 After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, ~~a policy editor (WIP)~~ (moved to outside of MOSH due to technical limitations, see above), extension disabler, and modmium updater (NOTE, will curl repo locally [we'll make a release and it'll curl the latest release's source code]), and install modFiles to rootfs. i can code that later). 
 
+If crosh is blocked and your school has a custom sign-in page so you can't remove the account, open VT2 and login as `root` then run `/usr/bin/crosh` to open MOSH.
+From there, you can select "Remove User" to __remove your account without powerwashing__.
+
 ## REPO LAYOUT
 
 (thank you mariah!)
