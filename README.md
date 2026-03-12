@@ -27,7 +27,7 @@ You still have access to VT's even in verified, and how rootfs verification is d
 ## policy editor instructions
 0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
 1. Install and boot modmium in verified (see above instructions)
-2. Open VT2
+2. Open VT2 once fully enrolled
 3. Run `bash policy.sh` and enter your school email when prompted.
 4. When the fake device management server starts, go back to VT1 and sign in with the same email.
 5. After you're logged in, go back to VT2 and hit Ctrl+C
