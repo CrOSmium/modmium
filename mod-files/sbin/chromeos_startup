@@ -118,8 +118,9 @@ if [ ! -f /.updates_blocked ]; then
 fi
 
 if [ -f /.delete_user ]; then
-	echo "Deleting user directory..."
-	rm -rf /home/.shadow/$(cat /.delete_user)
+	email=$(cat /.delete_user)
+	echo "Removing user's cryptohome..."
+	cryptohome --action=remove --user=$email --force
 	echo "Done"
 	rm -rf /.delete_user
 fi
