@@ -27,10 +27,12 @@ fail() {
 dropModFiles() {
 	modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
 	for file in $modFiles; do
+		echo $file # debugging
 		if [[ -d $file ]]; then
 			:
 		elif [[ -f $file ]]; then
-			realFile=$(echo "$file" | sed 's/mod-files//')
+			realFile=$(echo "$file" | sed 's/^.*mod-files//')
+			echo $realFile
 			mkdir -p $(dirname $realFile)
 			cp $file $realFile
 			chown 0:0 $realFile
@@ -51,7 +53,7 @@ update() {
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
 	echo -e "${G}Done! Cleaning up...${N}"
 	rm -rf /mnt/stateful_partition/git/modmium
-	sleep 2
+	sleep 10 
 	return
 }
 

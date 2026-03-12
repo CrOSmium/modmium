@@ -144,7 +144,7 @@ selector() {
 
     if [[ "${options[$selected_index]}" == "5) Update Modmium [NOT CHROMEOS]" ]]; then
         tput cnorm
-        employ update_modmium 
+        employ as_system bash /usr/bin/update-modmium.sh 
 				menu_reset
         full_menu
     fi
@@ -162,10 +162,6 @@ selector() {
         clear
         exit 0
     fi
-}
-
-update_modmium() {
-	employ as_system /usr/bin/update-modmium.sh
 }
 
 full_menu() {
