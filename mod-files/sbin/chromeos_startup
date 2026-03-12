@@ -117,6 +117,13 @@ if [ ! -f /.updates_blocked ]; then
 	echo "Done"
 fi
 
+if [ -f /.delete_user ]; then
+	echo "Deleting user directory..."
+	rm -rf /home/.shadow/$(cat /.delete_user)
+	echo "Done"
+	rm -rf /.delete_user
+fi
+
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 

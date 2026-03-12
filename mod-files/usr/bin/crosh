@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-    options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Enable Extentions" "5) Update Modmium [NOT CHROMEOS]" "6) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Enable Extentions" "5) Update Modmium [NOT CHROMEOS]" "6) Remove User" "7) Exit")
     num_options=${#options[@]}
 }
 
@@ -93,69 +93,27 @@ get_fixed_dst_drive() {
     echo "${dev}"
 }
 
-extlist() {
-    clear
-    menu_logo
-    echo -e "-- ${G}Re-enable disabled extentions${N} --"
-    echo ""
-    ids=()
-    count=0
-    for manifest in $(find /home/user/*/Extensions/*/*/manifest.json -maxdepth 0); do
-        ext_id=$(echo "$manifest" | awk -F'/' '{print $(NF-2)}')
-    
-        name=$(jq -r '.name' "$manifest")
-
-        if [[ $name == __MSG_* ]]; then
-            key=$(echo "$name" | sed 's/__MSG_//;s/__//')
-            default_lang=$(jq -r '.default_locale' "$manifest")
-            locale_file="$(dirname "$manifest")/_locales/$default_lang/messages.json"
-        
-            if [ -f "$locale_file" ]; then
-                name=$(jq -r ".\"$key\".message // .\"${key,,}\".message // .\"${key^^}\".message" "$locale_file")
-            fi
-        fi
-
-        ids+=("$ext_id")
-        names+=("$name")
-        ((count++))
-
-        printf "[%2d] %s (%s)\n" "$count" "$name" "$ext_id"
-
-    done
-    echo ""
-    echo -e "Enter the number to the left of an extention to enable it!"
-    read -p "Extention number (or 'q' to quit): " choice
-    if [[ "$choice" == [Qq] ]]; then
-        return
-    fi
-    if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -le "$count" ] && [ "$choice" -gt 0 ]; then
-        index=$((choice-1))
-    
-        selected_id=${ids[$index]}
-        selected_name=${names[$index]}
-        echo -e "Enabling $selected_name..."
-    
-        chmod 700 /home/user/*/Extensions/$selected_id
-        sleep 1
-        echo -e "$selected_name ($selected_id) was enabled!"
-        sleep 1.67
-        extlist
-    else
-        echo -e "Invalid selection, returning to menu..."
-        sleep 2
-        return
-    fi
+remove_user() {
+	echo -ne "If your school has a custom sign-in page, you can use this to remove an account without powerwashing (requires reboot). \
+		${D}(Ctrl+C to cancel)
+		${G}Enter target email: ${N}"
+	read -rep "" email
+	hash=$(cryptohome --action=obfuscate_user --user=$email)
+	if [[ -d /home/.shadow/$hash ]]; then
+		echo -e "${G}User directory found! Preparing to delete on reboot...${N}"
+		echo $hash >/.delete_user
+		echo -e "${G}Done! Reboot when ready...${N}"
+		sleep 2
+		return
+	else
+		echo -e "${R}User directory not found :(${N} \
+			Exiting..."
+		sleep 2
+		return
+	fi
 }
 
 selector() {
-    if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
-        tput cnorm
-        clear
-        exit 0
-        menu_reset
-        full_menu
-    fi
-
     if [[ "${options[$selected_index]}" == "1) Root Shell" ]]; then
         tput cnorm
         employ as_system bash
@@ -172,7 +130,7 @@ selector() {
 
     if [[ "${options[$selected_index]}" == "3) Crosh" ]]; then
         tput cnorm
-        employ /usr/bin/crosh.old
+        employ as_system /usr/bin/crosh.old
         menu_reset
         full_menu
     fi
@@ -191,7 +149,22 @@ selector() {
         menu_reset
         full_menu
     fi
+    
+		if [[ "${options[$selected_index]}" == "6) Remove User" ]]; then
+        tput cnorm
+        clear
+        employ as_system remove_user
+        menu_reset
+        full_menu
+    fi
+    
+		if [[ "${options[$selected_index]}" == "7) Exit" ]]; then
+        tput cnorm
+        clear
+        exit 0
+    fi
 }
+
 full_menu() {
     clear
     tput civis
