@@ -72,6 +72,7 @@ if ! which git >/dev/null 2>&1; then
 		#cleaning up
 		rm -rf /root/.googleStatus /root/.devinstall-log
 	fi
+	ldconfig # reload shared libraries to include python libs
 	emerge git
 	source /root/.bashrc # just in case
 fi
