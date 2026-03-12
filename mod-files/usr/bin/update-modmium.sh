@@ -56,7 +56,7 @@ update() {
 }
 
 if ! which git >/dev/null 2>&1; then
-	echo -e ${R}git not installed, installing...${N}"
+	echo -e "${R}git not installed, installing...${N}"
 	if [[ ! -d /usr/local/share/policy-test-tool ]]; then
 		nohup dev_install --reinstall --yes >/root/.devinstall_log 2>&1 &
 		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
