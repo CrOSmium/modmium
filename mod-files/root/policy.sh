@@ -76,7 +76,6 @@ cat > /root/.policy-test-tool/policies.json << EOF
     "SafeBrowsingProtectionLevel": 0,
     "DownloadRestrictions": 0,
     "NetworkPredictionOptions": 0,
-	"ArcEnabled": true,
     "ArcPolicy": "{\"playStoreMode\":\"ENABLED\",\"playEmmApiInstallDisabled\":false,\"dpsInteractionsDisabled\":false}",
     "UserBorealisAllowed": true
   },
@@ -101,7 +100,7 @@ while [[ $pythonGoogleInstalled != "true" ]]; do
 	sleep 1
 done
 #cleaning up
-rm -rf .devinstall-log
+rm -rf .googleStatus .devinstall-log
 
 cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
 cd /usr/local/share/policy-test-tool 
@@ -109,7 +108,7 @@ cd /usr/local/share/policy-test-tool
 if [[ -f /root/policy.json ]]; then
 	echo -e "${B}Extracting extension list from policy.json...${N}"
 	python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
-	extList=$(cat extracted.json | grep Forcelist -A 99999 | sed '1,/],/!d' | sed 's/],/]/')
+	extList=$(cat extracted.json | grep Forcelist -A 99999 | sed '1,/],/!d')
 cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
@@ -147,10 +146,14 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "SafeBrowsingProtectionLevel": 0,
     "DownloadRestrictions": 0,
     "NetworkPredictionOptions": 0,
-	"ArcEnabled": true,
     "ArcPolicy": "{\"playStoreMode\":\"ENABLED\",\"playEmmApiInstallDisabled\":false,\"dpsInteractionsDisabled\":false}",
     "UserBorealisAllowed": true,
 		$extList
+		"ExtensionSettings": {
+			"*": {
+				"installation_mode": "normal_installed"
+			}
+		}
   },
   "device": {}
 }
