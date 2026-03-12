@@ -46,7 +46,7 @@ Speaking of which; if you pass policy.json your school extensions will install, 
    * is a rootfs overlay (for example, `modFiles/usr/bin/crosh` is mosh (modmium shell)
    * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `modFiles/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
 * `build_image.sh`
-   * the actual image builder. autobuilding will be added later, since it'll be pretty trivial to implement.
+   * Autobuilder for building modified recovery images with modmium installed.
 * `modmium.sh`
    * the devfw installation helper (will be hosted on crosbreaker cdn).
 * `DEPENDENCIES.md`
