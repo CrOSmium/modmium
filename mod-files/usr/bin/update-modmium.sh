@@ -55,4 +55,25 @@ update() {
 	return
 }
 
+if ! which git >/dev/null 2>&1; then
+	echo -e ${R}git not installed, installing...${N}"
+	if [[ ! -d /usr/local/share/policy-test-tool ]]; then
+		nohup dev_install --reinstall --yes >/root/.devinstall_log 2>&1 &
+		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
+		pythonGoogleInstalled=
+		while [[ $pythonGoogleInstalled != "true" ]]; do
+  		python -m google >/root/.googleStatus 2>&1
+  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable because python is fucking retarded i hate python
+  		if [[ $output == *"package"* ]]; then
+    		pythonGoogleInstalled=true
+  		fi
+  		sleep 1
+		done
+		#cleaning up
+		rm -rf /root/.googleStatus /root/.devinstall-log
+	fi
+	emerge git
+	source /root/.bashrc # just in case
+}	
+
 update
