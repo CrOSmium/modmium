@@ -44,8 +44,7 @@ update() {
 	source /root/.bashrc # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
-	git clone git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" 
-	# we use ssh for now since the repo is private, REPLACE WITH HTTPS LATER
+	git clone https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	echo -e "${G}Successfully cloned repository!${N} Dropping new files..." 
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
 	echo -e "${G}Done! Cleaning up...${N}"
