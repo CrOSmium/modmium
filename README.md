@@ -32,7 +32,8 @@ You still have access to VT's even in verified, and how rootfs verification is d
 4. When the fake device management server starts, go back to VT1 and sign in with the same email.
 5. After you're logged in, go back to VT2 and hit Ctrl+C
 
-After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, ~~a policy editor (WIP)~~ (moved to outside of MOSH due to technical limitations, see above), extension disabler, and modmium updater (NOTE, will curl repo locally [we'll make a release and it'll curl the latest release's source code]), and install modFiles to rootfs. i can code that later). 
+After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, and the modmium updater. **Some utilities aren't in MOSH, such as the policy editor (see above)**. <br>
+Speaking of which; if you pass policy.json your school extensions will install, but __not be force-installed__ (i.e. you can press the switch to toggle them off in chrome://extensions).
 
 If crosh is blocked and your school has a custom sign-in page so you can't remove the account, open VT2 and login as `root` then run `/usr/bin/crosh` to open MOSH.
 From there, you can select "Remove User" to __remove your account without powerwashing__.
@@ -47,20 +48,7 @@ From there, you can select "Remove User" to __remove your account without powerw
    * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `modFiles/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
 * `build_image.sh`
    * the actual image builder. autobuilding will be added later, since it'll be pretty trivial to implement.
--------------
-#### copy-pasted from the discussion in crosbreaker dev:
-
-### maria:
-> people using it should be unenrolled with WP off.
-> from there, we can have the readme say to plug in a usb (and have a script ask which usb to back up to, just searching /dev/sd\*), then curl a script which will run make dev ssd and make dev firmware automatically, as well as format the selected usb to vfat then put the firmware backup on it.
-> similar to mrchromebox script in that regard.
-> it'll also set disable dev request to 1.
-> from there readme will say to reboot and enroll in verified mode, plug in the usb, then curl the script again (we can have it check the fw type [normal or developer]) to back up the policy file to the usb
-### maria:
-> this is setup before building the image
-> once you have the policy file, you can get the policy json from chrome://policy, and put that on the usb too
-> then finally it'll be able to take the policy json and policy file to use integrated policyedit, build the image like normal, and drop the modded policy files in /root
-> then we can just have a daemon similar to murkmod, it'll check for a policy file and public key in /var/lib/devicesettings/ every 15 seconds, and if it exists, overwrite it with the ones in /root 
-> obviously this is all just conceptual, not even psuedocode, but that's the outline for how it'll work imo
-> any suggestions, critiques, or otherwise?
-(there was no response)
+* `modmium.sh`
+   * the devfw installation helper (will be hosted on crosbreaker cdn).
+* `DEPENDENCIES.md`
+   * the dependencies required to build modmium on various linux distros.
