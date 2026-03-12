@@ -1,5 +1,4 @@
 #!/bin/bash
-# similarly to ext.sh, this too had to be its own file
 
 B='\033[1;36m'
 G='\033[1;32m'
