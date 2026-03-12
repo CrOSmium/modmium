@@ -185,7 +185,8 @@ class Orchestrator:
         self.dmserver_process.kill()
 
     if os.path.exists(CHROME_DEV_CONFIG_PATH):
-      os.remove(CHROME_DEV_CONFIG_PATH)
+      with open(CHROME_DEV_CONFIG_PATH, "w", encoding="utf-8") as f:
+        f.write("--disable-policy-key-verification")
 
     logging.info("Cleanup complete.")
 
