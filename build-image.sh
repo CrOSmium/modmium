@@ -12,6 +12,16 @@ if [[ $EUID -ne 0 ]]; then
 	 exit $?
 fi
 source ./build-utils/common_modmium.sh
+
+credits() {
+	echo -e "\
+Credits:
+${R}mariahscarycarey: ${P}Lead developer; laid out everything conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
+\033[38;5;78mdmd: The TUI guy; made MOSH and devfw installer.${N}
+${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
+\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
+}
+
 # args=$@ 
 # I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
 # after a day of thinking i realize it's because $@ is the arguments passed into the function, of which there are none unless i did something like getFlags($@). i think. lemme test it.
@@ -232,3 +242,4 @@ main(){
 }
 
 main $@
+credits
