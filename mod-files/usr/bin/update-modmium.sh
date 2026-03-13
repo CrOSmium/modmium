@@ -55,7 +55,7 @@ update() {
 
 if ! which git >/dev/null 2>&1; then
 	echo -e "${R}git not installed, installing...${N}"
-	if [[ ! -d /usr/local/share/policy-test-tool ]]; then
+	if [[ ! -f /root/.complete ]]; then
 		nohup dev_install --reinstall --yes >/root/.devinstall_log 2>&1 &
 		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
 		pythonGoogleInstalled=
@@ -72,6 +72,7 @@ if ! which git >/dev/null 2>&1; then
 	fi
 	ldconfig # reload shared libraries to include python libs
 	emerge git
+	sleep 3 # debugging
 	source /root/.bashrc # just in case
 fi
 
