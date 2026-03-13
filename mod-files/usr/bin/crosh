@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Modify bootsplash" "6) Exit")
     num_options=${#options[@]}
 }
 
@@ -122,7 +122,14 @@ selector() {
         full_menu
     fi
     
-		if [[ "${options[$selected_index]}" == "5) Exit" ]]; then
+		if [[ "${options[$selected_index]}" == "5) Modify bootsplash" ]]; then
+			tput cnorm
+			employ as_system bash /usr/bin/modify-bootsplash.sh
+			menu_reset
+			full_menu
+		fi
+
+		if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
         tput cnorm
         clear
         exit 0

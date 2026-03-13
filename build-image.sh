@@ -42,6 +42,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
+	DEFINE_string bootsplash "" "Path to bootsplash SVG (requires inkscape). Default modmium bootsplash is modsplash.svg" "s"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
@@ -84,6 +85,16 @@ checkFlagValidity(){
 	fi
 	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
 		echo -e "${R}Policy json file doesn't exist.${N}"
+		exit 1
+	fi
+	if [[ -n $FLAGS_bootsplash ]]; then
+		if ! inkscape --version >/dev/null; then
+			echo -e "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
+			exit 1
+		fi
+	fi
+	if [[ -n $FLAGS_bootsplash && ! ( -f "$FLAGS_bootsplash" ) ]]; then
+		echo -e "${R}Bootsplash svg file doesn't exist.${N}"
 		exit 1
 	fi
 }
@@ -181,6 +192,15 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
+	if [[ -n $FLAGS_bootsplash ]]; then
+		echo -e "${G}Modifying bootsplash...${N}"
+		for splashframe in $(find mnt/usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
+			mv $splashframe "$splashframe".old
+			if [[ $splashframe == *"00.png" ]]; then
+				cp mnt/root/.modmium_bootsplash.png $splashframe
+			fi
+		done
+	fi
 	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
@@ -197,6 +217,28 @@ dropModFiles(){
 	fi
 	echo -e ""$G"Finished!"$N""
 }
+bootsplash(){
+	unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
+	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)"
+	while [[ $unresolved == "true" ]]; do
+		echo -ne "Resolution: ${N}"
+		read -rep "" width height
+		for dimension in width height; do
+			if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
+				echo -e "${R}Invalid ${dimension}!"
+				export ${dimension}Valid=false
+			else
+				export ${dimension}Valid=true
+			fi
+		done
+		if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
+			unresolved=false
+		fi
+	done
+	echo -e "${G}Valid dimensions set! Converting...${N}"
+	inkscape -w $width -h $height "$FLAGS_bootsplash" -o /root/.modmium_bootsplash.png
+}
+
 # end build functions
 
 # begin downloading functions
@@ -234,6 +276,9 @@ Exiting..."$N""
 main(){
 	getFlags $@
 	checkFlagValidity
+	if [[ -n $FLAGS_bootsplash ]]; then
+		bootsplash
+	fi
 	if [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
 		downloadImage
 	fi
