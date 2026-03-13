@@ -20,6 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKER_FILE="$SCRIPT_DIR/.complete"
 
 echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
+echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
 if [[ "$1" == "--reinstall" ]]; then
     rm -f "$MARKER_FILE"
     echo -e "${G}Reinstall flag detected, removed .complete marker. Rerun the script to do a full setup.${N}"
