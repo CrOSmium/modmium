@@ -41,7 +41,7 @@ dropModFiles() {
 update() {
 	clear
 	menu_logo
-	export PATH="$PATH:/usr/local/libexec/git-gore" # just in case, so we know git https will work
+	export PATH="$PATH:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	git clone https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
