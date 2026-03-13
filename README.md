@@ -15,7 +15,7 @@ git clone https://github.com/CrOSmium/modmium && cd modmium
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
 ```
--# Note: You need 7zip, vboot-utils, and inkscape for the builder
+Note: You need 7zip, vboot-utils, and inkscape for the builder. See DEPENDENCIES.md
 
 6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal, open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk crosmium.dev/fwmp.sh)`.
