@@ -19,6 +19,7 @@ Credits:
 ${R}mariahscarycarey: ${P}Lead developer; laid out everything conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
 \033[38;5;78mdmd: The TUI guy; made MOSH and devfw installer.${N}
 ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
+\033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
 }
 
@@ -88,7 +89,7 @@ checkFlagValidity(){
 		exit 1
 	fi
 	if [[ -n $FLAGS_bootsplash ]]; then
-		if ! inkscape --version >/dev/null; then
+		if ! inkscape --version >/dev/null 2>&1; then
 			echo -e "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 			exit 1
 		fi
@@ -236,7 +237,7 @@ bootsplash(){
 		fi
 	done
 	echo -e "${G}Valid dimensions set! Converting...${N}"
-	inkscape -w $width -h $height "$FLAGS_bootsplash" -o /root/.modmium_bootsplash.png
+	inkscape -w $width -h $height "$FLAGS_bootsplash" -o mod-files/root/.modmium_bootsplash.png
 }
 
 # end build functions
