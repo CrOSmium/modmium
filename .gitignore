@@ -4,3 +4,5 @@ cros_sign_backups*
 *mount.sh
 verifykernels.sh
 policy.json
+.ssh
+id_rsa*

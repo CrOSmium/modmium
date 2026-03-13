@@ -14,7 +14,7 @@ if [[ $- != *i* ]] ; then
 	return
 fi
 
-
+source /etc/profile # emerge breaks without this
 # Put your fun stuff here.
 export gitHelpers="/usr/local/libexec/git-core"
 case ":$PATH:" in
