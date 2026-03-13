@@ -19,8 +19,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MARKER_FILE="$SCRIPT_DIR/.complete"
 
-echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall.${N}"
-echo -e "${G}Edit your policies in /usr/local/share/policy-test-tool/policies.json${N}"
+echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
 if [[ "$1" == "--reinstall" ]]; then
     rm -f "$MARKER_FILE"
     echo -e "${G}Reinstall flag detected, removed .complete marker. Rerun the script to do a full setup.${N}"
@@ -209,6 +208,26 @@ emerge chrome-binary-tests
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
 sleep 3
+cat > /tmp/_ext_links.py << 'PYEOF'
+import json, sys
+with open(sys.argv[1]) as f:
+    data = json.load(f)
+forcelist = data.get("user", {}).get("ExtensionInstallForcelist", [])
+urls = []
+for entry in forcelist:
+    if ";" in entry:
+        ext_id, update_url = entry.split(";", 1)
+    else:
+        ext_id = entry
+        update_url = "https://clients2.google.com/service/update2/crx"
+    if update_url.strip() == "https://clients2.google.com/service/update2/crx":
+        urls.append(f"https://chromewebstore.google.com/detail/a/{ext_id}")
+with open(sys.argv[1], "w") as f:
+    f.write("\n".join(urls) + "\n")
+PYEOF
+python3 /tmp/_ext_links.py /usr/local/share/policy-test-tool/extracted.json
+rm -f /tmp/_ext_links.py
+
 python orchestrator.py policies.json
 
 touch "$MARKER_FILE"
