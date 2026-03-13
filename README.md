@@ -6,7 +6,7 @@ murkmod walked, so we could fly
 2. run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` 
 3. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
 4. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
-5. Build the image
+5. Build the image __(SEE DEPENDENCIES.md FIRST)__
 ```sh
 git clone https://github.com/CrOSmium/modmium && cd modmium 
 # if you want to download an image and autobuild
