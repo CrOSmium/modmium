@@ -42,7 +42,7 @@ echo -e "\
 ${G}+##############################################+
 | Policy Test Tool                             |
 | -------------------------------------------- |
-| (WIP) Allows policy changes above 131        |
+| Allows policy changes above 131              |
 +##############################################+
 ${R}Warning: This will prevent school-mandated extensions from installing unless you prepared policy.json in mod-files/root (see readme).
 THIS WILL NOT WORK IF YOU'VE RUN 'chromeos-setdevpasswd'${G}
