@@ -41,12 +41,12 @@ replace_custom() {
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
 		for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
-		mv $splashframe "$splashframe".old
-		if [[ $splashframe == *"00.png" ]]; then
-			cp "$custom_img_path" $splashframe
-		fi
-	done
-	echo -e "${B}Replaced bootsplash!${N}"
+			mv $splashframe "$splashframe".old
+			if [[ $splashframe == *"00.png" ]]; then
+				cp "$custom_img_path" $splashframe
+			fi
+		done
+		echo -e "${B}Replaced bootsplash!${N}"
 	else
     	fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
 	fi
@@ -54,7 +54,7 @@ replace_custom() {
 
 restore() {
 	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.old'); do
-		mv "$splashframe" "${splashframe%.*}.png"
+		mv "$splashframe" "${splashframe%.*}"
 	done
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
