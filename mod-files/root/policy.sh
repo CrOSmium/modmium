@@ -18,25 +18,28 @@ if [ $(id -u) -ne 0 ]; then
     exit 1
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MARKER_FILE="$SCRIPT_DIR/.complete"
+DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
+POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
 echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
 echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
 if [[ "$1" == "--reinstall" ]]; then
-    rm -f "$MARKER_FILE"
-    echo -e "${G}Reinstall flag detected, removed .complete marker. Rerun the script to do a full setup.${N}"
+    rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
+    echo -e "${G}Reinstall flag detected, removed .devinstall_complete and .policytesttool_setup markers. Rerun the script to do a full setup.${N}"
     exit 0
 fi
 
-if [[ -f "$MARKER_FILE" ]]; then
+if [[ -f "$POLTEST_FILE" ]]; then
     echo -e "${G}Setup already complete. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
     python orchestrator.py policies.json
+		echo -e "${G}Done!${N}"
+		echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH."
+		echo -e "DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}${N}"
     exit 0
 fi
 
-if [[ ! -d /usr/local/share/policy-test-tool ]]; then
+if [[ ! -f $DEVINSTALL_FILE ]]; then
 	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
 	echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
 fi
@@ -234,7 +237,7 @@ rm -f /tmp/_ext_links.py
 
 python orchestrator.py policies.json
 
-touch "$MARKER_FILE"
+touch "$MARKER_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
 echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH.
-DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}"
+DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}${N}"

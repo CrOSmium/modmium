@@ -52,7 +52,7 @@ update() {
 if ! which git >/dev/null 2>&1; then
 	echo -e "${R}git not installed, installing...${N}"
 	source /etc/profile # required to get emerge working in mosh
-	if [[ ! -f /root/.complete ]]; then
+	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
 		nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
 		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
 		pythonGoogleInstalled=
