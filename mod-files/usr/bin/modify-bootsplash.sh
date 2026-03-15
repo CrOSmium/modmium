@@ -124,7 +124,7 @@ elif [ "$choice" == "4" ]; then
 elif [ "$choice" == "5" ]; then
 	remove
 else
-	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image) or 3 (restore) or 4 (download stock)"
+	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image), 3 (restore), 4 (download stock), or 5 (remove)"
 fi
 
 fail "Returning..." # not truly a "fail" but it's less clunky and more consistent with how other scripts go back to menu
