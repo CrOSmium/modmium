@@ -21,7 +21,7 @@ echo -e "+##############################################+${N}"
 echo ""
 
 replace() {
-	for splashframe in $(find /usr/share/chromeos-assets/images_100/percent -mindepth 1 -name 'boot_splash_frame*.png'); do
+	for splashframe in $(find /usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv $splashframe "$splashframe".old
 		if [[ $splashframe == *"00.png" ]]; then
 			cp /root/.modmium_bootsplash.png $splashframe
@@ -34,7 +34,7 @@ replace_custom() {
 	echo -e "${G}enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
-		for splashframe in $(find /usr/share/chromeos-assets/images_100/percent -mindepth 1 -name 'boot_splash_frame*.png'); do
+		for splashframe in $(find /usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv $splashframe "$splashframe".old
 		if [[ $splashframe == *"00.png" ]]; then
 			cp "$custom_img_path" $splashframe
