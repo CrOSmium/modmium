@@ -97,7 +97,7 @@ download_backup() {
 
 remove() {
 	echo -e "${Y}This will remove the bootsplash ENTIRELY. use restore to fix it${N}"
-	read -p "press enter to continue" temp
+	read -rep "press enter to continue" temp
 	echo -e "${Y}Removing bootsplash...${N}"
 	rm "$cros_assets/boot_splash_frame*.png"
 	rm "$cros_assets_2/boot_splash_frame*.png"
