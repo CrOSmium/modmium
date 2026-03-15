@@ -27,9 +27,9 @@ Already installed extensions are green, ones yet to be installed are white. You 
 	for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do
 		id=$(echo $extension | sed 's/^.*a\///')
 		if [ -d /home/user/*/Extensions/$id ]; then
-			echo -e "${B}$extension${N}" # for some reason, due to how crosh handles colors, $B is green and $G is blue??? idk man just roll with it
+			echo -e "Installed: ${B}$extension${N}" # for some reason, due to how crosh handles colors, $B is green and $G is blue??? idk man just roll with it
 		else
-			echo "$extension"
+			echo "Not installed: $extension"
 		fi
 	done
 	echo -e "${G}Hit (Ctrl+C) to go back to MOSH${N}"
