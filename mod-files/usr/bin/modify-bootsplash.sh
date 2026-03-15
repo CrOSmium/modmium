@@ -18,6 +18,7 @@ fail() {
 	return
 }
 cros_assets="/usr/share/chromeos-assets/images_100_percent"
+cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
 
 echo -e "${P}+##############################################+"
 echo -e "| Bootsplash Replacer                          |"
@@ -33,6 +34,13 @@ replace() {
 			cp /root/.modmium_bootsplash.png $splashframe
 		fi
 	done
+	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
+		mv $splashframe "$splashframe".old
+		if [[ $splashframe == *"00.png" ]]; then
+			cp /root/.modmium_bootsplash.png $splashframe
+		fi
+	done
+	
 	echo -e "${B}Replaced bootsplash!${N}"
 }
 
@@ -41,6 +49,12 @@ replace_custom() {
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
 		for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
+			mv $splashframe "$splashframe".old
+			if [[ $splashframe == *"00.png" ]]; then
+				cp "$custom_img_path" $splashframe
+			fi
+		done
+		for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
 			mv $splashframe "$splashframe".old
 			if [[ $splashframe == *"00.png" ]]; then
 				cp "$custom_img_path" $splashframe
@@ -56,6 +70,10 @@ restore() {
 	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.old'); do
 		mv "$splashframe" "${splashframe%.*}"
 	done
+	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.old'); do
+		mv "$splashframe" "${splashframe%.*}"
+	done
+	
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
 }
@@ -69,15 +87,28 @@ download_backup() {
 	for splashframe in boot_splash_frame*.png; do
     	mv $splashframe $cros_assets/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
 	done
+	for splashframe in boot_splash_frame*.png; do
+    	mv $splashframe $cros_assets_2/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	done
 	echo -e "${Y}Cleaning up!${N}"
 	rm chromeos_bootsplash.zip
 	echo -e "${B}Done! Use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
+}
+
+remove() {
+	echo -e "${Y}This will remove the bootsplash ENTIRELY. use restore to fix it${N}"
+	read -p "press enter to continue" temp
+	echo -e "${Y}Removing bootsplash...${N}"
+	rm "$cros_assets/boot_splash_frame*.png"
+	rm "$cros_assets_2/boot_splash_frame*.png"
+	echo -e "${G}Removed bootsplash!${N}"
 }
 
 echo -e "${G}1. Replace bootsplash with modmium bootsplash (the one used during building)${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
 echo -e "${G}3. Restore stock bootsplash${N}"
 echo -e "${G}4. Download stock bootsplash and save to backup${N}"
+echo -e "${G}5. Remove bootsplash${N}"
 
 
 read -rep "Choose an option: " choice
@@ -90,6 +121,8 @@ elif [ "$choice" == "3" ]; then
 	restore
 elif [ "$choice" == "4" ]; then
 	download_backup
+elif [ "$choice" == "5" ]; then
+	remove
 else
 	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image) or 3 (restore) or 4 (download stock)"
 fi
