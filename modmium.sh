@@ -81,23 +81,28 @@ main() {
         read -ep "Drive: " driveloc
         driveloc="${driveloc%/}"
         if [[ $driveloc == *"/dev/"* ]]; then
-						mkfs.vfat -I -F 32 $driveloc || (echo "unable to wipe device, exiting..." && exit 1)
+						if ! mkfs.vfat -I -F 32 $driveloc; then; echo "unable to wipe device, exiting..." && exit 1; fi
             mkdir -p /tmp/backupdir
-						mount $driveloc /tmp/backupdir || (echo "unable to mount device, exiting..." && exit 1)
+						if ! mount $driveloc /tmp/backupdir; then; echo "unable to mount device, exiting..." && exit 1; fi
         else
-            mkfs.vfat -I -F 32 /dev/$driveloc (echo "unable to mount device, exiting..." && exit 1)
+            if ! mkfs.vfat -I -F 32 /dev/$driveloc; then; echo "unable to wipe device, exiting..." && exit 1; fi
             mkdir -p /tmp/backupdir
-            mount /dev/$driveloc /tmp/backupdir || (echo "unable to mount device, exiting..." && exit 1)
+            if ! mount /dev/$driveloc /tmp/backupdir; then; echo "unable to mount device, exiting..." && exit 1; fi
         fi
         DRIVEBACKUP=1
         sync
         BACKUPDIR=/tmp/backupdir
-				[ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || (echo "unable to write to backup" && exit 1) # exits if isn't writable (this is redundant but i am paranoid)
+				if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
+					echo "unable to write to backup" && exit 1 # exits if isn't writable (this is redundant but i am paranoid)
+				fi
 		elif [[ $resp =~ ^[Pp]$ ]]; then
     		echo -e "What directory would you like to backup to?"
     		read -p "Dir: " BACKUPDIR
-    		[ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test || (echo "unable to write to backup" && exit 1) # exits if backup doesn't exist or isn't writable
-    		echo -e "Valid directory!"
+				if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
+					echo "unable to write to backup" && exit 1 # exits if backup doesn't exist or isn't writable
+				else
+    			echo -e "Valid directory!"
+				fi
 		else
 				echo "Invalid response, exiting..." && exit 1
 		fi
