@@ -1,5 +1,6 @@
 #!/bin/bash
 # written by mariah carey
+# lxrd for extension name fetching
 B='\033[1;36m'
 G='\033[1;32m'
 Y='\033[38;5;220m'
