@@ -36,7 +36,11 @@ update() {
 	export PATH="/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
-	git clone https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+	if [[ -d /root/.ssh ]]; then
+		git clone git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+	else
+		git clone https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+	fi
 	echo -e "${G}Successfully cloned repository!${N} Dropping new files..." 
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
 	echo -e "${G}Done! Cleaning up...${N}"
