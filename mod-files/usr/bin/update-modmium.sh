@@ -76,6 +76,7 @@ if ! which git >/dev/null 2>&1; then
 	fi
 	ldconfig # reload shared libraries to include python libs
 	emerge git
+	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 
 update

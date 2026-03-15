@@ -34,17 +34,17 @@ If you intended to do so, sign out this account or powerwash, then see the READM
 fi
 
 while :; do
+	echo -e "${P}This is used to install your school ${UN}Chrome Web Store${RUN} extensions after running policy.sh
+Already installed extensions are green, ones yet to be installed are white. You can click the links.${N}"
 	for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do
 		id=$(echo $extension | sed 's/^.*a\///')
-		if [[ -d /home/user/*/Extensions/$id ]]; then
-			echo "${G}$extension${N}"
+		if [ -d /home/user/*/Extensions/$id ]; then
+			echo -e "${B}$extension${N}" # for some reason, due to how crosh handles colors, $B is green and $G is blue??? idk man just roll with it
 		else
 			echo "$extension"
 		fi
 	done
-	sleep 1
+	sleep 10 
 	clear
 	menu_logo
-	echo -e "${G}This is used to install your school ${UN}Chrome Web Store${RUN} extensions after running policy.sh
-Already installed extensions are green, ones yet to be installed are white. You can click the links.${N}"
 done
