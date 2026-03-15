@@ -56,11 +56,12 @@ main() {
 		fi
 	fi
 
-	device_management_client --action=remove_firmware_management_parameters 
-	device_management_client --action=set_firmware_management_parameters --flags=0x0000 # just in case
+	device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1 
+	device_management_client --action=set_firmware_management_parameters --flags=0x0000 >/dev/null 2>&1 # just in case
 
 	echo -e "Are you sure you want to flash DevFW firmware?"
 	read -r -n 2 -s -p "Double click y to continue, or hold any other key to quit." confirmation # don't put Y if confirm wants y
+	echo ""
     if [[ "$confirmation" != "yy" ]]; then
         echo -e "Denied! exiting.."
 				exit 0
@@ -76,17 +77,17 @@ main() {
     if [[ $resp =~ ^[Dd]$ ]]; then
         echo -e "These are the drives connected to your device:"
         lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
-        echo -e "What drive would you like write the backup onto? (THIS WILL ERASE THE DRIVE!!!!)"
+        echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX not the USB's name (THIS WILL ERASE THE DRIVE!!!!)"
         read -ep "Drive: " driveloc
         driveloc="${driveloc%/}"
         if [[ $driveloc == *"/dev/"* ]]; then
-            mkfs.vfat -F 32 $driveloc
-            mkdir /tmp/backupdir
-            mount $driveloc /tmp/backupdir
+            mkfs.vfat -I -F 32 $driveloc
+            mkdir -p /tmp/backupdir
+						mount $driveloc /tmp/backupdir || (echo "unable to mount device, exiting..." && exit 1)
         else
-            mkfs.vfat -F 32 /dev/$driveloc
+            mkfs.vfat -I -F 32 /dev/$driveloc
             mkdir /tmp/backupdir
-            mount /dev/$driveloc /tmp/backupdir
+            mount /dev/$driveloc /tmp/backupdir || (echo "unable to mount device, exiting..." && exit 1)
         fi
         DRIVEBACKUP=1
         sync
