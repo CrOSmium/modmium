@@ -186,8 +186,7 @@ class Orchestrator:
 
     if os.path.exists(CHROME_DEV_CONFIG_PATH):
       with open(CHROME_DEV_CONFIG_PATH, "w", encoding="utf-8") as f:
-        f.write("--disable-policy-key-verification
-                --disable-features=ExtensionManifestV2Unsupported")
+        f.write("--disable-policy-key-verification\n--disable-features=ExtensionManifestV2Unsupported")
 
     logging.info("Cleanup complete.")
 
