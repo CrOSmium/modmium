@@ -71,7 +71,7 @@ download_backup() {
 
 echo -e "${G}1. Replace bootsplash with modmium bootsplash${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
-echo -e "${G}3. Restore stock bootsplash{$N}"
+echo -e "${G}3. Restore stock bootsplash${N}"
 echo -e "${G}4. Download stock bootsplash and save to backup${N}"
 
 
