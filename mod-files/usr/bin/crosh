@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 99% of this was stolen from cr3nroll :3
+# written by DMD
 
 STABLEVERSIONS="135,138,140,144" # if you have tested a version, add the version's release number and a comma to seperate it from the others
 # ^^^ 144 seems to work perfectly fine
