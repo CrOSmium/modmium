@@ -107,6 +107,25 @@ remove() {
 	fi
 }
 
+broidontevencareanymore() { # lol this was very lazy
+	curl -LO https://dl.xz8f.gay/broidontevencareanymore.zip
+	bsdtar -xf broidontevencareanymore.zip
+	for splashframe in boot_splash_frame*.png; do
+    	mv $splashframe $cros_assets/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	done
+	for splashframe in boot_splash_frame*.png; do
+    	mv $splashframe $cros_assets_2/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	done
+	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.old'); do
+		mv "$splashframe" "${splashframe%.*}"
+	done
+	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.old'); do
+		mv "$splashframe" "${splashframe%.*}"
+	done
+	rm broidontevencareanymore.zip
+	echo "lol"
+}
+
 echo -e "${G}1. Replace bootsplash with modmium bootsplash (the one used during building)${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
 echo -e "${G}3. Restore stock bootsplash${N}"
@@ -126,6 +145,8 @@ elif [ "$choice" == "4" ]; then
 	download_backup
 elif [ "$choice" == "5" ]; then
 	remove
+elif [ "$choice" == "tuff" ]; then
+	broidontevencareanymore
 else
 	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image), 3 (restore), 4 (download stock), or 5 (remove)"
 fi
