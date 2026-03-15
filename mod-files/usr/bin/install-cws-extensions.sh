@@ -32,6 +32,7 @@ Already installed extensions are green, ones yet to be installed are white. You 
 			echo "$extension"
 		fi
 	done
+	echo -e "${G}Hit (Ctrl+C) to go back to MOSH${N}"
 	sleep 10 
 	clear
 done
