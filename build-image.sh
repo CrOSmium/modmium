@@ -232,7 +232,7 @@ bootsplash(){
 		fi
 	done
 	echo -e "${G}Valid dimensions set! Converting...${N}"
-	inkscape -w $width -h $height "$FLAGS_bootsplash" -o mod-files/root/.modmium_bootsplash.png
+	inkscape -w $width -h $height "$FLAGS_bootsplash" -o mod-files/root/.modmium_bootsplash.png >/dev/null 2>&1
 }
 
 # end build functions
