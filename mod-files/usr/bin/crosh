@@ -93,54 +93,40 @@ get_fixed_dst_drive() {
     echo "${dev}"
 }
 
+runscript() {
+	tput cnorm
+	employ as_system "$1"
+	menu_reset
+	full_menu
+}
+
 selector() {
-    if [[ "${options[$selected_index]}" == "1) Root Shell" ]]; then
-        tput cnorm
-        employ as_system bash
-        menu_reset
-        full_menu
-    fi
+		sel="${options[$selected_index]}"
 
-    if [[ "${options[$selected_index]}" == "2) Chronos Shell" ]]; then
-        tput cnorm
-        employ as_system "cd /home/chronos; sudo -i -u chronos"
-        menu_reset
-        full_menu
-    fi
-
-    if [[ "${options[$selected_index]}" == "3) Crosh" ]]; then
-        tput cnorm
-        employ as_system /usr/bin/crosh.old
-        menu_reset
-        full_menu
-    fi
- 
-    if [[ "${options[$selected_index]}" == "4) Update Modmium [NOT CHROMEOS]" ]]; then
-        tput cnorm
-        employ as_system bash /usr/bin/update-modmium.sh 
-				menu_reset
-        full_menu
-    fi
-    
-		if [[ "${options[$selected_index]}" == "5) Modify Bootsplash" ]]; then
-			tput cnorm
-			employ as_system bash /usr/bin/modify-bootsplash.sh
-			menu_reset
-			full_menu
-		fi
-
-		if [[ "${options[$selected_index]}" == "6) Install School Webstore Extensions" ]]; then
-			tput cnorm
-			employ as_system bash /usr/bin/install-cws-extensions.sh
-			menu_reset
-			full_menu
-		fi
-		
-		if [[ "${options[$selected_index]}" == "7) Exit" ]]; then
-        tput cnorm
-        clear
-        exit 0
-    fi
+		case "$sel" in
+			"1)*")
+				runscript bash
+				;;
+			"2)*")
+				runscript "cd /home/chronos; sudo -i -u chronos"
+				;;
+			"3*")
+				runscript /usr/bin/crosh.old
+				;;
+			"4)*")
+				runscript "bash /usr/bin/update-modmium.sh"
+				;;
+			"5)*")
+				runscript "bash /usr/bin/modify-bootsplash.sh"
+				;;
+			"6)*")
+				runscript "bash /usr/bin/install-cws-extensions.sh"
+				;;
+			"7)*")
+				tput cnorm
+				clear
+				exit 0
+		esac
 }
 
 full_menu() {
