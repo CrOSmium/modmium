@@ -27,7 +27,7 @@ replace() {
 			cp /root/.modmium_bootsplash.png $splashframe
 		fi
 	done
-	echo -e "${G}Replaced bootsplash!${N}"
+	echo -e "${G}replaced bootsplash!${N}"
 }
 
 replace_custom() {
@@ -40,9 +40,9 @@ replace_custom() {
 			cp "$custom_img_path" $splashframe
 		fi
 	done
-	echo -e "${G}Replaced bootsplash!${N}"
+	echo -e "${G}replaced bootsplash!${N}"
 	else
-    	echo -e "${R}The image $custom_img_path does not exist! make sure you have the path right${N}"
+    	echo -e "${R}the image $custom_img_path does not exist! make sure you have the path right${N}"
 	fi
 }
 
@@ -50,12 +50,13 @@ restore() {
 	for splashframe in $(find /usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv "$splashframe".old "$splashframe"
 	done
-	echo -e "${G}Restored bootsplash!${N}"
+	echo -e "${G}restored bootsplash!${N}"
+	echo -e "${Y}note: if the bootsplash is missing or it didn't restore, use the \"download stock bootsplash\" option" # lol just incase something happens ig
 }
 
 download_backup() {
 	cros_assets="/usr/share/chromeos-assets/images_100_percent"
-	echo -e "${G}Downloading stock chromeos bootsplash${N}"
+	echo -e "${G}downloading stock bootsplash${N}"
 	curl -LO https://dl.xz8f.gay/chromeos_bootsplash.zip
 	echo -e "${Y}unzipping${N}"
 	bsdtar -xf chromeos_bootsplash.zip
@@ -65,12 +66,12 @@ download_backup() {
 	done
 	echo -e "${Y}cleaning up${N}"
 	rm chromeos_bootsplash.zip
-	echo -e "${G}Done! use option 3 (Restore normal bootsplash) to restore the stock bootsplash${N}"
+	echo -e "${G}done! use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
 }
 
 echo -e "${G}1. Replace bootsplash with modmium bootsplash${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
-echo -e "${G}3. Restore normal bootsplash{$N}"
+echo -e "${G}3. Restore stock bootsplash{$N}"
 echo -e "${G}4. Download stock bootsplash and save to backup${N}"
 
 
@@ -87,5 +88,5 @@ elif [ "$choice" == "4" ]; then
 else
 	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image) or 3 (restore) or 4 (download stock)"
 fi
-sleep 2
+read -p "press enter to go back to the menu" temp
 return
