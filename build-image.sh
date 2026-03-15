@@ -2,9 +2,8 @@
 # once again, a conceptual overview for now, seeing as we don't want to write a bunch of code for nothing if ts gets serverside patched by the big Goog :fanxql:
 
 # pre-flight checklist
-if [ "$(basename $PWD)" != "modmium" ]; then
-	echo "Please run this script in the cloned directory (modmium/)"
-	exit 1
+if [[ "$(basename $PWD)" != "modmium" ]]; then
+	fail "Please run this script in the cloned directory (modmium/)"
 fi
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root, elevating with sudo..."
@@ -21,6 +20,10 @@ ${R}mariahscarycarey: ${P}Lead developer; laid out everything conceptually, made
 ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
+}
+fail() {
+	echo -e "$1"
+	exit 1
 }
 
 # args=$@ 
@@ -55,15 +58,12 @@ $0 -b <board> -v <version> [flags]"
 }
 checkFlagValidity(){
 	if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
-		echo -e ""$R"File not found"$N", please provide a path to an actual recovery image."
-		exit 1
+		fail "${R}File not found, please provide a path to an actual recovery image.${N}"
 	elif [[ -n $FLAGS_image && ( $FLAGS_image == "modmium.bin" ) ]]; then
-		echo -e ""$R"Input image cannot have the same name as output image."$N" Rename it to something other than "$B"modmium.bin"$N""
-		exit 1
+		fail "${R}Input image cannot have the same name as output image.${N} Rename it to something other than ${B}modmium.bin${N}"
 	fi
 	if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
-		echo -e ""$R"Version not a natural number"$N", please provide chromeOS "$B"MILESTONE"$N" you want to build."
-		exit 1
+		fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
 	fi
 	if [[ -n $FLAGS_board ]]; then
 		FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
@@ -74,29 +74,24 @@ checkFlagValidity(){
 			fi
 		done
 		if [[ $boardInList != 1 ]]; then
-			echo -e ""$R"Invalid board name."$N" See "$B"https://dl.crosbreaker.dev/recovery-images"$N" for a complete list."
-			exit 1
+			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.dev/recovery-images${N} for a complete list."
 		fi
 	fi
 	if [[ -n $FLAGS_kernver ]]; then
 		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ ]]; then
-    	echo -e "${R}Kernver is not hex or contains leading \"0x\".${N}"
-			exit 1
+    	fail "${R}Kernver is not hex or contains leading \"0x\".${N}"
 		fi
 	fi
 	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
-		echo -e "${R}Policy json file doesn't exist.${N}"
-		exit 1
+		fail "${R}Policy json file doesn't exist.${N}"
 	fi
 	if [[ -n $FLAGS_bootsplash ]]; then
 		if ! inkscape --version >/dev/null 2>&1; then
-			echo -e "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
-			exit 1
+			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
 	if [[ -n $FLAGS_bootsplash && ! ( -f "$FLAGS_bootsplash" ) ]]; then
-		echo -e "${R}Bootsplash svg file doesn't exist.${N}"
-		exit 1
+		fail "${R}Bootsplash svg file doesn't exist.${N}"
 	fi
 }
 # end flag functions
@@ -166,7 +161,7 @@ dropModFiles(){
 				else
 					rm -rf $newImage mnt
 				fi
-				exit 1
+				fail "${R}Exiting...${N}"
 			else
 				echo
 				echo -e "${G}Continuing...${N}"
@@ -245,7 +240,7 @@ bootsplash(){
 # begin downloading functions
 downloadImage(){
 	jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
-	echo -e ""$G"Checking crosbreaker/chromeos-releases-data for recovery image URL..."$N""
+	echo -e "${G}Checking crosbreaker/chromeos-releases-data for recovery image URL...${N}"
 	recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $FLAGS_board --arg ver $FLAGS_version '
 		.[$board].images // []
 		| map(select(
@@ -257,20 +252,19 @@ downloadImage(){
 		| .url // empty
 	')	
 	if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
-		echo -e ""$G"Recovery URL found!"$N""
+		echo -e "${G}Recovery URL found!${N}"
 	else
-		echo -e ""$R"Recovery URL not found or invalid :(
-Exiting..."$N""
-		exit 1
+		fail "${R}Recovery URL not found or invalid :(
+Exiting...${N}"
 	fi
-	echo -e ""$G"Downloading image..."$N""
+	echo -e "${G}Downloading image...${N}"
 	wget --show-progress -O recovery.zip $recoveryUrl
-	echo -e ""$G"Unzipping image..."$N""
+	echo -e "${G}Unzipping image...${N}"
 	7z x recovery.zip
 	downloadedImage=$(basename $(find -name "chromeos*.bin"))
-	echo -e ""$G"Removing zip file..."$N""
+	echo -e "${G}Removing zip file...${N}"
 	rm -rf recovery.zip
-	echo -e ""$G"Done! Continuing to build..."$N""
+	echo -e "${G}Done! Continuing to build...${N}"
 }
 # end downloading functions
 
