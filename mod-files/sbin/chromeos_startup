@@ -2,7 +2,7 @@
 
 # Yes, SOME of this script was taken from murkmod, credit for that goes to rainestorme
 
-# stripped & rewritten by DMD for Modmium
+# stripped & rewritten by DMD
 
 get_largest_cros_blockdev() {
     local largest size dev_name tmp_size remo

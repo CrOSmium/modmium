@@ -1,4 +1,5 @@
 #!/bin/bash
+# written by mariah carey
 
 B='\033[1;36m'
 G='\033[1;32m'

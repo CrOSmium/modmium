@@ -1,6 +1,6 @@
 #!/bin/bash
-# originally written by xz8f
-# rewritten by mariah carey for MOSH
+# originally written by xz8f (and currently maintained by her)
+# partially rewritten by mariah carey for MOSH
 
 # colors :pray:
 B='\033[1;36m' 

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # written by lxrd and mariah carey
 
 # colors!
