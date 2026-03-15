@@ -54,15 +54,24 @@ restore() {
 }
 
 download_backup() {
-	# I am hosting the stock bootsplash images on https://dl.xz8f.gay/chromeos_bootsplash.zip
-	# just need to download, unzip, copy files
-	echo "not implemented yet"
+	cros_assets="/usr/share/chromeos-assets/images_100_percent"
+	echo -e "${G}Downloading stock chromeos bootsplash${N}"
+	curl -LO https://dl.xz8f.gay/chromeos_bootsplash.zip
+	echo -e "${Y}unzipping${N}"
+	bsdtar -xf chromeos_bootsplash.zip
+	echo -e "${Y}creating new backup${N}" # should this say something different? idk
+	for i in $(seq -f "%02g" 0 30); do
+    	mv "boot_splash_frame${i}.png" "$cros_assets/boot_splash_frame${i}.old" # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	done
+	echo -e "${Y}cleaning up${N}"
+	rm chromeos_bootsplash.zip
+	echo -e "${G}Done! use option 3 (Restore normal bootsplash) to restore the stock bootsplash${N}"
 }
 
 echo -e "${G}1. Replace bootsplash with modmium bootsplash${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
 echo -e "${G}3. Restore normal bootsplash{$N}"
-# echo -e "${G}4. Download stock bootsplash and save to backup${N}"
+echo -e "${G}4. Download stock bootsplash and save to backup${N}"
 
 
 read -rep "Choose an option: " choice
@@ -76,7 +85,7 @@ elif [ "$choice" == "3" ]; then
 elif [ "$choice" == "4" ]; then
 	download_backup
 else
-	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image) or 3 (restore)" # or 4 (download)
+	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image) or 3 (restore) or 4 (download stock)"
 fi
 sleep 2
 return
