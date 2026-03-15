@@ -66,6 +66,7 @@ if ! which git >/dev/null 2>&1; then
 		done
 		#cleaning up
 		rm -rf /root/.googleStatus /root/.devinstall_log
+		touch /mnt/stateful_partition/.devinstall_complete
 	fi
 	ldconfig # reload shared libraries to include python libs
 	emerge git
