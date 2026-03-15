@@ -46,7 +46,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
-	DEFINE_string bootsplash "" "Path to bootsplash SVG (requires inkscape). Default modmium bootsplash is modsplash.svg" "s"
+	DEFINE_string bootsplash "" "Path to bootsplash SVG (optional, requires inkscape). Default modmium bootsplash is modsplash.svg" "s"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
