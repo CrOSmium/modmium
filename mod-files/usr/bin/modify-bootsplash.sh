@@ -115,19 +115,25 @@ echo -e "${G}5. Remove bootsplash${N}"
 
 
 read -rep "Choose an option: " choice
-
-if [ "$choice" == "1" ]; then
-	replace
-elif [ "$choice" == "2" ]; then
-	replace_custom
-elif [ "$choice" == "3" ]; then
-	restore
-elif [ "$choice" == "4" ]; then
-	download_backup
-elif [ "$choice" == "5" ]; then
-	remove
-else
-	echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image), 3 (restore), 4 (download stock), or 5 (remove)"
-fi
+case $choice in
+	"1")
+		replace
+		;;
+	"2")
+		replace_custom
+		;;
+	"3")
+		restore
+		;;
+	"4")
+		download_backup
+		;;
+	"5")
+		remove
+		;;
+	*)
+		echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image), 3 (restore), 4 (download stock), or 5 (remove)"
+		;;
+esac
 
 fail "Returning..." # not truly a "fail" but it's less clunky and more consistent with how other scripts go back to menu
