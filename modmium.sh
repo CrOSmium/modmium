@@ -81,13 +81,13 @@ main() {
         read -ep "Drive: " driveloc
         driveloc="${driveloc%/}"
         if [[ $driveloc == *"/dev/"* ]]; then
-						if ! mkfs.vfat -I -F 32 $driveloc; then; echo "unable to wipe device, exiting..." && exit 1; fi
+						if ! mkfs.vfat -I -F 32 $driveloc; then echo "unable to wipe device, exiting..." && exit 1; fi
             mkdir -p /tmp/backupdir
-						if ! mount $driveloc /tmp/backupdir; then; echo "unable to mount device, exiting..." && exit 1; fi
+						if ! mount $driveloc /tmp/backupdir; then echo "unable to mount device, exiting..." && exit 1; fi
         else
-            if ! mkfs.vfat -I -F 32 /dev/$driveloc; then; echo "unable to wipe device, exiting..." && exit 1; fi
+            if ! mkfs.vfat -I -F 32 /dev/$driveloc; then echo "unable to wipe device, exiting..." && exit 1; fi
             mkdir -p /tmp/backupdir
-            if ! mount /dev/$driveloc /tmp/backupdir; then; echo "unable to mount device, exiting..." && exit 1; fi
+            if ! mount /dev/$driveloc /tmp/backupdir; then echo "unable to mount device, exiting..." && exit 1; fi
         fi
         DRIVEBACKUP=1
         sync
