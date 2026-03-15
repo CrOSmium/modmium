@@ -10,16 +10,6 @@ P='\033[1;35m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
-menu_logo() {
-    echo -ne "\033]0;MOSH\007"
-    echo -e "Welcome to MOSH, the Modmium developer shell
-
-If you got here by mistake, don't panic! Just close this tab and carry on.
-
-This shell contains a list of utilities for performing various actions on a chromebook running Modmium.
-"
-}
-
 fail() {
 	echo -e "$1"
 	sleep 3
@@ -43,7 +33,6 @@ dropModFiles() {
 
 update() {
 	clear
-	menu_logo
 	export PATH="/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git

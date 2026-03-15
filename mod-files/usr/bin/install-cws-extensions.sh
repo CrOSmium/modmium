@@ -10,23 +10,11 @@ P='\033[1;35m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
-menu_logo() {
-    echo -ne "\033]0;MOSH\007"
-    echo -e "Welcome to MOSH, the Modmium developer shell
-
-If you got here by mistake, don't panic! Just close this tab and carry on.
-
-This shell contains a list of utilities for performing various actions on a chromebook running Modmium.
-"
-}
-
 fail() {
 	echo -e "$1"
 	sleep 3
 	exit 1
 }
-
-menu_logo
 
 if [[ ! -f /usr/local/share/policy-test-tool/extracted.json ]]; then
 	fail "${R}You didn't use policy.sh or didn't provide a policy.json to install extensions.
@@ -46,5 +34,4 @@ Already installed extensions are green, ones yet to be installed are white. You 
 	done
 	sleep 10 
 	clear
-	menu_logo
 done
