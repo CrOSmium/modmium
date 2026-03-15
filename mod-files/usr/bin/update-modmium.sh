@@ -6,6 +6,9 @@ Y='\033[38;5;220m'
 R='\033[38;5;203m'
 N='\033[0m'
 D='\033[1;90m'
+P='\033[1;35m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
 
 menu_logo() {
     echo -ne "\033]0;MOSH\007"
@@ -41,7 +44,7 @@ dropModFiles() {
 update() {
 	clear
 	menu_logo
-	export PATH="$PATH:/usr/local/libexec/git-core" # just in case, so we know git https will work
+	export PATH="/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	git clone https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
@@ -57,7 +60,7 @@ if ! which git >/dev/null 2>&1; then
 	echo -e "${R}git not installed, installing...${N}"
 	source /etc/profile # required to get emerge working in mosh
 	if [[ ! -f /root/.complete ]]; then
-		nohup dev_install --reinstall --yes >/root/.devinstall_log 2>&1 &
+		nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
 		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
 		pythonGoogleInstalled=
 		while [[ $pythonGoogleInstalled != "true" ]]; do
@@ -69,11 +72,10 @@ if ! which git >/dev/null 2>&1; then
   		sleep 1
 		done
 		#cleaning up
-		rm -rf /root/.googleStatus /root/.devinstall-log
+		rm -rf /root/.googleStatus /root/.devinstall_log
 	fi
 	ldconfig # reload shared libraries to include python libs
 	emerge git
-	source /root/.bashrc # just in case
 fi
 
 update

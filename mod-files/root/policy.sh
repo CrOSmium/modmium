@@ -9,6 +9,8 @@ Y='\033[38;5;220m'
 R='\033[38;5;203m'
 N='\033[0m'    
 D='\033[1;90m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
 
 # Root check
 if [ $(id -u) -ne 0 ]; then
@@ -107,7 +109,8 @@ Location: /root/.policy-test-tool/policies.json
 Configured for: ${email}${N}"
 fi
 
-echo -e "${G}Waiting for python dependencies from dev_install...${N}"
+echo -e "${G}Waiting for python dependencies from dev_install...${D}
+(If this takes more than 5 minutes, something went wrong; open another VT and run dev_install --reinstall)${N}"
 pythonGoogleInstalled=
 while [[ $pythonGoogleInstalled != "true" ]]; do
 	python -m google >.googleStatus 2>&1
@@ -233,3 +236,5 @@ python orchestrator.py policies.json
 
 touch "$MARKER_FILE"
 echo -e "${G}Done!${N}"
+echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH.
+DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}"

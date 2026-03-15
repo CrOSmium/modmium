@@ -33,7 +33,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Modify bootsplash" "6) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Modify Bootsplash" "6) Install School Webstore Extensions" "7) Exit")
     num_options=${#options[@]}
 }
 
@@ -122,14 +122,21 @@ selector() {
         full_menu
     fi
     
-		if [[ "${options[$selected_index]}" == "5) Modify bootsplash" ]]; then
+		if [[ "${options[$selected_index]}" == "5) Modify Bootsplash" ]]; then
 			tput cnorm
 			employ as_system bash /usr/bin/modify-bootsplash.sh
 			menu_reset
 			full_menu
 		fi
 
-		if [[ "${options[$selected_index]}" == "6) Exit" ]]; then
+		if [[ "${options[$selected_index]}" == "6) Install School Webstore Extensions" ]]; then
+			tput cnorm
+			employ as_system bash /usr/bin/install-cws-extensions.sh
+			menu_reset
+			full_menu
+		fi
+		
+		if [[ "${options[$selected_index]}" == "7) Exit" ]]; then
         tput cnorm
         clear
         exit 0
