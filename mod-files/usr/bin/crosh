@@ -95,6 +95,7 @@ get_fixed_dst_drive() {
 
 runscript() {
 	tput cnorm
+	echo "$1"
 	employ as_system "$1"
 	menu_reset
 	full_menu
@@ -104,25 +105,25 @@ selector() {
 		sel="${options[$selected_index]}"
 
 		case "$sel" in
-			"1)*")
+			1*)
 				runscript bash
 				;;
-			"2)*")
+			2*)
 				runscript "cd /home/chronos; sudo -i -u chronos"
 				;;
-			"3*")
+			3*)
 				runscript /usr/bin/crosh.old
 				;;
-			"4)*")
+			4*)
 				runscript "bash /usr/bin/update-modmium.sh"
 				;;
-			"5)*")
+			5*)
 				runscript "bash /usr/bin/modify-bootsplash.sh"
 				;;
-			"6)*")
+			6*)
 				runscript "bash /usr/bin/install-cws-extensions.sh"
 				;;
-			"7)*")
+			7*)
 				tput cnorm
 				clear
 				exit 0
