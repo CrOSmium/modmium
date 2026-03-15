@@ -237,7 +237,7 @@ rm -f /tmp/_ext_links.py
 
 python orchestrator.py policies.json
 
-touch "$MARKER_FILE" "$POLTEST_FILE"
+touch "$DEVINSTALL_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
 echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH.
 DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}${N}"
