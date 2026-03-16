@@ -46,7 +46,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
-	DEFINE_string bootsplash "" "Path to bootsplash SVG (optional, requires inkscape). Default modmium bootsplash is modsplash.svg" "s"
+	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
@@ -90,8 +90,10 @@ checkFlagValidity(){
 			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
-	if [[ -n $FLAGS_bootsplash && ! ( -f "$FLAGS_bootsplash" ) ]]; then
-		fail "${R}Bootsplash svg file doesn't exist.${N}"
+	if [[ -n $FLAGS_bootsplash && ! ( -d bootsplash/ ) ]]; then
+		fail "${R}Bootsplash directory doesn't exist.${N}"
+	elif [ -n $FLAGS_bootsplash ] && [ -z "$(find bootsplash/ -mindepth 1 -name 'nightly*')" ]; then
+		fail "${R}Bootsplash directory is empty or doesn't have nightly bootsplashes.${N}"
 	fi
 }
 # end flag functions
@@ -188,19 +190,13 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
-	if [[ -n $FLAGS_bootsplash ]]; then
-		echo -e "${G}Modifying bootsplash...${N}"
-		for splashframe in $(find mnt/usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
-			mv $splashframe "$splashframe".old
-			if [[ $splashframe == *"00.png" ]]; then
-				cp mnt/root/.modmium_bootsplash.png $splashframe
-			fi
-		done
-	fi
 	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""
+	if [[ -n $FLAGS_bootsplash ]]; then
+		rm -rf mod-files/bootsplash/*.png
+	fi
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
@@ -214,25 +210,29 @@ dropModFiles(){
 	echo -e ""$G"Finished!"$N""
 }
 bootsplash(){
-	unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
-	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)"
-	while [[ $unresolved == "true" ]]; do
-		echo -ne "Resolution: ${N}"
-		read -rep "" width height
-		for dimension in width height; do
-			if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
-				echo -e "${R}Invalid ${dimension}!"
-				export ${dimension}Valid=false
-			else
-				export ${dimension}Valid=true
+	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
+	for splash in $(find bootsplash/ -mindepth 1 -name 'nightly*.svg'); do
+		unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
+		echo -e "Converting ${G}$(basename $splash)${N} to png..."
+		while [[ $unresolved == "true" ]]; do
+			echo -ne "Resolution: ${N}"
+			read -rep "" width height
+			for dimension in width height; do
+				if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
+					echo -e "${R}Invalid ${dimension}!"
+					export ${dimension}Valid=false
+				else
+					export ${dimension}Valid=true
+				fi
+			done
+			if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
+				unresolved=false
 			fi
 		done
-		if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
-			unresolved=false
-		fi
+		echo -e "${G}Valid dimensions set! Converting...${N}"
+		mkdir -p mod-files/bootsplash
+		inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png) >/dev/null 2>&1
 	done
-	echo -e "${G}Valid dimensions set! Converting...${N}"
-	inkscape -w $width -h $height "$FLAGS_bootsplash" -o mod-files/root/.modmium_bootsplash.png >/dev/null 2>&1
 }
 
 # end build functions

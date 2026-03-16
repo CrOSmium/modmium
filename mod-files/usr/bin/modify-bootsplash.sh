@@ -27,17 +27,34 @@ echo -e "| Replaces the stock ChromeOS bootsplash       |"
 echo -e "+##############################################+${N}"
 echo ""
 
+# gets chosen bootsplash
+mkdir -p /home/user/*/MyFiles/Downloads/bootsplashes
+cp /bootsplash/* /home/user/*/MyFiles/Downloads/bootsplashes
+chmod 777 /home/user/*/MyFiles/Downloads/bootsplashes/*
+echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
+Open the Files app to see them."
+for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
+	echo $(basename $image)
+done
+echo -ne "Enter one of the filenames above: "
+read -rep "" bootsplash
+for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
+	if [[ "$bootsplash" != "$image" ]]; then
+		fail "${R}Invalid filename...${N}"
+	fi
+done
+
 replace() {
 	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv $splashframe "$splashframe".old
 		if [[ $splashframe == *"00.png" ]]; then
-			cp /root/.modmium_bootsplash.png $splashframe
+			cp $bootsplash $splashframe
 		fi
 	done
 	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv $splashframe "$splashframe".old
 		if [[ $splashframe == *"00.png" ]]; then
-			cp /root/.modmium_bootsplash.png $splashframe
+			cp $bootsplash $splashframe
 		fi
 	done
 	
