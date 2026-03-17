@@ -27,22 +27,32 @@ echo -e "| Replaces the stock ChromeOS bootsplash       |"
 echo -e "+##############################################+${N}"
 echo ""
 
+# checks if image was built with bootsplashes
+if [[ ! -d /bootsplash ]]; then
+	echo -e "${R}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${N}"
+else
+	get_installed_bootsplashes
+fi
+
 # gets chosen bootsplash
-mkdir -p /home/user/*/MyFiles/Downloads/bootsplashes
-cp /bootsplash/* /home/user/*/MyFiles/Downloads/bootsplashes
-chmod 777 /home/user/*/MyFiles/Downloads/bootsplashes/*
-echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
+get_installed_bootsplashes() {
+	mkdir -p /home/user/*/MyFiles/Downloads/bootsplashes
+	cp /bootsplash/* /home/user/*/MyFiles/Downloads/bootsplashes
+	chmod 777 /home/user/*/MyFiles/Downloads/bootsplashes/*
+	echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
 Open the Files app to see them."
-for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
-	echo $(basename $image)
-done
-echo -ne "Enter one of the filenames above: "
-read -rep "" bootsplash
-for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
-	if [[ "$bootsplash" != "$image" ]]; then
-		fail "${R}Invalid filename...${N}"
-	fi
-done
+	for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
+		echo $(basename $image)
+	done
+	echo -ne "Enter one of the filenames above: "
+	read -rep "" bootsplash
+	bootsplash=/bootsplash/$bootsplash
+	for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
+		if [[ "$bootsplash" != "$image" ]]; then
+			fail "${R}Invalid filename...${N}"
+		fi
+	done
+}
 
 replace() {
 	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
@@ -124,7 +134,7 @@ remove() {
 	fi
 }
 
-echo -e "${G}1. Replace bootsplash with modmium bootsplash (the one used during building)${N}"
+echo -e "${G}1. Replace bootsplash with modmium bootsplash (the one you just selected)${N}"
 echo -e "${G}2. Replace bootsplash with custom image${N}"
 echo -e "${G}3. Restore stock bootsplash${N}"
 echo -e "${G}4. Download stock bootsplash and save to backup${N}"
