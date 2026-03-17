@@ -44,7 +44,7 @@ replace() {
 	echo -e "${B}Replaced bootsplash!${N}"
 }
 
-replace_custom() {
+replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
