@@ -3,10 +3,10 @@ murkmod walked, so we could fly
 ## usage instructions:
 0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info). If interested in keeping school extensions (but with the ability to disable them), read the policy editor instructions before continuing!
 1. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
-2. Run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` to install developer firmware easily. 
+2. Run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` to install developer firmware & backup to a drive or directory easily. 
 3. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
 4. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
-5. Build the image __(SEE DEPENDENCIES.md FIRST)__
+5. Build the image
 ```sh
 git clone https://github.com/CrOSmium/modmium && cd modmium 
 # if you want to download an image and autobuild
@@ -15,7 +15,7 @@ git clone https://github.com/CrOSmium/modmium && cd modmium
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
 ```
-Note: You need 7zip, vboot-utils, and inkscape for the builder. See DEPENDENCIES.md
+Note: You need 7zip, vboot-utils, and inkscape for the builder. ([DEPENDENCIES.md](./DEPENDENCIES.md))
 
 6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary), open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk crosmium.dev/fwmp.sh)`.
@@ -24,7 +24,7 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 9. Let it recover, then reboot.
 10. Return to secure mode.
 11. After it reboots, go through OOBE as normal and you'll be enrolled.
-You still have access to VT's even in verified, and how rootfs verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootfs's.
+You still have access to VT's even in verified, and how rootFS verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootFS's.
 
 ## policy editor instructions
 0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
