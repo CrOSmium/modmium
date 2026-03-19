@@ -71,17 +71,20 @@ replace() {
 	echo -e "${B}Replaced bootsplash!${N}"
 }
 
-replace_custom() {
+replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
+# try using this now, obviously this won't fix it but it could help figure out what the problem is
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
 		for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
+			echo $splashframe # debugging
 			mv $splashframe "$splashframe".old
 			if [[ $splashframe == *"00.png" ]]; then
 				cp "$custom_img_path" $splashframe
 			fi
 		done
 		for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
+			echo $splashframe # debugging
 			mv $splashframe "$splashframe".old
 			if [[ $splashframe == *"00.png" ]]; then
 				cp "$custom_img_path" $splashframe
