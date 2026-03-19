@@ -18,7 +18,7 @@ git clone https://github.com/CrOSmium/modmium && cd modmium
 Note: You need 7zip, vboot-utils, and inkscape for the builder. See DEPENDENCIES.md
 
 6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
-Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary), open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk cdn.xz8f.gay/d.sh)`.
+Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary), open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk crosmium.dev/fwmp.sh)`.
 7. Enter devmode recovery
 8. Plug in the disk with modmium on it.
 9. Let it recover, then reboot.
