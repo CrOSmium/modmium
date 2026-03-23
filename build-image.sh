@@ -3,6 +3,9 @@
 DEPENDENCIES=("futility" "jq" "wget" "7z")
 
 # pre-flight checklist
+source ./build-utils/common_modmium.sh
+branch=$(git rev-parse --abbrev-ref HEAD)
+
 if [[ "$(basename $PWD)" != "modmium" ]]; then
 	fail "Please run this script in the cloned directory (modmium/)"
 fi
@@ -11,7 +14,6 @@ if [[ $EUID -ne 0 ]]; then
 	 sudo "$0" "$@"
 	 exit $?
 fi
-source ./build-utils/common_modmium.sh
 
 credits() {
 	echo -e "\
@@ -104,8 +106,8 @@ checkFlagValidity(){
 	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE  && ! ( -d bootsplash/ ) ]]; then
 		fail "${R}Bootsplash directory doesn't exist.${N}"
-	elif [ $FLAGS_bootsplash == $FLAGS_TRUE ] && [ -z "$(find bootsplash/nightly -mindepth 1)" ]; then
-		fail "${R}Bootsplash directory is empty or doesn't have nightly bootsplashes.${N}"
+	elif [ $FLAGS_bootsplash == $FLAGS_TRUE ] && [ -z "$(find bootsplash/$branch -mindepth 1)" ]; then
+		fail "${R}Bootsplash directory is empty or doesn't have $branch bootsplashes.${N}"
 	fi
 }
 # end flag functions
@@ -223,7 +225,7 @@ dropModFiles(){
 }
 bootsplash(){
 	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
-	for splash in $(find bootsplash/ -mindepth 1 -name 'nightly*.svg'); do
+	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
 		unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
 		echo -e "Converting ${G}$(basename $splash)${N} to png..."
 		while [[ $unresolved == "true" ]]; do
