@@ -211,7 +211,7 @@ dropModFiles(){
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
-	if [[ $branch == "nightly ]]; then
+	if [[ $branch == "nightly" ]]; then
 		touch mnt/.nightly
 	fi
 	umount mnt
