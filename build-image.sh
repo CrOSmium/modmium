@@ -27,7 +27,7 @@ fail() {
 }
 checkDependencies() {
 	for dep in futility jq wget 7z; do # add more later
-		if ! command $dep >/dev/null 2>&1; then
+		if ! command -v $dep >/dev/null 2>&1; then
 			echo -e "${R}${dep} not found.${N}"
 			local shouldExit=true
 		fi
