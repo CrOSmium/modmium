@@ -24,7 +24,7 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 9. Let it recover, then reboot.
 10. Return to secure mode.
 11. After it reboots, go through OOBE as normal and you'll be enrolled.
-You still have access to VT's even in verified, and how rootFS verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified rootFS's.
+You still have access to VT's even in verified, and how rootFS verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified root filesystems.
 
 ## policy editor instructions
 0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
