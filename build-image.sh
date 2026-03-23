@@ -97,14 +97,14 @@ checkFlagValidity(){
 	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
 		fail "${R}Policy json file doesn't exist.${N}"
 	fi
-	if [[ $FLAGS_bootsplash -eq 0 ]]; then
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		if ! inkscape --version >/dev/null 2>&1; then
 			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
-	if [[ $FLAGS_bootsplash -eq 0 && ! ( -d bootsplash/ ) ]]; then
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE  && ! ( -d bootsplash/ ) ]]; then
 		fail "${R}Bootsplash directory doesn't exist.${N}"
-	elif [ -n $FLAGS_bootsplash ] && [ -z "$(find bootsplash/ -mindepth 1 -name 'nightly*')" ]; then
+	elif [ $FLAGS_bootsplash == $FLAGS_TRUE ] && [ -z "$(find bootsplash/nightly -mindepth 1)" ]; then
 		fail "${R}Bootsplash directory is empty or doesn't have nightly bootsplashes.${N}"
 	fi
 }
@@ -206,7 +206,7 @@ dropModFiles(){
 	sleep 0.5
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""
-	if [[ $FLAGS_bootsplash -eq 0 ]]; then
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
 	umount mnt
@@ -284,7 +284,7 @@ main(){
 	getFlags $@
 	checkFlagValidity
 	checkDependencies
-	if [[ $FLAGS_bootsplash -eq 0 ]]; then
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
 	fi
 	if [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
