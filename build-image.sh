@@ -25,6 +25,17 @@ fail() {
 	echo -e "$1"
 	exit 1
 }
+checkDependencies() {
+	for dep in 7z wget; do # add more later
+		if ! command $dep >/dev/null 2>&1; then
+			echo -e "${R}${dep} not found.${N}"
+			local shouldExit=true
+		fi
+	done
+	if [[ $shouldExit == "true" ]]; then
+		fail "Exiting..."
+	fi
+}
 
 # args=$@ 
 # I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
@@ -85,12 +96,12 @@ checkFlagValidity(){
 	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
 		fail "${R}Policy json file doesn't exist.${N}"
 	fi
-	if [[ -n $FLAGS_bootsplash ]]; then
+	if [[ $FLAGS_bootsplash -eq 0 ]]; then
 		if ! inkscape --version >/dev/null 2>&1; then
 			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
-	if [[ -n $FLAGS_bootsplash && ! ( -d bootsplash/ ) ]]; then
+	if [[ $FLAGS_bootsplash -eq 0 && ! ( -d bootsplash/ ) ]]; then
 		fail "${R}Bootsplash directory doesn't exist.${N}"
 	elif [ -n $FLAGS_bootsplash ] && [ -z "$(find bootsplash/ -mindepth 1 -name 'nightly*')" ]; then
 		fail "${R}Bootsplash directory is empty or doesn't have nightly bootsplashes.${N}"
@@ -194,7 +205,7 @@ dropModFiles(){
 	sleep 0.5
 	# cleanup time!
 	echo -e ""$G"Cleaning up..."$N""
-	if [[ -n $FLAGS_bootsplash ]]; then
+	if [[ $FLAGS_bootsplash -eq 0 ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
 	umount mnt
@@ -271,7 +282,8 @@ Exiting...${N}"
 main(){
 	getFlags $@
 	checkFlagValidity
-	if [[ -n $FLAGS_bootsplash ]]; then
+	checkDependencies
+	if [[ $FLAGS_bootsplash -eq 0 ]]; then
 		bootsplash
 	fi
 	if [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
