@@ -1,5 +1,6 @@
 #!/bin/bash
-# once again, a conceptual overview for now, seeing as we don't want to write a bunch of code for nothing if ts gets serverside patched by the big Goog :fanxql:
+
+DEPENDENCIES=("futility" "jq" "wget" "7z")
 
 # pre-flight checklist
 if [[ "$(basename $PWD)" != "modmium" ]]; then
@@ -26,7 +27,7 @@ fail() {
 	exit 1
 }
 checkDependencies() {
-	for dep in futility jq wget 7z; do # add more later
+	for dep in $DEPENDENCIES; do
 		if ! command -v $dep >/dev/null 2>&1; then
 			echo -e "${R}${dep} not found.${N}"
 			local shouldExit=true
