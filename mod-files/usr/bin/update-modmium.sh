@@ -44,9 +44,9 @@ update() {
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	if [[ -d /root/.ssh ]]; then
-		git clone -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	else
-		git clone -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	fi
 	echo -e "${G}Successfully cloned repository!${N} Dropping new files..." 
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
