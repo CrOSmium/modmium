@@ -2,11 +2,12 @@
 # written by lxrd and mariah carey
 
 # colors!
-B='\033[1;36m' 
-G='\033[1;32m' 
+B='\033[38;5;45m'
+G='\033[38;5;46m'
 Y='\033[38;5;220m'
 R='\033[38;5;203m'
-N='\033[0m'    
+P='\033[38;5;135m'
+N='\033[0m'
 D='\033[1;90m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
