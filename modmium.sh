@@ -114,7 +114,7 @@ main() {
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
 		/usr/share/vboot/bin/set_gbb_flags.sh 0x80b1 || futility gbb -s --flash --flags=0xa0b1
         /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUPDIR
-        sync;sync;sync # sync because I dont trust ChromeOS / lol this is needed
+        sync # sync because I dont trust ChromeOS
         vpd -i RO_VPD -s "dev_firmware"=1
     else 
       echo -e "You are already using DevFW (Devkeys)! cancelling"
