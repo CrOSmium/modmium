@@ -15,6 +15,9 @@ RUN='\033[24m' #reset underline
 
 fail() {
 	echo -e "$1"
+	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
+		rm -rf ${downloadsDir}/bootsplashes
+	done # we do this because you can't delete them in the files app for some reason? idk man
 	sleep 3
 	return
 }
@@ -28,20 +31,13 @@ echo -e "| Replaces the stock ChromeOS bootsplash       |"
 echo -e "+##############################################+${N}"
 echo -e "${D}(Hit Ctrl+C to return to MOSH)${N}"
 
-# checks if image was built with bootsplashes
-if [[ ! -d /bootsplash ]]; then
-	echo -e "${R}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${N}"
-else
-	get_installed_bootsplashes
-fi
-
 # gets chosen bootsplash
 get_installed_bootsplashes() {
-	mkdir -p /home/user/*/MyFiles/Downloads/bootsplashes
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
 		mkdir -p ${downloadsDir}/bootsplashes
-		cp /bootsplash/* ${downloadsDir}/bootsplashes
+		cp /bootsplash/* ${downloadsDir}/bootsplashes >/dev/null 2>&1
 		chmod 777 ${downloadsDir}/bootsplashes/*
+		chown 0:0 ${downloadsDir}/bootsplashes/*
 	done
 	echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
 Open the Files app to see them."
@@ -58,7 +54,13 @@ Open the Files app to see them."
 	done
 }
 
+# checks if image was built with bootsplashes
+if [[ ! -d /bootsplash ]]; then
+  echo -e "${R}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${N}"
+fi
+
 replace() {
+	get_installed_bootsplashes
 	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
 		mv $splashframe "$splashframe".old
 		if [[ $splashframe == *"00.png" ]]; then
@@ -118,11 +120,11 @@ download_backup() {
 	echo -e "${Y}Unzipping...${N}"
 	bsdtar -xf chromeos_bootsplash.zip
 	echo -e "${Y}Creating backup...${N}" # should this say something different? idk
-	for splashframe in boot_splash_frame*.png; do
-    	mv $splashframe $cros_assets/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	for splashframe in $cros_assets/boot_splash_frame*.png; do
+    	mv $splashframe $splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
 	done
-	for splashframe in boot_splash_frame*.png; do
-    	mv $splashframe $cros_assets_2/$splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	for splashframe in $cros_assets_2/boot_splash_frame*.png; do
+    	mv $splashframe $splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
 	done
 	echo -e "${Y}Cleaning up!${N}"
 	rm chromeos_bootsplash.zip
