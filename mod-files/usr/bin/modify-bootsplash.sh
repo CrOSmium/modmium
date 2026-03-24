@@ -37,8 +37,11 @@ fi
 # gets chosen bootsplash
 get_installed_bootsplashes() {
 	mkdir -p /home/user/*/MyFiles/Downloads/bootsplashes
-	cp /bootsplash/* /home/user/*/MyFiles/Downloads/bootsplashes
-	chmod 777 /home/user/*/MyFiles/Downloads/bootsplashes/*
+	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
+		mkdir -p ${downloadsDir}/bootsplashes
+		cp /bootsplash/* ${downloadsDir}/bootsplashes
+		chmod 777 ${downloadsDir}/bootsplashes/*
+	done
 	echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
 Open the Files app to see them."
 	for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
