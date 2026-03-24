@@ -24,8 +24,20 @@ ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
 }
+silence() {
+	$@ >/dev/null 2>&1
+}
+cleanup() { # to be used in case of failure, not for successful building
+	silence umount mnt
+	silence losetup -d $loopDev 
+	silence rm -rf mnt
+	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin'); do
+		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+	done
+}
 fail() {
 	echo -e "$1"
+	cleanup
 	exit 1
 }
 checkDependencies() {
@@ -124,15 +136,15 @@ removeVerity(){
 		newImage=modmium.bin
 		mv $downloadedImage $newImage
 	fi
-	echo -e ""$G"Setting up loop device..."$N""
-	loopDev=$(losetup -Pf --show $newImage) 
+	echo -e "${G}Setting up loop device...${N}"
+	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
 	echo -e ""$G"Disabling verity..."$N""
 	build-utils/ssd_util.sh -i $loopDev -r --partitions 2
 	build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
 
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
 	for part in 2 4; do
-    echo -e ""$G"Dumping and modifying kernel ${part} commandline..."$N""
+    echo -e "${G}Dumping and modifying kernel ${part} commandline...${N}"
 		futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
 		[ $part -eq 2 ] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
 		if [ $part -eq 4 ]; then
@@ -157,11 +169,11 @@ removeVerity(){
         --oldblob ${loopDev}p$part
 	done
 
-	echo -e ""$G"Cleaning up kernel backups and configs..."$N""
+	echo -e "${G}Cleaning up kernel backups and configs...${N}"
 	rm -rf cros_sign_backups config*
 }
 dropModFiles(){
-	echo -e ""$G"Mounting loop device..."$N""
+	echo -e "${G}Mounting loop device...${N}"
 	mount "$loopDev"p3 mnt --mkdir
 	if [[ ! -f mod-files/root/policy.json ]]; then
 		if [[ -z $FLAGS_json ]]; then
@@ -169,15 +181,7 @@ dropModFiles(){
 			read -n 1 -r
 			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 				echo
-				echo -e "${G}Cleaning up...${N}"
-				umount mnt
-				losetup -d $loopDev
-				if [[ -n $FLAGS_image ]]; then
-					rm -rf $newImage mnt $tempDir
-				else
-					rm -rf $newImage mnt
-				fi
-				fail "${R}Exiting...${N}"
+				fail "${R}Cleaning up and exiting...${N}"
 			else
 				echo
 				echo -e "${G}Continuing...${N}"
@@ -207,24 +211,24 @@ dropModFiles(){
 	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
-	echo -e ""$G"Cleaning up..."$N""
+	echo -e "${G}Cleaning up...${N}"
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
-	if [[ $branch == "nightly" ]]; then
-		touch mnt/.nightly
-	fi
+	
+	echo $branch >mnt/.branch
+
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
-		echo -e ""$G"Moving image from RAM to $(basename $newImage) in current directory..."$N""
+		echo -e "${G}Moving image from RAM to $(basename $newImage) in current directory...${N}"
 		mv $newImage $(basename $newImage)
 		sync
 		rm -rf $tempDir mnt
 	else
 		rm -rf mnt
 	fi
-	echo -e ""$G"Finished!"$N""
+	echo -e "${G}Finished!${N}"
 }
 bootsplash(){
 	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
