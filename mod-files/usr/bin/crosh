@@ -2,8 +2,12 @@
 
 # written by DMD
 
+
+# -- Pre TUI init --
+stty -echo # prevent input from showing before the menu loads (i wasn't gonna fix it but i was asked to :p)
+
 STABLEVERSIONS="135,138,140,144" # if you have tested a version, add the version's release number and a comma to seperate it from the others
-# ^^^ 144 seems to work perfectly fine
+
 # -- Root escalation --
 as_system() {
     # this bypasses permissions on /.rootkey preventing ssh from working
@@ -33,7 +37,7 @@ D='\033[1;90m'
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Modify Bootsplash" "6) Install School Webstore Extensions" "7) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Modify Bootsplash" "6) Install Enterprise Webstore Extensions" "7) Exit")
     num_options=${#options[@]}
 }
 
@@ -106,24 +110,31 @@ selector() {
 
 		case "$sel" in
 			1*)
+				stty echo
 				runscript bash
 				;;
 			2*)
+				stty echo
 				runscript "cd /home/chronos; sudo -i -u chronos"
 				;;
 			3*)
+				stty echo
 				runscript /usr/bin/crosh.old
 				;;
 			4*)
+				stty echo
 				runscript "bash /usr/bin/update-modmium.sh"
 				;;
 			5*)
+				stty echo
 				runscript "bash /usr/bin/modify-bootsplash.sh"
 				;;
 			6*)
+				stty echo
 				runscript "bash /usr/bin/install-cws-extensions.sh"
 				;;
 			7*)
+				stty echo
 				tput cnorm
 				clear
 				exit 0
@@ -132,6 +143,7 @@ selector() {
 
 full_menu() {
     clear
+	stty -echo
     tput civis
     while true; do
         display_menu
@@ -192,7 +204,7 @@ display_menu() {
             if [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
                 echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-nightly) --"
             else
-                echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-nightly) -- Do note that this version hasn't been tested by devs, but will likely still work fine."
+                echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-nightly-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
             fi
         fi
     fi
