@@ -48,7 +48,7 @@ Already installed extensions are green, ones yet to be installed are white. You 
 		id=$(echo $extension | sed 's/^.*a\///')
 		name="${NAME_CACHE[$extension]}"
 		if [[ " $installed " == *" $id "* ]]; then
-			echo -e "Installed: ${B}$name${N} — $extension" # for some reason, due to how crosh handles colors, $B is green and $G is blue??? idk man just roll with it
+			echo -e "Installed: ${G}$name${N} — $extension
 		else
 			echo -e "Not installed: $name — $extension"
 		fi
