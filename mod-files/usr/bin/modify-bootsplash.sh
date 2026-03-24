@@ -25,7 +25,7 @@ echo -e "| Bootsplash Replacer                          |"
 echo -e "| -------------------------------------------- |"
 echo -e "| Replaces the stock ChromeOS bootsplash       |"
 echo -e "+##############################################+${N}"
-echo ""
+echo -e "${D}(Hit Ctrl+C to return to MOSH)${N}"
 
 # checks if image was built with bootsplashes
 if [[ ! -d /bootsplash ]]; then
