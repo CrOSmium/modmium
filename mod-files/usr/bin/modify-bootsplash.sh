@@ -47,15 +47,12 @@ Open the Files app to see them."
 	echo -ne "Enter one of the filenames above: "
 	read -rep "" bootsplash
 	bootsplash=/bootsplash/$bootsplash
-	local shouldExit=true
+	shouldExit=true
 	for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
 		if [[ "$bootsplash" == "$image" ]]; then
 			shouldExit=false
 		fi
 	done
-	if [[ $shouldExit == true ]]; then
-		fail "${R}Invalid filename...${N}"
-	fi
 }
 
 # checks if image was built with bootsplashes
@@ -83,6 +80,9 @@ move_images() {
 
 replace() {
 	get_installed_bootsplashes
+	if [[ $shouldExit == true ]]; then
+		fail "${R}Invalid filename...${N}"
+	fi
 	move_images $bootsplash
 	echo -e "${B}Replaced bootsplash!${N}"
 }
