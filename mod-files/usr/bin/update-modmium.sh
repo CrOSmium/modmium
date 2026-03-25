@@ -12,11 +12,7 @@ D='\033[1;90m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
-if [[ -f /.nightly ]]; then
-	branch=nightly
-else
-	branch=main
-fi
+branch=$(cat /.branch)
 
 fail() {
 	echo -e "$1"
