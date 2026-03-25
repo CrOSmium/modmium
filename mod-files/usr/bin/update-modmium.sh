@@ -53,6 +53,7 @@ update() {
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
 	echo -e "${G}Done! Cleaning up...${N}"
 	rm -rf /mnt/stateful_partition/git/modmium
+	sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
 	sleep 3 
 	return
 }
@@ -66,13 +67,13 @@ if ! which git >/dev/null 2>&1; then
 		pythonGoogleInstalled=
 		while [[ $pythonGoogleInstalled != "true" ]]; do
   		python -m google >/root/.googleStatus 2>&1
-  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable because python is fucking retarded i hate python
+  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable i hate python
   		if [[ $output == *"package"* ]]; then
     		pythonGoogleInstalled=true
   		fi
   		sleep 1
 		done
-		#cleaning up
+		# cleaning up
 		rm -rf /root/.googleStatus /root/.devinstall_log
 		touch /mnt/stateful_partition/.devinstall_complete
 	fi
