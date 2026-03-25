@@ -65,7 +65,7 @@ if [[ ! -d /bootsplash ]]; then
 fi
 
 move_images() {
-	if [ -z $(find $cros_assets -name '*.old') ]; then
+	if [[ -z $(find $cros_assets -name '*.old') ]]; then
 		for assets in $cros_assets $cros_assets_2; do
 			for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.png'); do
 				mv $splashframe ${splashframe}.old
