@@ -1,0 +1,3 @@
+[submodule "mod-files/root/.policyedit"]
+	path = mod-files/root/.policyedit
+	url = https://github.com/ading2210/policyedit
