@@ -61,7 +61,7 @@ if [[ ! -d /bootsplash ]]; then
 fi
 
 move_images() {
-	if [ ! -f $cros_assets/*.old ]; then
+	if [ -z $(find $cros_assets -name '*.old') ]; then
 		for assets in $cros_assets $cros_assets_2; do
 			for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.png'); do
 				mv $splashframe ${splashframe}.old
@@ -72,7 +72,7 @@ move_images() {
 		done
 	else
 		for assets in $cros_assets $cros_assets_2; do
-			mv $1 ${assets}/boot_splash_frame00.png
+			cp $1 ${assets}/boot_splash_frame00.png
 		done
 	fi
 }
@@ -96,13 +96,11 @@ replace_custom() { # this is broken rn, can someone figure out whats happening? 
 }
 
 restore() {
-	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.old'); do
-		mv "$splashframe" "${splashframe%.*}"
-	done
-	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.old'); do
-		mv "$splashframe" "${splashframe%.*}"
-	done
-	
+	for assets in $cros_assets $cros_assets_2; do
+		for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.old'); do
+			mv ${splashframe} ${splashframe%.*}
+		done
+	done	
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
 }
