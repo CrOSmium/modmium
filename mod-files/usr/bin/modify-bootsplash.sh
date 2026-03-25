@@ -82,9 +82,10 @@ replace() {
 	get_installed_bootsplashes
 	if [[ $shouldExit == true ]]; then
 		fail "${R}Invalid filename...${N}"
+	else
+		move_images $bootsplash
+		echo -e "${B}Replaced bootsplash!${N}"
 	fi
-	move_images $bootsplash
-	echo -e "${B}Replaced bootsplash!${N}"
 }
 
 replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
