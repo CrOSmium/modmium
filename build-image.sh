@@ -18,8 +18,9 @@ fi
 credits() {
 	echo -e "\
 Credits:
-${R}mariahscarycarey: ${P}Lead developer; laid out everything conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
+${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
 \033[38;5;78mdmd: The TUI guy; made MOSH and devfw installer.${N}
+\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
 ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
@@ -42,7 +43,7 @@ fail() {
 }
 checkDependencies() {
 	for dep in $DEPENDENCIES; do
-		if ! command -v $dep >/dev/null 2>&1; then
+		if ! silence command -v $dep; then
 			echo -e "${R}${dep} not found.${N}"
 			local shouldExit=true
 		fi
@@ -112,7 +113,7 @@ checkFlagValidity(){
 		fail "${R}Policy json file doesn't exist.${N}"
 	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
-		if ! inkscape --version >/dev/null 2>&1; then
+		if ! silence inkscape --version; then
 			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
@@ -139,8 +140,8 @@ removeVerity(){
 	echo -e "${G}Setting up loop device...${N}"
 	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
 	echo -e ""$G"Disabling verity..."$N""
-	build-utils/ssd_util.sh -i $loopDev -r --partitions 2
-	build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
 
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
 	for part in 2 4; do
@@ -252,7 +253,7 @@ bootsplash(){
 		done
 		echo -e "${G}Valid dimensions set! Converting...${N}"
 		mkdir -p mod-files/bootsplash
-		inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png) >/dev/null 2>&1
+		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
 }
 
