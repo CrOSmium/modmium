@@ -56,24 +56,30 @@ Open the Files app to see them."
 
 # checks if image was built with bootsplashes
 if [[ ! -d /bootsplash ]]; then
-  echo -e "${R}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${N}"
+  echo -e "${R}${UN}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${RUN}${N}"
+	replace_broken=true
 fi
+
+move_images() {
+	if [ ! -f $cros_assets/*.old ]; then
+		for assets in $cros_assets $cros_assets_2; do
+			for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.png'); do
+				mv $splashframe ${splashframe}.old
+				if [[ $splashframe == *"00.png" ]]; then
+					cp $1 $splashframe
+				fi
+			done
+		done
+	else
+		for assets in $cros_assets $cros_assets_2; do
+			mv $1 ${assets}/boot_splash_frame00.png
+		done
+	fi
+}
 
 replace() {
 	get_installed_bootsplashes
-	for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
-		mv $splashframe "$splashframe".old
-		if [[ $splashframe == *"00.png" ]]; then
-			cp $bootsplash $splashframe
-		fi
-	done
-	for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
-		mv $splashframe "$splashframe".old
-		if [[ $splashframe == *"00.png" ]]; then
-			cp $bootsplash $splashframe
-		fi
-	done
-	
+	move_images $bootsplash
 	echo -e "${B}Replaced bootsplash!${N}"
 }
 
@@ -82,20 +88,7 @@ replace_custom() { # this is broken rn, can someone figure out whats happening? 
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
 	if [ -f "$custom_img_path" ]; then
-		for splashframe in $(find $cros_assets -mindepth 1 -name 'boot_splash_frame*.png'); do
-			echo $splashframe # debugging
-			mv $splashframe "$splashframe".old
-			if [[ $splashframe == *"00.png" ]]; then
-				cp "$custom_img_path" $splashframe
-			fi
-		done
-		for splashframe in $(find $cros_assets_2 -mindepth 1 -name 'boot_splash_frame*.png'); do
-			echo $splashframe # debugging
-			mv $splashframe "$splashframe".old
-			if [[ $splashframe == *"00.png" ]]; then
-				cp "$custom_img_path" $splashframe
-			fi
-		done
+		move_images $custom_img_path
 		echo -e "${B}Replaced bootsplash!${N}"
 	else
     	fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
@@ -120,19 +113,18 @@ download_backup() {
 	echo -e "${Y}Unzipping...${N}"
 	bsdtar -xf chromeos_bootsplash.zip
 	echo -e "${Y}Creating backup...${N}" # should this say something different? idk
-	for splashframe in $cros_assets/boot_splash_frame*.png; do
-    	mv $splashframe $splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
-	done
-	for splashframe in $cros_assets_2/boot_splash_frame*.png; do
-    	mv $splashframe $splashframe.old # I could probably do something like mv "boot_splash_frame*.png" but I dont wanna bother with that rn
+	for assets in $cros_assets $cros_assets_2; do
+		for splashframe in boot_splash_frame*.png; do
+			cp $splashframe ${assets}/${splashframe}.old
+		done
 	done
 	echo -e "${Y}Cleaning up!${N}"
-	rm chromeos_bootsplash.zip
+	rm chromeos_bootsplash.zip boot_splash_frame*.png
 	echo -e "${B}Done! Use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
 }
 
 remove() {
-	echo -e "${Y}This will remove the bootsplash ENTIRELY. use restore to fix it.${N}"
+	echo -e "${Y}This will remove the bootsplash ENTIRELY. Use restore to fix it.${N}"
 	read -p "Contnue? (y/N) " -n 1 -r
 	echo   
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -143,7 +135,11 @@ remove() {
 	fi
 }
 
-echo -e "${G}1. Replace bootsplash with modmium bootsplash (the one you just selected)${N}"
+if [[ $replace_broken == "true" ]]; then
+	echo -e "${R}1. Replace bootsplash with modmium bootsplash${N}"
+else
+	echo -e "${G}1. Replace bootsplash with modmium bootsplash${N}"
+fi
 echo -e "${G}2. Replace bootsplash with custom image${N}"
 echo -e "${G}3. Restore stock bootsplash${N}"
 echo -e "${G}4. Download stock bootsplash and save to backup${N}"
