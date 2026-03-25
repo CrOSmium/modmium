@@ -1109,11 +1109,19 @@ generateBlobs() {
 }
 
 backupBlobs() {
-	mkdir -p /root/.blob-backups
+	mkdir -p /mnt/stateful_partition/.blob-backups
 	for blob in /var/lib/devicesettings/*; do
-		if [[ -f $blob && ! -f /root/.blob-backups/school-$blob ]]; then
-			mv $blob /root/.blob-backups/school-$(basename $blob)
+		if [[ -f $blob && ! -f /mnt/stateful_partition/.blob-backups/school-$blob ]]; then
+			mv $blob /mnt/stateful_partition/.blob-backups/school-$(basename $blob)
 		fi
+	done
+}
+
+restoreBlobs() {
+	rm -rf /var/lib/devicesettings/*
+	mkdir -p /var/lib/devicesettings
+	for blob in /mnt/stateful_partition/.blob-backups/*; do
+		mv $blob /var/lib/devicesettings/$(basename $blob | sed 's/^.*school-//')
 	done
 }
 
@@ -1124,8 +1132,23 @@ overwriteBlobs() {
 	mv policy.1 /var/lib/devicesettings
 }
 
-getSchoolValues
-writeJSON
-generateBlobs
-backupBlobs
-overwriteBlobs
+unrestrict() {
+	getSchoolValues
+	writeJSON
+	generateBlobs
+	backupBlobs
+	overwriteBlobs
+}
+
+restrict() {
+	restoreBlobs
+	rm -rf /mnt/stateful_partition/.blob-backups
+}
+
+main() {
+	if [[ -d /mnt/stateful_partition/.blob-backups ]]; then
+		restrict
+	else
+		unrestrict
+	fi
+}
