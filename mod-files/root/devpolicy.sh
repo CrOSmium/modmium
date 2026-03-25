@@ -1,4 +1,11 @@
 #!/bin/bash
+
+if [[ ! -f policy.json ]]; then
+	echo "NO SCHOOL POLICY FILE DETECTED. THIS WOULD BREAK BADLY."
+	echo "Exiting..."
+	exit 1
+fi
+
 getSchoolValues() {
 	for jqPolicy in DefaultPrinterSelection DeviceLocalAccounts DeviceLoginScreenDomainAutoComplete DeviceLoginScreenLocales DevicePrinters ManagedBookmarks PinnedLauncherApps PrintersBulkConfiguration SystemTimezone WebAppInstallForceList; do
 		export Value${jqPolicy}="$(jq .policyValues.chrome.policies.${jqPolicy}.value policy.json)"
