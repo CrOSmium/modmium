@@ -34,8 +34,8 @@ if [[ -f "$POLTEST_FILE" ]]; then
     cd /usr/local/share/policy-test-tool
     python orchestrator.py policies.json
 		echo -e "${G}Done!${N}"
-		echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH."
-		echo -e "DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}${N}"
+		echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH."
+		echo -e "DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"
     exit 0
 fi
 
@@ -49,10 +49,10 @@ ${G}+##############################################+
 | -------------------------------------------- |
 | Allows policy changes above 131              |
 +##############################################+
-${R}Warning: This will prevent school-mandated extensions from installing unless you prepared policy.json in mod-files/root (see readme).
+${R}Warning: This will prevent enterprise-mandated extensions from installing unless you prepared policy.json in mod-files/root (see readme).
 THIS WILL NOT WORK IF YOU'VE RUN 'chromeos-setdevpasswd'${G}
 ${B}Run this *before* signing into the target email. ${N}
-If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N} or powerwashing if your school has a custom signin screen with no delete account option.
+If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N} or powerwashing if your enterprise has a custom signin screen with no delete account option.
 also, make sure you're connected to the internet before running this.
 ${D}(Hit Ctrl+C to exit)${N}"
 
@@ -239,5 +239,5 @@ python orchestrator.py policies.json
 
 touch "$DEVINSTALL_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
-echo -e "${G}${UN}BE SURE TO RUN \"Install School Webstore Extensions\" IN MOSH.
-DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE SCHOOL'S CUSTOM EXTENSIONS.${RUN}${N}"
+echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH.
+DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"

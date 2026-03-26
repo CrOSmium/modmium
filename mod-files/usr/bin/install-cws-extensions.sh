@@ -41,7 +41,7 @@ for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do
 	NAME_CACHE[$extension]=$(get_ext_name "$id")
 done
 while :; do
-	echo -e "${P}This is used to install your school ${UN}Chrome Web Store${RUN} extensions after running policy.sh
+	echo -e "${P}This is used to install your enterprise ${UN}Chrome Web Store${RUN} extensions after running policy.sh
 Already installed extensions are green, ones yet to be installed are white. You can click the links.${N}"
 	installed=$(ls /home/user/*/Extensions/ 2>/dev/null | tr '\n' ' ')
 	for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do

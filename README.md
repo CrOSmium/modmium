@@ -1,7 +1,7 @@
 murkmod walked, so we could fly
 
 ## usage instructions:
-0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info). If interested in keeping school extensions (but with the ability to disable them), read the policy editor instructions before continuing!
+0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info). If interested in keeping enterprise extensions (but with the ability to disable them), read the policy editor instructions before continuing!
 1. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
 2. Run `bash <(curl -Lsk cdn.crosbreaker.dev/modmium.sh)` to install developer firmware & backup to a drive or directory easily. 
 3. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot you into verified.
@@ -27,15 +27,15 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 You still have access to VT's even in verified, and how rootFS verification is disabled in verified. This is thanks to dev firmware allowing us to use resigned kernels and unverified root filesystems.
 
 ## policy editor instructions
-0. (Optional) Before installing modmium, enroll and login to your school account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your school's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
+0. (Optional) Before installing modmium, enroll and login to your enterprise account, then export json from chrome://policy. Place it in mod-files/root/ and rename it to policy.json (do this if you want your enterprise's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it).
 1. Install and boot modmium in verified (see above instructions)
 2. Open VT2 once fully enrolled
-3. Run `bash policy.sh` and enter your school email when prompted.
+3. Run `bash policy.sh` and enter your enterprise email when prompted.
 4. When the fake device management server starts, go back to VT1 and sign in with the same email.
 5. After you're logged in, go back to VT2 and hit Ctrl+C
 
 After you sign in to an account, hit **[Ctrl+Alt+T]** to open MOdmium SHell (MOSH). In MOSH, there's various utilities, such as root/chronos shell, and the modmium updater. **Some utilities aren't in MOSH, such as the policy editor (see above)**. <br>
-Speaking of which; if you pass policy.json your school extensions will install, but __not be force-installed__ (i.e. you can press the switch to toggle them off in chrome://extensions).
+Speaking of which; if you pass policy.json your enterprise extensions will install, but __not be force-installed__ (i.e. you can press the switch to toggle them off in chrome://extensions).
 
 
 

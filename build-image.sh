@@ -178,7 +178,7 @@ dropModFiles(){
 	mount "$loopDev"p3 mnt --mkdir
 	if [[ ! -f mod-files/root/policy.json ]]; then
 		if [[ -z $FLAGS_json ]]; then
-			echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
+			echo -e "${B}Policy json not found, running policy editor will NOT install enterprise extensions... Continue anyway? (y/N)${N}"
 			read -n 1 -r
 			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 				echo
