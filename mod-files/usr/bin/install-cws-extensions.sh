@@ -1,14 +1,18 @@
 #!/bin/bash
 # written by mariah carey
-B='\033[1;36m'
-G='\033[1;32m'
+# lxrd for extension name fetching
+
+# colors
+B='\033[38;5;45m'
+G='\033[38;5;46m'
 Y='\033[38;5;220m'
 R='\033[38;5;203m'
+P='\033[38;5;135m'
 N='\033[0m'
 D='\033[1;90m'
-P='\033[1;35m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
+
 fail() {
 	echo -e "$1"
 	sleep 3
@@ -37,19 +41,19 @@ for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do
 	NAME_CACHE[$extension]=$(get_ext_name "$id")
 done
 while :; do
-	echo -e "${P}This is used to install your school ${UN}Chrome Web Store${RUN} extensions after running policy.sh
+	echo -e "${P}This is used to install your enterprise ${UN}Chrome Web Store${RUN} extensions after running policy.sh
 Already installed extensions are green, ones yet to be installed are white. You can click the links.${N}"
 	installed=$(ls /home/user/*/Extensions/ 2>/dev/null | tr '\n' ' ')
 	for extension in $(cat /usr/local/share/policy-test-tool/extracted.json); do
 		id=$(echo $extension | sed 's/^.*a\///')
 		name="${NAME_CACHE[$extension]}"
 		if [[ " $installed " == *" $id "* ]]; then
-			echo -e "Installed: ${B}$name${N} — $extension" # for some reason, due to how crosh handles colors, $B is green and $G is blue??? idk man just roll with it
+			echo -e "Installed: ${G}$name${N} — $extension"
 		else
 			echo -e "Not installed: $name — $extension"
 		fi
 	done
-	echo -e "${G}Hit (Ctrl+C) to go back to MOSH${N}"
+	echo -e "${D}Hit (Ctrl+C) to go back to MOSH${N}"
 	sleep 10 
 	clear
 done

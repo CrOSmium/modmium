@@ -1,0 +1,58 @@
+    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+
+        <defs>
+            <filter id="lightglow">
+                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+            <filter id="middleglow">
+                <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+
+        <rect width="100%" height="100%" fill="rgb(0,0,0)"/>
+
+
+
+        <path d="M960,370 A90,90 0 0,0 960,598 L960,598 L960,370 Z" fill="rgb(100, 135, 180)" filter="url(#lightglow)"/>
+        <path d="M960,370 A90,90 0 0,1 960,598 L960,598 L960,370 Z" fill="rgb(70, 95, 125)" filter="url(#lightglow)"/>
+
+        <polygon points="960,486 920,450 960,370" fill="rgb(55, 75, 100)"/>
+        <polygon points="960,486 1006,516 960,598" fill="rgb(110, 150, 200)"/>
+
+        <circle cx="50%" cy="45%" r="56" fill="rgb(0, 0, 0)" filter="url(#lightglow)"/>
+        <circle cx="50%" cy="45%" r="43" fill="rgb(140, 191, 255)" filter="url(#lightglow)"/>
+
+        <text x="45.5%" y="62%"
+                fill="white"
+                font-size="40"
+                text-anchor="middle"
+                font-family="monospace"
+                filter="url(#lightglow)">
+            Modmium
+        </text>
+        <text x="55%" y="62%"
+                fill="rgb(140, 191, 255)"
+                font-size="40"
+                text-anchor="middle"
+                font-family="monospace"
+                filter="url(#lightglow)">
+            Nightly
+        </text>
+        <text x="50%" y="65%"
+                fill="white"
+                font-size="15"
+                text-anchor="middle"
+                font-family="monospace">
+            Crosbreaker &amp; CrOSmium
+        </text>
+
+
+    </svg>

@@ -6,3 +6,4 @@ verifykernels.sh
 policy.json
 .ssh
 id_rsa*
+*DS_Store*

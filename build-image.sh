@@ -1,7 +1,11 @@
 #!/bin/bash
-# once again, a conceptual overview for now, seeing as we don't want to write a bunch of code for nothing if ts gets serverside patched by the big Goog :fanxql:
+
+DEPENDENCIES=("futility" "jq" "wget" "7z")
 
 # pre-flight checklist
+source ./build-utils/common_modmium.sh
+branch=$(git rev-parse --abbrev-ref HEAD)
+
 if [[ "$(basename $PWD)" != "modmium" ]]; then
 	fail "Please run this script in the cloned directory (modmium/)"
 fi
@@ -10,20 +14,43 @@ if [[ $EUID -ne 0 ]]; then
 	 sudo "$0" "$@"
 	 exit $?
 fi
-source ./build-utils/common_modmium.sh
 
 credits() {
 	echo -e "\
 Credits:
-${R}mariahscarycarey: ${P}Lead developer; laid out everything conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
+${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
 \033[38;5;78mdmd: The TUI guy; made MOSH and devfw installer.${N}
+\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
 ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
 }
+silence() {
+	$@ >/dev/null 2>&1
+}
+cleanup() { # to be used in case of failure, not for successful building
+	silence umount mnt
+	silence losetup -d $loopDev 
+	silence rm -rf mnt
+	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin'); do
+		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+	done
+}
 fail() {
 	echo -e "$1"
+	cleanup
 	exit 1
+}
+checkDependencies() {
+	for dep in $DEPENDENCIES; do
+		if ! silence command -v $dep; then
+			echo -e "${R}${dep} not found.${N}"
+			local shouldExit=true
+		fi
+	done
+	if [[ $shouldExit == "true" ]]; then
+		fail "Exiting..."
+	fi
 }
 
 # args=$@ 
@@ -46,7 +73,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
-	DEFINE_string bootsplash "" "Path to bootsplash SVG (optional, requires inkscape). Default modmium bootsplash is modsplash.svg" "s"
+	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
 	if ! [[ 
 		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
@@ -85,13 +112,15 @@ checkFlagValidity(){
 	if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
 		fail "${R}Policy json file doesn't exist.${N}"
 	fi
-	if [[ -n $FLAGS_bootsplash ]]; then
-		if ! inkscape --version >/dev/null 2>&1; then
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
+		if ! silence inkscape --version; then
 			fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
 		fi
 	fi
-	if [[ -n $FLAGS_bootsplash && ! ( -f "$FLAGS_bootsplash" ) ]]; then
-		fail "${R}Bootsplash svg file doesn't exist.${N}"
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE  && ! ( -d bootsplash/ ) ]]; then
+		fail "${R}Bootsplash directory doesn't exist.${N}"
+	elif [ $FLAGS_bootsplash == $FLAGS_TRUE ] && [ -z "$(find bootsplash/$branch -mindepth 1)" ]; then
+		fail "${R}Bootsplash directory is empty or doesn't have $branch bootsplashes.${N}"
 	fi
 }
 # end flag functions
@@ -108,15 +137,15 @@ removeVerity(){
 		newImage=modmium.bin
 		mv $downloadedImage $newImage
 	fi
-	echo -e ""$G"Setting up loop device..."$N""
-	loopDev=$(losetup -Pf --show $newImage) 
+	echo -e "${G}Setting up loop device...${N}"
+	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
 	echo -e ""$G"Disabling verity..."$N""
-	build-utils/ssd_util.sh -i $loopDev -r --partitions 2
-	build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
 
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
 	for part in 2 4; do
-    echo -e ""$G"Dumping and modifying kernel ${part} commandline..."$N""
+    echo -e "${G}Dumping and modifying kernel ${part} commandline...${N}"
 		futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
 		[ $part -eq 2 ] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
 		if [ $part -eq 4 ]; then
@@ -141,27 +170,19 @@ removeVerity(){
         --oldblob ${loopDev}p$part
 	done
 
-	echo -e ""$G"Cleaning up kernel backups and configs..."$N""
+	echo -e "${G}Cleaning up kernel backups and configs...${N}"
 	rm -rf cros_sign_backups config*
 }
 dropModFiles(){
-	echo -e ""$G"Mounting loop device..."$N""
+	echo -e "${G}Mounting loop device...${N}"
 	mount "$loopDev"p3 mnt --mkdir
 	if [[ ! -f mod-files/root/policy.json ]]; then
 		if [[ -z $FLAGS_json ]]; then
-			echo -e "${B}Policy json not found, running policy editor will NOT install school extensions... Continue anyway? (y/N)${N}"
+			echo -e "${B}Policy json not found, running policy editor will NOT install enterprise extensions... Continue anyway? (y/N)${N}"
 			read -n 1 -r
 			if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 				echo
-				echo -e "${G}Cleaning up...${N}"
-				umount mnt
-				losetup -d $loopDev
-				if [[ -n $FLAGS_image ]]; then
-					rm -rf $newImage mnt $tempDir
-				else
-					rm -rf $newImage mnt
-				fi
-				fail "${R}Exiting...${N}"
+				fail "${R}Cleaning up and exiting...${N}"
 			else
 				echo
 				echo -e "${G}Continuing...${N}"
@@ -188,51 +209,52 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
-	if [[ -n $FLAGS_bootsplash ]]; then
-		echo -e "${G}Modifying bootsplash...${N}"
-		for splashframe in $(find mnt/usr/share/chromeos-assets/images_100_percent -mindepth 1 -name 'boot_splash_frame*.png'); do
-			mv $splashframe "$splashframe".old
-			if [[ $splashframe == *"00.png" ]]; then
-				cp mnt/root/.modmium_bootsplash.png $splashframe
-			fi
-		done
-	fi
 	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
-	echo -e ""$G"Cleaning up..."$N""
+	echo -e "${G}Cleaning up...${N}"
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
+		rm -rf mod-files/bootsplash/*.png
+	fi
+	
+	echo $branch >mnt/.branch
+
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
-		echo -e ""$G"Moving image from RAM to $(basename $newImage) in current directory..."$N""
+		echo -e "${G}Moving image from RAM to $(basename $newImage) in current directory...${N}"
 		mv $newImage $(basename $newImage)
 		sync
 		rm -rf $tempDir mnt
 	else
 		rm -rf mnt
 	fi
-	echo -e ""$G"Finished!"$N""
+	echo -e "${G}Finished!${N}"
 }
 bootsplash(){
-	unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
-	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)"
-	while [[ $unresolved == "true" ]]; do
-		echo -ne "Resolution: ${N}"
-		read -rep "" width height
-		for dimension in width height; do
-			if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
-				echo -e "${R}Invalid ${dimension}!"
-				export ${dimension}Valid=false
-			else
-				export ${dimension}Valid=true
+	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
+	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
+		unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
+		echo -e "Converting ${G}$(basename $splash)${N} to png..."
+		while [[ $unresolved == "true" ]]; do
+			echo -ne "Resolution: ${N}"
+			read -rep "" width height
+			for dimension in width height; do
+				if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
+					echo -e "${R}Invalid ${dimension}!"
+					export ${dimension}Valid=false
+				else
+					export ${dimension}Valid=true
+				fi
+			done
+			if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
+				unresolved=false
 			fi
 		done
-		if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
-			unresolved=false
-		fi
+		echo -e "${G}Valid dimensions set! Converting...${N}"
+		mkdir -p mod-files/bootsplash
+		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
-	echo -e "${G}Valid dimensions set! Converting...${N}"
-	inkscape -w $width -h $height "$FLAGS_bootsplash" -o mod-files/root/.modmium_bootsplash.png >/dev/null 2>&1
 }
 
 # end build functions
@@ -271,7 +293,8 @@ Exiting...${N}"
 main(){
 	getFlags $@
 	checkFlagValidity
-	if [[ -n $FLAGS_bootsplash ]]; then
+	checkDependencies
+	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
 	fi
 	if [[ -n $FLAGS_board && -n $FLAGS_version ]]; then
