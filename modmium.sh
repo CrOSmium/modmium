@@ -97,7 +97,7 @@ main() {
 				fi
 		elif [[ $resp =~ ^[Pp]$ ]]; then
     		echo -e "What directory would you like to backup to?"
-    		read -p "Dir: " BACKUPDIR
+    		read -ep "Dir: " BACKUPDIR
 				if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
 					echo "unable to write to backup" && exit 1 # exits if backup doesn't exist or isn't writable
 				else
