@@ -131,6 +131,7 @@ selector() {
 			;;
 		6*)
 			runscript "bash /usr/bin/toggle-enrollment.sh"
+			;;
 		7*)
 			runscript "bash /usr/bin/install-cws-extensions.sh"
 			;;
