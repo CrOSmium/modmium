@@ -14,6 +14,7 @@ git clone https://github.com/CrOSmium/modmium && cd modmium
 # if you want to use a local image (non-destructive)
 ./build_image.sh -i /path/to/image.bin
 # note that -i and -b/-v are MUTUALLY EXCLUSIVE. it's one or the other, the script will refuse to run if you pass both
+# (You can also use -u for userkeys, which allows you to sign the image with your own keys instead of devkeys)
 ```
 Note: You need 7zip, vboot-utils, and inkscape for the builder. ([DEPENDENCIES.md](./DEPENDENCIES.md)) (If you don't want 7zip, run the following code:
 ```bash
