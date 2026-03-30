@@ -132,7 +132,7 @@ checkFlagValidity(){
 
 # begin build functions
 removeVerity(){
-	if [[ -d build-utils/keys/userkeys ]]; then
+	if [[ $FLAGS_keys == $FLAGS_TRUE ]]; then
 		keydir=build-utils/keys/userkeys
 	else
 		keydir=build-utils/keys/devkeys
