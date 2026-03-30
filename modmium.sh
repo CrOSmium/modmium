@@ -1,6 +1,8 @@
 #!/bin/bash
 
-if [[ $1 == "--userkey"* ]]; then
+source /usr/share/misc/shflags
+DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
+if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
 	userkeys=true
 else
 	userkeys=false

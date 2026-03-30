@@ -76,7 +76,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-	DEFINE_boolean keys "$FLAGS_FALSE" "Whether or not to generate your own signing keys (ADVANCED USERS ONLY)." "e"
+	DEFINE_boolean keys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (ADVANCED USERS ONLY)." "u"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
@@ -299,7 +299,7 @@ backupSigningKeys(){
 	if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
 		fail "${R}Unable to write to backup.${N}" # exits if isn't writable (this is redundant but i am paranoid)
 	fi
-	echo -e "${G}Backing up signing keys, when installing devfw add --userkeys when calling modmium.sh and have the drive plugged in...${N}"
+	echo -e "${G}Backing up signing keys, when installing devfw add -u/--userkeys when calling modmium.sh and ${UN}have the drive plugged in${RUN}...${N}"
 	cp -r build-utils/keys/userkeys $BACKUPDIR
 }
 # end build functions
