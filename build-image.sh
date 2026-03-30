@@ -76,7 +76,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-	DEFINE_boolean keys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (ADVANCED USERS ONLY)." "u"
+	DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (plug in the drive to back them up to before starting building)." "u"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
@@ -132,7 +132,7 @@ checkFlagValidity(){
 
 # begin build functions
 removeVerity(){
-	if [[ $FLAGS_keys == $FLAGS_TRUE ]]; then
+	if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
 		keydir=build-utils/keys/userkeys
 	else
 		keydir=build-utils/keys/devkeys
@@ -301,6 +301,7 @@ backupSigningKeys(){
 	fi
 	echo -e "${G}Backing up signing keys, when installing devfw add -u/--userkeys when calling modmium.sh and ${UN}have the drive plugged in${RUN}...${N}"
 	cp -r build-utils/keys/userkeys $BACKUPDIR
+	umount $BACKUPDIR
 }
 # end build functions
 
@@ -339,7 +340,7 @@ main(){
 	getFlags $@
 	checkFlagValidity
 	checkDependencies
-	if [[ $FLAGS_keys == $FLAGS_TRUE ]]; then
+	if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
 		if [[ ! -d build-utils/keys/userkeys ]]; then
 			genUserKeys
 		fi
