@@ -277,6 +277,31 @@ genUserKeys(){
 	done
 	silence popd
 }
+backupSigningKeys(){
+	# lol this one is taken from modmium.sh
+	BACKUPDIR=/tmp/backupdir
+  echo -e "These are the drives connected to your device:"
+  lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
+  echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX, not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
+  read -ep "Drive: " driveloc
+  driveloc="${driveloc%/}"
+  if [[ $driveloc == *"/dev/"* ]]; then
+		if ! mkfs.vfat -I -F 32 $driveloc; then fail "${R}Unable to wipe device...${N}"; fi
+    mkdir -p $BACKUPDIR
+		if ! mount $driveloc $BACKUPDIR; then fail "${R}Unable to mount device...${N}"; fi
+  else
+    if ! mkfs.vfat -I -F 32 /dev/$driveloc; then fail "${R}Unable to wipe device...${N}"; fi
+    mkdir -p /tmp/backupdir
+    if ! mount /dev/$driveloc $BACKUPDIR; then fail "${R}Unable to mount device...${N}"; fi
+  fi
+  DRIVEBACKUP=1
+  sync
+	if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
+		fail "${R}Unable to write to backup.${N}" # exits if isn't writable (this is redundant but i am paranoid)
+	fi
+	echo -e "${G}Backing up signing keys, when installing devfw add --userkeys when calling modmium.sh and have the drive plugged in...${N}"
+	cp -r build-utils/keys/userkeys $BACKUPDIR
+}
 # end build functions
 
 # begin downloading functions
@@ -314,8 +339,11 @@ main(){
 	getFlags $@
 	checkFlagValidity
 	checkDependencies
-	if [[ $FLAGS_keys == $FLAGS_TRUE && ! -d build-utils/keys/userkeys ]]; then
-		genUserKeys
+	if [[ $FLAGS_keys == $FLAGS_TRUE ]]; then
+		if [[ ! -d build-utils/keys/userkeys ]]; then
+			genUserKeys
+		fi
+		backupSigningKeys
 	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
