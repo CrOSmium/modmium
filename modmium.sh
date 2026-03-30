@@ -130,6 +130,9 @@ selectBackup(){
 		fi
 		DRIVEBACKUP=1
 	fi
+	if [[ $(df $BACKUP | awk '{print $4}' | tail -n 1) -lt 16384 ]]; then
+		fail "${R}NOT ENOUGH EMPTY SPACE ON DRIVE. Exiting...${N}"
+	fi
 }
 
 flashDevFW(){
