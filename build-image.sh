@@ -105,7 +105,7 @@ checkFlagValidity(){
 		fi
 	fi
 	if [[ -n $FLAGS_kernver ]]; then
-		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ ]]; then
+		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ && ${#FLAGS_kernver} -lt 3 ]]; then
     	fail "${R}Kernver is not hex or contains leading \"0x\".${N}"
 		fi
 	fi
