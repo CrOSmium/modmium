@@ -11,8 +11,12 @@ if [[ "$(basename $PWD)" != "modmium" ]]; then
 fi
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root, elevating with sudo..."
+	 echo $USER >.realuser
 	 sudo "$0" "$@"
 	 exit $?
+fi
+if [[ -f .realuser ]]; then
+	USER=$(cat .realuser)
 fi
 
 credits(){
@@ -31,7 +35,7 @@ silence(){
 cleanup(){ # to be used in case of failure, not for successful building
 	silence umount mnt
 	silence losetup -d $loopDev 
-	silence rm -rf mnt
+	silence rm -rf mnt .realuser
 	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin'); do
 		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
 	done
@@ -230,6 +234,7 @@ dropModFiles(){
 	else
 		rm -rf mnt
 	fi
+	rm -rf .realuser
 	echo -e "${G}Finished!${N}"
 }
 bootsplash(){
@@ -260,7 +265,11 @@ bootsplash(){
 genUserKeys(){
 	echo -e "${G}Generating user keys...${N}"
 	silence pushd build-utils/keygeneration
-	silence bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP --output ../keys/userkeys
+	su $USER -c "bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP >/dev/null 2>&1" # we do this to make sure permissions aren't janky
+	su $USER -c "mkdir -p ../keys/userkeys" # we do this to make sure permissions aren't janky
+	for key in *.keyblock *.v*; do
+		su $USER -c "mv $key ../keys/userkeys" # we do this to make sure permissions aren't janky
+	done
 	silence popd
 }
 # end build functions
