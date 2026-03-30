@@ -270,9 +270,17 @@ bootsplash(){
 genUserKeys(){
 	echo -e "${G}Generating user keys...${N}"
 	silence pushd build-utils/keygeneration
+	if [[ -d ApRoV1Signing-PreMP ]]; then
+		rm -rf ApRoV1Signing-PreMP
+	fi
+	su $USER -c "bash make_arv_root.sh >/dev/null 2>&1"
 	su $USER -c "bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP >/dev/null 2>&1" # we do this to make sure permissions aren't janky
+	cd accessory
+	su $USER -c "bash create_new_ec_efs_key.sh >/dev/null 2>&1"
+	su $USER -c "openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key >/dev/null 2>&1"
+	cd ..
 	su $USER -c "mkdir -p ../keys/userkeys" # we do this to make sure permissions aren't janky
-	for key in *.keyblock *.v*; do
+	for key in $(find . -mindepth 1 -name '*.v*' -o -name '*.keyblock' -o -name '*ec_*' ! -name '*ec_*.sh'); do
 		su $USER -c "mv $key ../keys/userkeys" # we do this to make sure permissions aren't janky
 	done
 	silence popd

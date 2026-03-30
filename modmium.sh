@@ -38,7 +38,10 @@ logo() {
 
 fail(){
 	echo -e "$@"
-	vpd -d dev_firmware
+	if [[ $2 != "keepflag" ]]; then
+		vpd -d dev_firmware
+	fi
+	umount $BACKUP >/dev/null 2>&1
 	sleep 1
 	exit 1
 }
@@ -148,7 +151,7 @@ flashDevFW(){
 		sync # sync because I dont trust ChromeOS
   	vpd -i RO_VPD -s "dev_firmware"=1
   else 
-    fail "You are already using DevFW (Devkeys)!"
+    fail "You are already using DevFW (Devkeys)!" keepflag
   fi
   sleep 0.5
   if [[ $DRIVEBACKUP == 1 ]]; then
