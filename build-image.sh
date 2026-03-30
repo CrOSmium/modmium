@@ -267,28 +267,31 @@ bootsplash(){
 		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
 }
+asUser(){
+	silence su $USER -c "$@" # we do this to make sure permisisons aren't janky
+}
 genUserKeys(){
 	echo -e "${G}Generating user keys...${N}"
 	silence pushd build-utils/keygeneration
 	if [[ -d ApRoV1Signing-PreMP ]]; then
 		rm -rf ApRoV1Signing-PreMP
 	fi
-	su $USER -c "bash make_arv_root.sh >/dev/null 2>&1"
-	su $USER -c "bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP >/dev/null 2>&1" # we do this to make sure permissions aren't janky
+	asUser bash make_arv_root.sh
+	asUser bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP >/dev/null 2>&1
 	cd accessory
-	su $USER -c "bash create_new_ec_efs_key.sh >/dev/null 2>&1"
-	su $USER -c "openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key >/dev/null 2>&1"
+	asUser bash create_new_ec_efs_key.sh
+	asUser openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key
 	cd ..
-	su $USER -c "mkdir -p ../keys/userkeys" # we do this to make sure permissions aren't janky
+	asUser mkdir -p ../keys/userkeys
 	for key in $(find . -mindepth 1 -name '*.v*' -o -name '*.keyblock' -o -name '*ec_*' ! -name '*ec_*.sh'); do
-		su $USER -c "mv $key ../keys/userkeys" # we do this to make sure permissions aren't janky
+		asUser mv $key ../keys/userkeys
 	done
 	silence popd
 }
 backupSigningKeys(){
 	# lol this one is taken from modmium.sh
 	BACKUPDIR=/tmp/backupdir
-  echo -e "These are the drives connected to your device:"
+  echo -e "These are the external drives connected to your device:"
   lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
   echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX, not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
   read -ep "Drive: " driveloc
