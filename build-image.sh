@@ -130,7 +130,7 @@ removeVerity(){
 	if [[ -n $FLAGS_image ]]; then
 		tempDir=$(mktemp -d)
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
-		echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
+		echo -e "${G}Copying image to tempdir, ${R}this may take a while...${N}"
 		cp "$FLAGS_image" $newImage
 		sync
 	else
@@ -139,7 +139,7 @@ removeVerity(){
 	fi
 	echo -e "${G}Setting up loop device...${N}"
 	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
-	echo -e ""$G"Disabling verity..."$N""
+	echo -e "${G}Disabling verity...${N}"
 	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2
 	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
 
@@ -161,7 +161,7 @@ removeVerity(){
 			kernver=$(futility show ${loopDev}p$part | grep "Kernel version" | sed 's/^.*:      //')
 		fi
 
-		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
+		echo -e "${G}Resigning kernel ${part} with modified commandline...${N}"
     vbutil_kernel --repack ${loopDev}p$part \
         --keyblock build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
         --signprivate build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
@@ -193,7 +193,7 @@ dropModFiles(){
 		fi
 	fi
 	modFiles=$(find mod-files -mindepth 1 -name "*")
-	echo -e ""$G"Dropping modfiles..."$N""
+	echo -e "${G}Dropping modfiles...${N}"
 	for file in $modFiles; do
 		if [[ -d $file ]]; then
 			:
