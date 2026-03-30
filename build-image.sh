@@ -132,6 +132,11 @@ checkFlagValidity(){
 
 # begin build functions
 removeVerity(){
+	if [[ -d build-utils/keys/userkeys ]]; then
+		keydir=build-utils/keys/userkeys
+	else
+		keydir=build-utils/keys/devkeys
+	fi
 	if [[ -n $FLAGS_image ]]; then
 		tempDir=$(mktemp -d)
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
