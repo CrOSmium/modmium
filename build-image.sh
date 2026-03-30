@@ -15,7 +15,7 @@ if [[ $EUID -ne 0 ]]; then
 	 exit $?
 fi
 
-credits() {
+credits(){
 	echo -e "\
 Credits:
 ${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
@@ -25,10 +25,10 @@ ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
 }
-silence() {
+silence(){
 	$@ >/dev/null 2>&1
 }
-cleanup() { # to be used in case of failure, not for successful building
+cleanup(){ # to be used in case of failure, not for successful building
 	silence umount mnt
 	silence losetup -d $loopDev 
 	silence rm -rf mnt
@@ -36,12 +36,12 @@ cleanup() { # to be used in case of failure, not for successful building
 		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
 	done
 }
-fail() {
+fail(){
 	echo -e "$1"
 	cleanup
 	exit 1
 }
-checkDependencies() {
+checkDependencies(){
 	for dep in $DEPENDENCIES; do
 		if ! silence command -v $dep; then
 			echo -e "${R}${dep} not found.${N}"
@@ -72,6 +72,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
+	DEFINE_boolean keys "$FLAGS_FALSE" "Whether or not to generate your own signing keys (ADVANCED USERS ONLY)." "e"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
@@ -140,8 +141,8 @@ removeVerity(){
 	echo -e "${G}Setting up loop device...${N}"
 	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
 	echo -e "${G}Disabling verity...${N}"
-	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2
-	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2 --keys ${keydir}
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key --keys ${keydir}
 
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
 	for part in 2 4; do
@@ -163,8 +164,8 @@ removeVerity(){
 
 		echo -e "${G}Resigning kernel ${part} with modified commandline...${N}"
     vbutil_kernel --repack ${loopDev}p$part \
-        --keyblock build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
-        --signprivate build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
+        --keyblock ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
+        --signprivate ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
         --config config_${part}.txt \
 				--version $kernver \
         --oldblob ${loopDev}p$part
@@ -256,7 +257,12 @@ bootsplash(){
 		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
 }
-
+genUserKeys(){
+	echo -e "${G}Generating user keys...${N}"
+	silence pushd build-utils/keygeneration
+	silence bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP --output ../keys/userkeys
+	silence popd
+}
 # end build functions
 
 # begin downloading functions
@@ -294,6 +300,9 @@ main(){
 	getFlags $@
 	checkFlagValidity
 	checkDependencies
+	if [[ $FLAGS_keys == $FLAGS_TRUE && ! -d build-utils/keys/userkeys ]]; then
+		genUserKeys
+	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
 	fi
