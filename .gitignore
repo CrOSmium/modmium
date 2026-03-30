@@ -8,3 +8,4 @@ policy.json
 id_rsa*
 *DS_Store*
 userkeys
+.realuser
