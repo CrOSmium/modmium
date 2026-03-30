@@ -37,7 +37,7 @@ logo() {
 }
 
 fail(){
-	echo -e "$@"
+	echo -e "$1"
 	if [[ $2 != "keepflag" ]]; then
 		vpd -d dev_firmware
 	fi
