@@ -38,6 +38,7 @@ logo() {
 
 fail(){
 	echo -e "$@"
+	vpd -d dev_firmware
 	sleep 1
 	exit 1
 }
@@ -142,7 +143,7 @@ flashDevFW(){
   	if [[ $userkeys == "false" ]]; then
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
 		else
-			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys/
+			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
 		fi
 		sync # sync because I dont trust ChromeOS
   	vpd -i RO_VPD -s "dev_firmware"=1
