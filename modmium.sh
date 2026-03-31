@@ -137,13 +137,13 @@ selectBackup(){
 
 flashDevFW(){
 	DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
-	initctl stop tcsd >/dev/null 2>&1
-	tpmc clear
-	tpmc def 0x100a 0x28 0x12000
-	tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	device_management_client --action=remove_firmware_management_parameters
-	device_management_client --action=set_firmware_management_parameters --flags=0x0
-	# we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
+	( \
+		device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1; \
+		device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 ) \
+	|| \
+	( initctl stop tcsd >/dev/null 2>&1; \
+		tpmc clear; tpmc def 0x100a 0x28 0x12000; \
+		tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 	
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
