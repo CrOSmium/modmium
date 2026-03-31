@@ -141,14 +141,18 @@ flashDevFW(){
 	tpmc clear
 	tpmc def 0x100a 0x28 0x12000
 	tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	device_management_client --action=remove_firmware_management_parameters
+	device_management_client --action=set_firmware_management_parameters --flags=0x0
 	# we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 	
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
 		/usr/share/vboot/bin/set_gbb_flags.sh 0xa0b1 || futility gbb -s --flash --flags=0xa0b1
   	if [[ $userkeys == "false" ]]; then
+			/usr/share/vboot/bin/make_dev_ssd.sh --force
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
 		else
+			/usr/share/vboot/bin/make_dev_ssd.sh --force --keys ${BACKUP}/userkeys
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
 		fi
 		sync # sync because I dont trust ChromeOS
