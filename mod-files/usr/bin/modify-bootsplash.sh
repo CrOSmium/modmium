@@ -16,7 +16,8 @@ RUN='\033[24m' #reset underline
 fail() {
 	echo -e "$1"
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
-		rm -rf ${downloadsDir}/bootsplashes
+		# rm -rf ${downloadsDir}/bootsplashes
+		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes"
 	done # we do this because you can't delete them in the files app for some reason? idk man
 	sleep 3
 	return
