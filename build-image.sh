@@ -30,7 +30,7 @@ ${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
 }
 silence(){
-	$@ >/dev/null 2>&1
+	"$@" >/dev/null 2>&1
 }
 cleanup(){ # to be used in case of failure, not for successful building
 	silence umount mnt
@@ -268,7 +268,7 @@ bootsplash(){
 	done
 }
 asUser(){
-	silence su $USER -c "$@" # we do this to make sure permisisons aren't janky
+	su $USER -c "$1" >/dev/null 2>&1 # we do this to make sure permisisons aren't janky
 }
 genUserKeys(){
 	echo -e "${G}Generating user keys...${N}"
@@ -276,15 +276,15 @@ genUserKeys(){
 	if [[ -d ApRoV1Signing-PreMP ]]; then
 		rm -rf ApRoV1Signing-PreMP
 	fi
-	asUser bash make_arv_root.sh
-	asUser bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP >/dev/null 2>&1
+	asUser "bash make_arv_root.sh"
+	asUser "bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP"
 	cd accessory
-	asUser bash create_new_ec_efs_key.sh
-	asUser openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key
+	asUser "bash create_new_ec_efs_key.sh"
+	asUser "openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key"
 	cd ..
-	asUser mkdir -p ../keys/userkeys
+	asUser "mkdir -p ../keys/userkeys"
 	for key in $(find . -mindepth 1 -name '*.v*' -o -name '*.keyblock' -o -name '*ec_*' ! -name '*ec_*.sh'); do
-		asUser mv $key ../keys/userkeys
+		asUser "mv $key ../keys/userkeys"
 	done
 	silence popd
 }
