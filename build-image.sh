@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=("futility" "jq" "wget" "7z")
+DEPENDENCIES=("futility" "jq" "wget" "pv")
 
 # pre-flight checklist
 source ./build-utils/common_modmium.sh
@@ -339,8 +339,8 @@ Exiting...${N}"
 	echo -e "${G}Downloading image...${N}"
 	wget --show-progress -O recovery.zip $recoveryUrl
 	echo -e "${G}Unzipping image...${N}"
-	7z x recovery.zip
-	downloadedImage=$(basename $(find -name "chromeos*.bin"))
+	pv recovery.zip | funzip > recovery.bin
+	downloadedImage="recovery.bin"
 	echo -e "${G}Removing zip file...${N}"
 	rm -rf recovery.zip
 	echo -e "${G}Done! Continuing to build...${N}"
