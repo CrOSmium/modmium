@@ -125,6 +125,7 @@ if [ -f /.deprovision ]; then
 		sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
 		echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
 	fi
+# TODO: add powerwash flag check
 elif [ ! -f /.deprovision ]; then
 	vpd -i RW_VPD -d re_enrollment_key
 	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
