@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=("futility" "jq" "wget" "pv")
+DEPENDENCIES=("funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_modmium.sh
@@ -251,8 +251,8 @@ bootsplash(){
 			echo -ne "Resolution: ${N}"
 			read -rep "" width height
 			for dimension in width height; do
-				if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
-					echo -e "${R}Invalid ${dimension}!"
+				if [[ ( -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ) || -z ${!dimension} ]]; then
+					echo -e "${R}Invalid ${dimension}!${N}"
 					export ${dimension}Valid=false
 				else
 					export ${dimension}Valid=true
