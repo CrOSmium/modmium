@@ -4,6 +4,18 @@
 
 # stripped & rewritten by DMD
 
+B='\033[38;5;45m'
+G='\033[38;5;46m'
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+P='\033[38;5;135m'
+N='\033[0m'
+D='\033[1;90m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
+
+echo -e "${G}-------------------------- chromeos_startup --------------------------${N}" # lol this is so its easier to understand what happens when for me ig
+
 get_largest_cros_blockdev() {
     local largest size dev_name tmp_size remo
     size=0
@@ -134,5 +146,5 @@ fi
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 
-echo "Handing startup back to ChromeOS :D"
+echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
