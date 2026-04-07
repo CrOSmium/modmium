@@ -12,7 +12,7 @@ UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
 if [ $(id -u) -ne 0 ]; then
-    echo "Please run this script as root. You can do so by using 'sudo su'."
+    echo "Please run this script as root. You can do so by using 'sudo -i'."
     exit 1
 fi
 fail(){
