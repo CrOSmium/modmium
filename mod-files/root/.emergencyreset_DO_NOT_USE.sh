@@ -33,8 +33,8 @@ checkWP(){
 			fail "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
 		fi
 	fi
-
-
+}
+echo -e "Firmware write protection is disabled, continuing..."
 echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to normal IF you lost your backup, however, it is very destructive and can brick your device."
 echo -e "${R}This will update your firmware and possibly re-keyroll you, are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
 read -re
