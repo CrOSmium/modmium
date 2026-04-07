@@ -41,7 +41,7 @@ RUN='\033[24m' #reset underline
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Misc" "6) Exit")
+	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Install Enterprise Webstore Extensions" "4) Open Cr3nroll" "5) Go back")
     num_options=${#options[@]}
 }
 
@@ -115,21 +115,18 @@ selector() {
 
 	case "$sel" in
 		1*)
-			runscript bash
+			runscript "bash /usr/bin/modify-bootsplash.sh"
 			;;
 		2*)
-			runscript "cd /home/chronos; sudo -i -u chronos"
+			runscript "bash /usr/bin/toggle-enrollment.sh"
 			;;
 		3*)
-			runscript /usr/bin/crosh.old
+			runscript "bash /usr/bin/install-cws-extensions.sh"
 			;;
-		4*)
-			runscript "bash /usr/bin/update-modmium.sh"
-			;;
+        4*)
+            runscript "bash /usr/bin/cr3nroll.sh"
+            ;;
 		5*)
-			runscript "bash /usr/bin/mosh-misc.sh"
-			;;
-		6*)
 			stty echo
 			tput cnorm
 			clear
