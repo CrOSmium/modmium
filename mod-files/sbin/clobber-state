@@ -237,7 +237,7 @@ fi
 # /sbin/shutdown -r now
 # sleep 1d  # Wait for shutdown
 
-if [[ -n $(vpd -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null ]]; then
+if [[ -n $(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null ]]; then
 	vpd -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
 	echo "Continuing normal startup..."
 else
