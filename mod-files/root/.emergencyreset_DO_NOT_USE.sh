@@ -10,6 +10,7 @@ N='\033[0m'
 D='\033[1;90m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
+board=$(grep -F "RELEASE_BOARD" /etc/lsb-release | sed 's/^.*=//' | sed 's/-.*^*//')
 
 if [ $(id -u) -ne 0 ]; then
     echo "Please run this script as root. You can do so by using 'sudo -i'."
@@ -20,6 +21,7 @@ fail(){
 	sleep 1
 	exit 1
 }
+
 checkWP(){
 	writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
 	if [[ $writeprotect == *"disabled"* ]]; then
@@ -34,10 +36,17 @@ checkWP(){
 		fi
 	fi
 }
-echo -e "Firmware write protection is disabled, continuing..."
-echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to normal IF you lost your backup, however, it is very destructive and can brick your device."
+
+main(){
+echo -e "Firmware write protection is [${R}disabled${N}], continuing..."
+echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to normal  you lost your backup, however, it is very destructive and can brick your device."
 echo -e "${R}This will update your firmware and possibly re-keyroll you, are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
 read -re
 if [[ $REPLY =~ ^[Yy]$ ]]; then
 chromeos-firmwareupdate --mode=factory --force --gbb_flags=0xa0b1
+vpd -i RW_VPD -d "dev_firmware" # factory fwupdate should wipe this, but just in case
+# TODO (dmd): add auto unkeyrolling & ask to permanently prevent keyrolling (im implementing this soon)
 fi
+}
+
+main
