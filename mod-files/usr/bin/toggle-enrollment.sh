@@ -37,7 +37,7 @@ if [[ -f /.deprovision ]]; then
 		rm /.deprovision
 		fail "${G}Done! Powerwash to re-enroll...${N}"
 	else
-		fail "${R}Exiting...${N}"
+		fail # :whale:
 	fi
 else
 	echo -e "${B}You are currently ${G}enrolled${B}, would you like to toggle [${R}prevent${B}] enrollment? [y/N]${N}"
