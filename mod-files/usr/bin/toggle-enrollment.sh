@@ -3,7 +3,7 @@
 # using qs for 142- suggested by xz8f
 
 
-# TODO: add powerwashing to MOSH for use with this by skids (any maybe a prompt in here too(?))
+# TODO: add powerwashing to MOSH for use with this by skids (and maybe a prompt in here too(?))
 
 # colors
 B='\033[38;5;45m'
