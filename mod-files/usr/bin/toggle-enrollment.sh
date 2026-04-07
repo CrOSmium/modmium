@@ -34,10 +34,18 @@ fail() {
 
 if [[ -f /.deprovision ]]; then
 	echo -e "${B}You are currently ${R}unenrolled${B}, would you like to toggle [${G}allow${B}] enrollment? [y/N]${N}"
+	# read -re REPLY
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		rm /.deprovision
 		fail "${G}Done! Powerwash to re-enroll...${N}"
+	else
+		fail # :whale:
+	fi
+	echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
+	read -re
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		vpd -i RW_VPD -s "MODMIUM_CLOBBER_STATE_DO_NOT_DELETE"="carbon_40k_vrp_stealer_will_steal_this_tuff_method"
 	else
 		fail # :whale:
 	fi
@@ -47,6 +55,13 @@ else
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo $(grep MILESTONE /etc/lsb-release | sed 's|^.*=||g') >/.deprovision
 		fail "${G}Done! You will now be unenrolled on your next powerwash.${N}"
+	else
+		fail # :whale:
+	fi
+	echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
+	read -re
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		vpd -i RW_VPD -s "MODMIUM_CLOBBER_STATE_DO_NOT_DELETE"="carbon_40k_vrp_stealer_will_steal_this_tuff_method"
 	else
 		fail # :whale:
 	fi
