@@ -2,6 +2,9 @@
 # written by mariah carey & dmd
 # using qs for 142- suggested by xz8f
 
+
+# TODO: add powerwashing to MOSH for use with this by skids (any maybe a prompt in here too(?))
+
 # colors
 B='\033[38;5;45m'
 G='\033[38;5;46m'
