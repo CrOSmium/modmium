@@ -10,15 +10,6 @@
 
 # should I be doing the checks in chromeos-startup or is this good
 
-# thanks mariah <3
-variable=$(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null)
-if [[ -n $variable ]]; then # VALUE DOES EXIST
-  :
-else # VALUE DOES NOT EXIST
-  echo "clobber state already done or no powerwash needed"
-  exit
-fi
-
 . /usr/sbin/chromeos-common.sh
 SCRIPT="$0"
 # stateful partition isn't around for logging, so dump to the screen:
@@ -246,4 +237,10 @@ fi
 # /sbin/shutdown -r now
 # sleep 1d  # Wait for shutdown
 
-vpd -i RW_VPD -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
+if [[ -n $(vpd -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null ]]; then
+	vpd -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
+	echo "Continuing normal startup..."
+else
+	/sbin/shutdown -r now
+	sleep 1d  # we keep this to not affect standard powerwash behavior
+fi
