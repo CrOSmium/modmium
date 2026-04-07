@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by mariah carey
+# written by mariah carey & dmd
 # using qs for 142- suggested by xz8f
 
 # colors
@@ -13,14 +13,25 @@ D='\033[1;90m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
+
+
+
 fail() {
-	echo -e "$1"
-	sleep 3
-	exit 1
+	if [[ "$1" == "" ]]; then
+		echo -e "Exiting..."
+		sleep 3
+		exit 1
+	else
+		echo -e "$1"
+		sleep 0.75
+		echo -e "Exiting..."
+		sleep 2.25
+		exit 1
+	fi
 }
 
 if [[ -f /.deprovision ]]; then
-	echo -e "${B}Currently unenrolled, enable enrollment? [y/N]${N}"
+	echo -e "${B}You are currently ${R}unenrolled${B}, would you like to toggle [${G}allow${B}] enrollment? [y/N]${N}"
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		rm /.deprovision
@@ -29,13 +40,13 @@ if [[ -f /.deprovision ]]; then
 		fail "${R}Exiting...${N}"
 	fi
 else
-	echo -e "${B}Currently enrolled, enable unenrollment? [y/N]${N}"
+	echo -e "${B}You are currently ${G}enrolled${B}, would you like to toggle [${R}prevent${B}] enrollment? [y/N]${N}"
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo $(grep MILESTONE /etc/lsb-release | sed 's|^.*=||g') >/.deprovision
-		fail "${G}Done! Powerwash to unenroll...${N}"
+		fail "${G}Done! You will now be unenrolled on your next powerwash.${N}"
 	else
-		fail "${R}Exiting...${N}"
+		fail # :whale:
 	fi
 fi
 
