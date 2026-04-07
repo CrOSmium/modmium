@@ -2,7 +2,7 @@
 
 # written by DMD
 
-# .
+
 # -- Pre TUI init --
 stty -echo # prevent input from showing before the menu loads (i wasn't gonna fix it but i was asked to :p)
 
