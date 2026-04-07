@@ -79,7 +79,7 @@ EOF
 # single-liners
 echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-assets/text/boot_messages/en/power_wash.txt
 
-echo "your firmware is updating!! (if you see this message, report an issue ASAP at https://github.com/crosmium/modmium) " >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
+echo "your firmware is updating!! (if you see this message, report an issue ASAP)\nhttps://github.com/crosmium/modmium " >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
 
 # chromeOS disenfuckinators
 crossystem block_devmode=0
