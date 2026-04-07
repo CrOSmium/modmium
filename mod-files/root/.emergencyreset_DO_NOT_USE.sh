@@ -55,7 +55,8 @@ unkeyroll(){
 
 main(){
     echo -e "Firmware write protection is [${R}disabled${N}], continuing..."
-    echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to normal  you lost your backup, however, it is very destructive and can brick your device."
+    echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to normal if you lost your backup, however, it is very destructive and can brick your device."
+	echo -e "${R}${UN}ONLY${RUN} use this if you lost your backup, and need to revert to factory FW at all costs${N}"
     echo -e "${R}This will update your firmware and possibly re-keyroll you, are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
     read -re
     if [[ $REPLY =~ ^[Yy]$ ]]; then
