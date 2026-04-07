@@ -6,7 +6,7 @@
 # -- Pre TUI init --
 stty -echo # prevent input from showing before the menu loads (i wasn't gonna fix it but i was asked to :p)
 
-STABLEVERSIONS="135,138,140,144" # if you have tested a version, add the version's release number and a comma to seperate it from the others
+STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
 
 # -- Root escalation --
 as_system() {
