@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=("funzip" "futility" "jq" "pv" "wget")
+DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_modmium.sh
@@ -36,8 +36,8 @@ cleanup(){ # to be used in case of failure, not for successful building
 	silence umount mnt
 	silence losetup -d $loopDev 
 	silence rm -rf mnt .realuser
-	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin'); do
-		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
+		silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
 	done
 }
 fail(){
