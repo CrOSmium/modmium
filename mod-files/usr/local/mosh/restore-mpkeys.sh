@@ -56,7 +56,6 @@ unkeyroll(){
 main(){
     clear
     checkWP
-    echo -e "Firmware write protection is [${R}disabled${N}], continuing..."
     echo -e "This script is a work in progress, it should return you to MPkeys and restore your firmware to factory if you lost your backup."
     echo ""
 	echo -e "${R}${UN}ONLY${RUN} use this if you lost your backup${N}, and need to revert to factory FW ${UN}at all costs${RUN}${N}"
