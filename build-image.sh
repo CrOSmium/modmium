@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO, SEPARATE NON-NECESSARY BUILD FUNCTIONS FROM BUILD FUNCTIONS SECTION (stricty for organizational purposes, not necessary as of now)
+
 DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
@@ -313,6 +315,17 @@ backupSigningKeys(){
 	echo -e "${G}Backing up signing keys, when installing devfw add -u/--userkeys when calling modmium.sh and ${UN}have the drive plugged in${RUN}...${N}"
 	cp -r build-utils/keys/userkeys $BACKUPDIR
 	umount $BACKUPDIR
+}
+buildKernel(){ # unused until we actually need buildcharge, but useful
+	silence pushd build-utils/buildcharge
+	make fullclean
+	sed -i '/^.*MODMIUM_UPDATER/s/n/y/' .config # assumes package name is CONFIG_PACKAGE_MDOMIUM_UPDATER, change as necessary (this will enable the package in buildcharge config)
+	make $arch KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0 # note $arch is a dummy variable rn, could do something like arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
+	mv out/buildcharge.${arch}.kpart ../..
+	silence popd
+	# note, due to using a different kernel, we will most definitely have to modify removeVerity(). we can likely overwrite p12 with the kernel (and use leftover partition space to store things like the policy json, bootsplashes, etc..) then modify postinstall to give the buildcharge kernel max priority, while also not overwriting the other kernels on disk :D 
+	# this method keeps p4 on the recovery image intact, meaning the standard dev resigned cros kernel will be on disk
+	# of course, this is just a concept, kxtz may implement it differently and we'll adjust accorindgly
 }
 # end build functions
 
