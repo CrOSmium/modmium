@@ -4,9 +4,8 @@
 
 
 # -- Pre TUI init --
-stty -echo # prevent input from showing before the menu loads (i wasn't gonna fix it but i was asked to :p)
 
-STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
+stty -echo # prevent input from showing before the menu loads (i wasn't gonna fix it but i was asked to :p)
 
 # -- Root escalation --
 as_system() {
@@ -41,7 +40,7 @@ RUN='\033[24m' #reset underline
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Install Enterprise Webstore Extensions" "4) Open Cr3nroll" "5) ${R}Emergency Revert${N}" "6) Go back")
+	options=("1) Full factory revert [restore OS & MPkeys]" "2) Revert lost MPkeys" "3) Go back")
     num_options=${#options[@]}
 }
 
@@ -115,21 +114,14 @@ selector() {
 
 	case "$sel" in
 		1*)
-			runscript "bash /usr/local/mosh/modify-bootsplash.sh"
+			echo -e "This option does not exist yet, but the basics for it will be:\n1. Restore MPkeys (either from backup or with restore_mpkeys.sh\n2. Recover ChromeOS\n3. ask if the user wants to keep the gbb flags as 0xa0b1 or restore them to 0x0"
+            echo -e "this will exit in 5 seconds :3" 
+            sleep 5
 			;;
-		2*)
-			runscript "bash /usr/local/mosh/toggle-enrollment.sh"
-			;;
+        2*)
+            runscript "bash /usr/bin/restore-mpkeys.sh"
+            ;;
 		3*)
-			runscript "bash /usr/local/mosh/install-cws-extensions.sh"
-			;;
-        4*)
-            runscript "bash /usr/local/mosh/cr3nroll.sh"
-            ;;
-        5*)
-            runscript "bash /usr/local/mosh/emergencyrevert.sh"
-            ;;
-		6*)
 			stty echo
 			tput cnorm
 			clear
@@ -184,23 +176,13 @@ menu_logo() {
 If you got here by mistake, don't panic! Just close this tab and carry on.
 
 This shell contains a list of utilities for performing various actions on a chromebook running Modmium.
+
+SPECIAL NOTE: 'Revert lost MPkeys' should only be used if you ${UN}${R}lost${RUN}${N} your backup and need to revert to factory.
 "
 }
 display_menu() {
 	tput sc
   menu_logo
-
-  if [[ "$MILESTONE" == "" ]]; then
-  	echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
-  elif [[ "$MILESTONE" -le 131 ]]; then
-    echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
-  elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-  	echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${branch}) --"
-  else
-    echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
-  fi
-
-  echo ""
   for i in "${!options[@]}"; do
   	if [[ $i -eq $selected_index ]]; then
     	printf "\e[7m > ${options[$i]} \e[0m\n"
