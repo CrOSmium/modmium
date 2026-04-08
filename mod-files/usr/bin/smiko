@@ -1,0 +1,6 @@
+#!/bin/bash
+# please see licenses/SMIKO-LICENSE for the license that smiko is under.
+
+# this script literally just executes the proper smiko for the arch because i am too lazy to make it specify during install for just smiko.
+
+exec /usr/bin/.smiko-$(uname -m) "$@"
