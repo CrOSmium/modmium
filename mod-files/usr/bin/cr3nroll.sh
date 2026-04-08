@@ -154,7 +154,7 @@ selector() {
         clear
         menu_logo
         echo -e "\n\nCurrently active serial number: '$(vpd -i RO_VPD -g "serial_number")'"
-        echo -e "Select an key to ${R}DELETE${N} from the saved enrollment keys."
+        echo -e "Select a key to ${R}DELETE${N} from the saved enrollment keys."
         echo ""
         sleep 1
         if [[ ${#KEYNAMES[@]} -eq 0 ]]; then
