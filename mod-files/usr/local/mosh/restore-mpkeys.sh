@@ -19,8 +19,8 @@ fi
 
 fail(){
 	echo -e "$1"
-	sleep 1
-	exit 1
+	sleep 4
+	exit 0
 }
 
 checkWP(){
