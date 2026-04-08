@@ -319,7 +319,10 @@ backupSigningKeys(){
 buildKernel(){ # unused until we actually need buildcharge, but useful
 	silence pushd build-utils/buildcharge
 	make fullclean
-	sed -i '/^.*MODMIUM_UPDATER/s/n/y/' .config # assumes package name is CONFIG_PACKAGE_MDOMIUM_UPDATER, change as necessary (this will enable the package in buildcharge config)
+	sed -i \
+		'/^.*MODMIUM_BOOTLOADER/s/n/y/' \
+		'/^.*MODMIUM_UPDATER/s/n/y' \
+		.config # assumes package name is CONFIG_PACKAGE_MDOMIUM_UPDATER, change as necessary (this will enable the package in buildcharge config)
 	make $arch KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0 # note $arch is a dummy variable rn, could do something like arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
 	mv out/buildcharge.${arch}.kpart ../..
 	silence popd
