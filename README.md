@@ -3,7 +3,7 @@ murkmod walked, so we could fly
 ## usage instructions:
 0. Disable WP on your chromebook (see [MrChromebox Guide](https://docs.mrchromebox.tech/docs/firmware/wp/disabling.html) for more info). If interested in keeping enterprise extensions (but with the ability to disable them), read the policy editor instructions before continuing!
 1. Connect to internet in the quick settings (bottom right), then open VT2 **[Ctrl+Alt+F2]** and login as `root`
-2. Run `curl -LOsk cdn.crosbreaker.dev/modmium.sh && bash modmium.sh <flags>` to install developer firmware (devfw) & backup to a drive or directory easily. 
+2. Run `curl -LOsk cdn.crosbreaker.com/modmium.sh && bash modmium.sh <flags>` to install developer firmware (devfw) & backup to a drive or directory easily. 
 3. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENED [pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot.
 4. **BACK UP THE FIRMWARE DUMP TO YOUR PC AND/OR CLOUD**
 5. Build the image
@@ -23,7 +23,7 @@ sed -i 's/7z/unzip/' build-image.sh
 done
 ```
 
-6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.dev/quickstart/exploits/misc/flashing-guide/) for a how-to).
+6. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary), open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -Lsk crosmium.dev/fwmp.sh)`.
 7. Enter devmode recovery
 8. Plug in the disk with modmium on it.
