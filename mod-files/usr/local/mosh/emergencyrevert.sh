@@ -119,7 +119,7 @@ selector() {
             sleep 5
 			;;
         2*)
-            runscript "bash /usr/local/mosh/restore_mpkeys.sh"
+            runscript "bash /usr/local/mosh/restore-mpkeys.sh"
             ;;
 		3*)
 			stty echo
