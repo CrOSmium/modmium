@@ -108,7 +108,7 @@ checkFlagValidity(){
 			fi
 		done
 		if [[ $boardInList != 1 ]]; then
-			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.dev/recovery-images${N} for a complete list."
+			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
 		fi
 	fi
 	if [[ -n $FLAGS_kernver ]]; then
