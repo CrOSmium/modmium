@@ -124,10 +124,10 @@ selector() {
 			runscript /usr/bin/crosh.old
 			;;
 		4*)
-			runscript "bash /usr/bin/update-modmium.sh"
+			runscript "bash /usr/local/mosh/update-modmium.sh"
 			;;
 		5*)
-			runscript "bash /usr/bin/mosh-misc.sh"
+			runscript "bash /usr/local/mosh/mosh-misc.sh"
 			;;
 		6*)
 			stty echo
