@@ -1,3 +1,5 @@
+ngl a good chunk of this needs a rewrite (the fwmp brick in particular), you can just sign sh1mmer with dev/user keys then boot it, run `tpm_manager_client take_ownership && cryptohome --action=remove_firmware_management_parameters` and ggs you're done
+
 # preventing bricking
 Modmium currently does not prevent FWMP from being set, this can mean that if you corrupt chromeOS with FWMP, recovery will be very difficult.
 
