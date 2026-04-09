@@ -160,7 +160,7 @@ PYEOF
 	rm -f /tmp/_pol_conv.pyi
 
 	echo -e "${B}Extracting user OpenNetworkConfiguration from policy.json...${N}"
-	oncSettings=$(jq .chromePolicies.OpenNetworkConfiguration.value /root/policy.json)
+	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration.value /root/policy.json)
 cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
