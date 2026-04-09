@@ -157,7 +157,10 @@ for line in lines[1:]:
     print("    " + line)
 PYEOF
 	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
-	rm -f /tmp/_pol_conv.py
+	rm -f /tmp/_pol_conv.pyi
+
+	echo -e "${B}Extracting user OpenNetworkConfiguration from policy.json...${N}"
+	oncSettings=$(jq .chromePolicies.OpenNetworkConfiguration.value /root/policy.json)
 cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
@@ -197,7 +200,8 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
-    "ExtensionSettings": $extSettings
+    "ExtensionSettings": ${extSettings},
+		"OpenNetworkConfiguration": ${oncSettings}
   },
   "device": {}
 }
