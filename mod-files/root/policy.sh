@@ -23,7 +23,10 @@ POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
 echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
 echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
-if [[ "$1" == "--reinstall" ]]; then
+. /usr/share/misc/shflags
+DEFINE_boolean reinstall "$FLAGS_FALSE" "Whether or not to reinstall." "r"
+FLAGS $@
+if [[ "$FLAGS_reinstall" == "$FLAGS_TRUE" ]]; then
     rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
     echo -e "${G}Reinstall flag detected, removed .devinstall_complete and .policytesttool_setup markers. Rerun the script to do a full setup.${N}"
     exit 0
