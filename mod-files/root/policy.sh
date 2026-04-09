@@ -157,7 +157,7 @@ for line in lines[1:]:
     print("    " + line)
 PYEOF
 	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
-	rm -f /tmp/_pol_conv.pyi
+	rm -f /tmp/_pol_conv.py
 
 	echo -e "${B}Extracting user OpenNetworkConfiguration from policy.json...${N}"
 	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration.value /root/policy.json)
