@@ -221,7 +221,7 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
-	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
+	rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
 	echo -e "${G}Cleaning up...${N}"
