@@ -23,6 +23,8 @@ DEVICESETTINGS_DIR = "/var/lib/devicesettings"
 OWNER_KEY_PATH = f"{DEVICESETTINGS_DIR}/owner.key"
 POLICY_PATH = f"{DEVICESETTINGS_DIR}/policy.1"
 
+STRING_ENUM_PREFIXES = {"allowed_connection_types": "CONNECTION_TYPE_"}
+
 
 def generate_keypair():
     pk = rsa.generate_private_key(65537, 2048, default_backend())
@@ -97,6 +99,59 @@ def unquote_numbers(d: dict) -> dict:
     return d
 
 
+def convert_scalar(field, val):
+    if field.type == field.TYPE_ENUM and field.name in STRING_ENUM_PREFIXES:
+        pfx = STRING_ENUM_PREFIXES[field.name]
+        if isinstance(val, list):
+            return [item.upper().removeprefix(pfx).lower() if isinstance(item, str) else item for item in val]
+        elif isinstance(val, str):
+            return val.upper().removeprefix(pfx).lower()
+    elif field.type == field.TYPE_ENUM:
+        if isinstance(val, str):
+            enum_val = field.enum_type.values_by_name.get(val.upper())
+            if enum_val is not None:
+                return enum_val.number
+        elif isinstance(val, list):
+            converted = []
+            for item in val:
+                if isinstance(item, str):
+                    enum_val = field.enum_type.values_by_name.get(item.upper())
+                    converted.append(enum_val.number if enum_val else item)
+                else:
+                    converted.append(item)
+            return converted
+    elif isinstance(val, str):
+        try:
+            return int(val)
+        except ValueError:
+            try:
+                return float(val)
+            except ValueError:
+                pass
+    return val
+
+
+def convert_message_by_desc(desc, d):
+    result = {}
+    for field in desc.fields:
+        if field.name not in d:
+            continue
+        val = d[field.name]
+        if field.message_type and field.label == field.LABEL_REPEATED and isinstance(val, list):
+            converted = []
+            for item in val:
+                if isinstance(item, dict):
+                    converted.append(convert_message_by_desc(field.message_type, item))
+                else:
+                    converted.append(item)
+            result[field.name] = converted
+        elif field.message_type and isinstance(val, dict):
+            result[field.name] = convert_message_by_desc(field.message_type, val)
+        else:
+            result[field.name] = convert_scalar(field, val)
+    return result
+
+
 def dump_policy(input_path: str, output_path: str):
     policy_data, ds = read_existing_policy(input_path)
     f2p = build_field_to_policy(load_map())
@@ -111,20 +166,16 @@ def dump_policy(input_path: str, output_path: str):
             path = f"{prefix}{field.name}" if prefix else field.name
             if field.message_type and isinstance(val, dict) and path not in f2p:
                 walk(getattr(msg, field.name), val, f"{path}.")
+            elif field.message_type and field.label == field.LABEL_REPEATED and isinstance(val, list) and path not in f2p:
+                converted = []
+                for item in val:
+                    if isinstance(item, dict):
+                        converted.append(convert_message_by_desc(field.message_type, item))
+                    else:
+                        converted.append(item)
+                device_dict[f2p.get(path, path)] = converted
             else:
-                if field.type == field.TYPE_ENUM and isinstance(val, str):
-                    enum_val = field.enum_type.values_by_name.get(val.upper())
-                    if enum_val is not None:
-                        val = enum_val.number
-                elif isinstance(val, str):
-                    try:
-                        val = int(val)
-                    except ValueError:
-                        try:
-                            val = float(val)
-                        except ValueError:
-                            pass
-                device_dict[f2p.get(path, path)] = val
+                device_dict[f2p.get(path, path)] = convert_scalar(field, val)
 
     walk(ds, raw)
     output = {"policy_user": policy_data.username, "managed_users": ["*"], "device": device_dict}
