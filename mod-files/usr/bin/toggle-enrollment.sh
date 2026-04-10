@@ -58,13 +58,6 @@ else
 	else
 		fail # :whale:
 	fi
-	echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
-	read -re
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		vpd -i RW_VPD -s "MODMIUM_CLOBBER_STATE_DO_NOT_DELETE"="carbon_40k_vrp_stealer_will_steal_this_tuff_method"
-	else
-		fail # :whale:
-	fi
 fi
 
 fail "${R}How did you get here..?${N}"
