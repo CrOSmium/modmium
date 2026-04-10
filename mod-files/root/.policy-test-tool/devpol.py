@@ -1,4 +1,5 @@
 # written by lxrd
+# Note: add policies that aren't in manual_device_policy_proto_map.yaml accordingly whenever you find one. It is not up to date and policies without a proper mapping will not parse correctly.
 import json
 import os
 import shutil
