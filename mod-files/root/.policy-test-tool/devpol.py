@@ -112,7 +112,11 @@ def dump_policy(input_path: str, output_path: str):
             if field.message_type and isinstance(val, dict):
                 walk(getattr(msg, field.name), val, f"{path}.")
             else:
-                if isinstance(val, str):
+                if field.type == field.TYPE_ENUM and isinstance(val, str):
+                    enum_val = field.enum_type.values_by_name.get(val.upper())
+                    if enum_val is not None:
+                        val = enum_val.number
+                elif isinstance(val, str):
                     try:
                         val = int(val)
                     except ValueError:
