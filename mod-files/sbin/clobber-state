@@ -229,7 +229,8 @@ if [ "$FACTORY_WIPE" = "factory" ]; then
   fi
 fi
 
-if [ -n $(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null) ]; then
+vpd=$(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null)
+if [ -n "${vpd}" ]; then
 	vpd -i RW_VPD -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
 	echo "Continuing normal startup..."
 else
