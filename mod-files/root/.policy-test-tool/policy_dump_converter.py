@@ -60,6 +60,7 @@ README.md in this directory.""",
   # actual list of policies.
   policy_list = policy_dump.get('policyValues', {}).get('chrome',
                                                         {}).get('policies')
+  ext_list = policy_dump.get('policyValues', {}).get('extensions')
 
   if not policy_list:
     logging.critical("Could not find a list of policies in the input JSON. "
@@ -70,6 +71,7 @@ README.md in this directory.""",
   # Convert the dictionary of policies to a list of policies.
   # The original script expected a list of policies, so we convert it here.
   policy_list_converted = []
+  ext_list_converted = []
   for name, details in policy_list.items():
     policy_list_converted.append({
         'name': name,
@@ -77,7 +79,21 @@ README.md in this directory.""",
         'scope': details.get('scope')
     })
   policy_list = policy_list_converted
+  
+  for name, details in ext_list.items():
+    ext_list_converted.append({
+        'name': name,
+        'value': details.get('value'),
+        'scope': details.get('scope')
+    })
+    ext_list = ext_list_converted
 
+
+   for policy in ext_list:
+    name = policy.get('name')
+    value = policy.get('value')
+    scope = "extensions"
+     
   for policy in policy_list:
     name = policy.get('name')
     value = policy.get('value')
@@ -95,6 +111,8 @@ README.md in this directory.""",
       simple_policies['user'][name] = value
     elif scope == 'device':
       simple_policies['device'][name] = value
+    elif scope == 'extensions':
+      simple_policies['extensions'][name] = value
     else:
       logging.warning(f"Skipping policy '{name}' with unknown scope: '{scope}'")
 
