@@ -80,6 +80,23 @@ def write_devicesettings(owner_key_der: bytes, policy_fetch_response: bytes):
         os.chmod(path, 0o644)
 
 
+def unquote_numbers(d: dict) -> dict:
+    for k, v in d.items():
+        if isinstance(v, str):
+            try:
+                d[k] = int(v)
+            except ValueError:
+                try:
+                    d[k] = float(v)
+                except ValueError:
+                    pass
+        elif isinstance(v, dict):
+            unquote_numbers(v)
+        elif isinstance(v, list):
+            d[k] = [unquote_numbers(i) if isinstance(i, dict) else i for i in v]
+    return d
+
+
 def dump_policy(input_path: str, output_path: str):
     policy_data, ds = read_existing_policy(input_path)
     f2p = build_field_to_policy(load_map())
@@ -95,6 +112,14 @@ def dump_policy(input_path: str, output_path: str):
             if field.message_type and isinstance(val, dict):
                 walk(getattr(msg, field.name), val, f"{path}.")
             else:
+                if isinstance(val, str):
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            pass
                 device_dict[f2p.get(path, path)] = val
 
     walk(ds, raw)
@@ -123,7 +148,7 @@ def main():
     simple_policies = json.load(open(sys.argv[1], encoding="utf-8"))
     device_schema = generate_device_policy_schema(MANUAL_MAP_PATH)
     policy_data, ds = read_existing_policy(POLICY_PATH)
-    apply_device_policies(simple_policies["device"], ds, device_schema)
+    apply_device_policies(unquote_numbers(simple_policies["device"]), ds, device_schema)
 
     pk, pub = generate_keypair()
     write_devicesettings(public_key_to_der(pub), build_policy_fetch_response(pk, ds, policy_data))
