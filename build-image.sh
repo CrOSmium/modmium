@@ -140,7 +140,13 @@ removeVerity(){
 		keydir=build-utils/keys/devkeys
 	fi
 	if [[ -n $FLAGS_image ]]; then
-		tempDir=$(mktemp -d)
+		if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image}) ]]; then # checks if tmp has enough room for the image
+			tempDir=$(mktemp -d)
+		else
+			echo -e "${B}/tmp is not large enough, using disk...${N}"
+			mkdir -p tmp
+			tempDir="tmp"
+		fi
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
 		echo -e "${G}Copying image to tempdir, ${R}this may take a while...${N}"
 		cp "$FLAGS_image" $newImage
@@ -234,7 +240,7 @@ dropModFiles(){
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
-		echo -e "${G}Moving image from RAM to $(basename $newImage) in current directory...${N}"
+		echo -e "${G}Moving image from tempdir to $(basename $newImage) in current directory...${N}"
 		mv $newImage $(basename $newImage)
 		sync
 		rm -rf $tempDir mnt
