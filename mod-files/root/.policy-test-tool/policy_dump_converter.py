@@ -84,16 +84,10 @@ README.md in this directory.""",
     ext_list_converted.append({
         'name': name,
         'value': details.get('value'),
-        'scope': details.get('scope')
+        'scope': "extensions"
     })
     ext_list = ext_list_converted
 
-
-   for policy in ext_list:
-    name = policy.get('name')
-    value = policy.get('value')
-    scope = "extensions"
-     
   for policy in policy_list:
     name = policy.get('name')
     value = policy.get('value')
