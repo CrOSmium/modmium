@@ -164,6 +164,10 @@ PYEOF
 
 	echo -e "${B}Extracting user OpenNetworkConfiguration from policy.json...${N}"
 	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration.value /root/policy.json)
+
+	echo -e "${B}Extracting extensions from extracted.json...${N}"
+	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
+
 cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
@@ -206,6 +210,7 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ExtensionSettings": ${extSettings},
 		"OpenNetworkConfiguration": ${oncSettings}
   },
+  "extensions": ${extBlock},
   "device": {}
 }
 EOF
