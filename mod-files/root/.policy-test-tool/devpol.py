@@ -164,9 +164,7 @@ def dump_policy(input_path: str, output_path: str):
                 continue
             val = d[field.name]
             path = f"{prefix}{field.name}" if prefix else field.name
-            if field.message_type and isinstance(val, dict) and path not in f2p:
-                walk(getattr(msg, field.name), val, f"{path}.")
-            elif field.message_type and field.label == field.LABEL_REPEATED and isinstance(val, list) and path not in f2p:
+            if field.message_type and field.label == field.LABEL_REPEATED and isinstance(val, list):
                 converted = []
                 for item in val:
                     if isinstance(item, dict):
@@ -174,6 +172,8 @@ def dump_policy(input_path: str, output_path: str):
                     else:
                         converted.append(item)
                 device_dict[f2p.get(path, path)] = converted
+            elif field.message_type and isinstance(val, dict) and path not in f2p:
+                walk(getattr(msg, field.name), val, f"{path}.")
             else:
                 device_dict[f2p.get(path, path)] = convert_scalar(field, val)
 
