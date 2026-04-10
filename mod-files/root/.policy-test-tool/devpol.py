@@ -71,8 +71,8 @@ def build_policy_fetch_response(pk, device_settings, policy_data) -> bytes:
 def write_devicesettings(owner_key_der: bytes, policy_fetch_response: bytes):
     os.makedirs(DEVICESETTINGS_DIR, exist_ok=True)
     for f in [OWNER_KEY_PATH, POLICY_PATH]:
-        if os.path.exists(f) and not os.path.exists(f + ".bak.school"):
-            shutil.copy2(f, f + ".bak.school")
+        if os.path.exists(f) and not os.path.exists(f + ".bak.enterprise"):
+            shutil.copy2(f, f + ".bak.enterprise")
             print(f"backed up {f}")
     for path, data in [(OWNER_KEY_PATH, owner_key_der), (POLICY_PATH, policy_fetch_response)]:
         open(path, "wb").write(data)
