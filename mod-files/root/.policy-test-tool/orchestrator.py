@@ -69,6 +69,7 @@ class Orchestrator:
     managed_users = simple_policies.get("managed_users", ["*"])
     policy_blob["managed_users"] = managed_users
     policy_blob["policies"] = []
+    policy_blob["external_policies"] = []
     optional_params = [
         "allow_set_device_attributes",
         "current_key_index",
@@ -83,6 +84,7 @@ class Orchestrator:
     for param in optional_params:
       if param in simple_policies:
         policy_blob[param] = simple_policies[param]
+          
     if "user" in simple_policies:
       user_settings = chrome_settings_pb2.ChromeSettingsProto()
       apply_user_policies(simple_policies["user"], user_settings)
@@ -92,6 +94,15 @@ class Orchestrator:
           "policy_type": "google/chromeos/user",
           "value": encoded_policy
       })
+    if "extensions" in simple_policies:
+        for ext_id, policy_data in simple_policies["extensions"].items():
+            json_data = json.dumps(policy_data)
+            encoded_policy = base64.b64encode(json_data.encode("utf-8")).decode("utf-8")
+            policy_blob["external_policies"].append({
+                "policy_type": "google/chrome/extension",
+                "entity_id": ext_id,
+                "value": encoded_policy
+            })
     if "device" in simple_policies:
       device_settings = chrome_device_policy_pb2.ChromeDeviceSettingsProto()
       apply_device_policies(simple_policies["device"], device_settings,
