@@ -1,4 +1,4 @@
-// written by lxrd
+# written by lxrd
 import json
 import os
 import shutil
