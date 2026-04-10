@@ -72,22 +72,21 @@ README.md in this directory.""",
   # The original script expected a list of policies, so we convert it here.
   policy_list_converted = []
   ext_list_converted = []
-  for name, details in policy_list.items():
-    policy_list_converted.append({
-        'name': name,
-        'value': details.get('value'),
-        'scope': details.get('scope')
-    })
-  policy_list = policy_list_converted
   
   for name, details in ext_list.items():
     ext_list_converted.append({
         'name': name,
         'value': details.get('value'),
         'scope': "extensions"
+    })  
+  for name, details in policy_list.items():
+    policy_list_converted.append({
+        'name': name,
+        'value': details.get('value'),
+        'scope': details.get('scope')
     })
-    ext_list = ext_list_converted
-
+  policy_list = policy_list_converted + ext_list_converted
+  
   for policy in policy_list:
     name = policy.get('name')
     value = policy.get('value')
