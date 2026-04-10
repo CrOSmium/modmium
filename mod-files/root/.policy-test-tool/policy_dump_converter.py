@@ -52,6 +52,7 @@ README.md in this directory.""",
       "policy_user": args.policy_user,
       "managed_users": ["*"],
       "user": {},
+      "extensions": {},
       "device": {}
   }
 
