@@ -15,7 +15,15 @@ import logging
 import sys
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
+def find_deep_value(data):
+    if isinstance(data, dict):
+        if 'value' in data:
+            return data['value']
+        for key in data:
+            result = find_deep_value(data[key])
+            if result is not None:
+                return result
+    return None
 
 def main():
   """Main script execution."""
@@ -71,23 +79,28 @@ README.md in this directory.""",
   # Convert the dictionary of policies to a list of policies.
   # The original script expected a list of policies, so we convert it here.
   policy_list_converted = []
-  ext_list_converted = []
   
-  for name, details in ext_list.items():
-    ext_list_converted.append({
-        'name': name,
-        'value': details.get('value'),
-        'scope': "extensions"
-    })  
+  
   for name, details in policy_list.items():
     policy_list_converted.append({
         'name': name,
         'value': details.get('value'),
         'scope': details.get('scope')
     })
-  policy_list = policy_list_converted + ext_list_converted
+    
+  for ext_id, ext_content in ext_list.items():
+      inner_policies = ext_content.get('policies', {})
+      for p_name, p_details in inner_policies.items():
+        val = find_deep_value(p_details)
+        if val is not None:
+          policy_list_converted.append({
+              'name': p_name,
+              'value': val,
+              'scope': "extensions",
+              'ext_id': ext_id
+          })
   
-  for policy in policy_list:
+  for policy in policy_list_converted:
     name = policy.get('name')
     value = policy.get('value')
     scope = policy.get('scope')
@@ -105,7 +118,10 @@ README.md in this directory.""",
     elif scope == 'device':
       simple_policies['device'][name] = value
     elif scope == 'extensions':
-      simple_policies['extensions'][name] = value
+      eid = policy.get('ext_id')
+      if eid not in simple_policies['extensions']:
+        simple_policies['extensions'][eid] = {}
+      simple_policies['extensions'][eid][name] = value
     else:
       logging.warning(f"Skipping policy '{name}' with unknown scope: '{scope}'")
 
