@@ -1,15 +1,9 @@
 #!/bin/sh
-
-# this is a very slightly modified version of chromium.googlesource.com/chromiumos/platform/init/+/refs/heads/toolchainB/clobber-state
-
 # Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 # This script can be called during startup to trash the stateful partition
 # and possibly reset the other root filesystem
-
-# should I be doing the checks in chromeos-startup or is this good
-
 . /usr/sbin/chromeos-common.sh
 SCRIPT="$0"
 # stateful partition isn't around for logging, so dump to the screen:
@@ -234,13 +228,11 @@ if [ "$FACTORY_WIPE" = "factory" ]; then
     ${BOARD_WIPE} ${WIPE_OPTION}
   fi
 fi
-# /sbin/shutdown -r now
-# sleep 1d  # Wait for shutdown
 
-if [[ -n $(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null ]]; then
-	vpd -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
+if [ -n $(vpd -i RW_VPD -g MODMIUM_CLOBBER_STATE_DO_NOT_DELETE 2>/dev/null) ]; then
+	vpd -i RW_VPD -d MODMIUM_CLOBBER_STATE_DO_NOT_DELETE
 	echo "Continuing normal startup..."
 else
 	/sbin/shutdown -r now
-	sleep 1d  # we keep this to not affect standard powerwash behavior
+	sleep 1d  # Wait for shutdown
 fi
