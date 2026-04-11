@@ -84,7 +84,7 @@ class Orchestrator:
     for param in optional_params:
       if param in simple_policies:
         policy_blob[param] = simple_policies[param]
-          
+
     if "user" in simple_policies:
       user_settings = chrome_settings_pb2.ChromeSettingsProto()
       apply_user_policies(simple_policies["user"], user_settings)
@@ -95,14 +95,17 @@ class Orchestrator:
           "value": encoded_policy
       })
     if "extensions" in simple_policies:
-        for ext_id, policy_data in simple_policies["extensions"].items():
-            json_data = json.dumps(policy_data)
-            encoded_policy = base64.b64encode(json_data.encode("utf-8")).decode("utf-8")
-            policy_blob["external_policies"].append({
-                "policy_type": "google/chrome/extension",
-                "entity_id": ext_id,
-                "value": encoded_policy
-            })
+      for ext_id, policy_data in simple_policies["extensions"].items():
+        # ParseComponentPolicy expects {policy_name: {"Value": value}, ...}
+        wrapped = {k: {"Value": v} for k, v in policy_data.items()}
+        json_data = json.dumps(wrapped)
+        encoded_policy = base64.b64encode(
+            json_data.encode("utf-8")).decode("utf-8")
+        policy_blob["external_policies"].append({
+            "policy_type": "google/chrome/extension",
+            "entity_id": ext_id,
+            "value": encoded_policy
+        })
     if "device" in simple_policies:
       device_settings = chrome_device_policy_pb2.ChromeDeviceSettingsProto()
       apply_device_policies(simple_policies["device"], device_settings,
@@ -121,7 +124,6 @@ class Orchestrator:
     """Writes the device management URL to the Chrome dev config file."""
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     timestamped_backup_path = (f"{CHROME_DEV_CONFIG_PATH}.original.{timestamp}")
-    # Back up the original file to restore it later during cleanup.
     if os.path.exists(CHROME_DEV_CONFIG_PATH):
       os.rename(CHROME_DEV_CONFIG_PATH, timestamped_backup_path)
       logging.info(f"Backed up original {CHROME_DEV_CONFIG_PATH} to "
@@ -179,7 +181,6 @@ class Orchestrator:
     backup_prefix = config_path + ".original."
     if os.path.exists(config_path):
       os.remove(config_path)
-    # Find the latest timestamped backup to restore
     backups = sorted([
         f for f in os.listdir("/etc")
         if f.startswith(os.path.basename(backup_prefix))
@@ -218,7 +219,6 @@ class Orchestrator:
         f"--startup-pipe={write_fd}",
     ]
     logging.info(f"Starting fake_dmserver: {' '.join(dmserver_args)}")
-    # pylint: disable=consider-using-with
     self.dmserver_process = subprocess.Popen(
         dmserver_args,
         pass_fds=[write_fd],
@@ -226,15 +226,14 @@ class Orchestrator:
         stderr=subprocess.STDOUT,
         text=True,
     )
-    os.close(write_fd)  # Close the write end in the parent
+    os.close(write_fd)
     server_info_raw = ""
     try:
       with os.fdopen(read_fd) as pipe_reader:
-        # Set a timeout for reading from the pipe
         signal.alarm(30)
         server_info_raw = pipe_reader.read()
-        signal.alarm(0)  # Disable the alarm
-    except TimeoutError:  # pylint: disable=broad-except-clause
+        signal.alarm(0)
+    except TimeoutError:
       stdout, _ = self.dmserver_process.communicate()
       raise RuntimeError("Timed out waiting for fake_dmserver to start. "
                          f"fake_dmserver output:\n{stdout}") from None

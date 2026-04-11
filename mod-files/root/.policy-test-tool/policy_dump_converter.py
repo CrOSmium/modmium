@@ -120,8 +120,8 @@ README.md in this directory.""",
     elif scope == 'extensions':
       eid = policy.get('ext_id')
       if eid not in simple_policies['extensions']:
-        simple_policies['extensions'][eid] = {'policies': {}}
-      simple_policies['extensions'][eid]['policies'][name] = value
+        simple_policies['extensions'][eid] = {}
+      simple_policies['extensions'][eid][name] = value
     else:
       logging.warning(f"Skipping policy '{name}' with unknown scope: '{scope}'")
 
