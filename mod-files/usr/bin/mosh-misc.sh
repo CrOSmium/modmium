@@ -41,7 +41,7 @@ RUN='\033[24m' #reset underline
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Install Enterprise Webstore Extensions" "4) Open Cr3nroll" "5) ${R}Emergency Revert${N}" "6) Go back")
+	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Open Cr3nroll" "4) ${R}Emergency Revert${N}" "5) Go back")
     num_options=${#options[@]}
 }
 
@@ -120,16 +120,13 @@ selector() {
 		2*)
 			runscript "bash /usr/bin/toggle-enrollment.sh"
 			;;
-		3*)
-			runscript "bash /usr/bin/install-cws-extensions.sh"
-			;;
-        4*)
-            runscript "bash /usr/bin/cr3nroll.sh"
-            ;;
-        5*)
-            runscript "bash /usr/bin/emergencyrevert.sh"
-            ;;
-		6*)
+    3*)
+        runscript "bash /usr/bin/cr3nroll.sh"
+        ;;
+    4*)
+        runscript "bash /usr/bin/emergencyrevert.sh"
+        ;;
+		5*)
 			stty echo
 			tput cnorm
 			clear

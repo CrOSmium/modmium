@@ -147,8 +147,6 @@ for entry in forcelist:
     else:
         ext_id = entry
         update_url = "https://clients2.google.com/service/update2/crx"
-    if update_url == "https://clients2.google.com/service/update2/crx":
-        continue
     entry_dict = ext_settings.get(ext_id, {})
     entry_dict["installation_mode"] = "normal_installed"
     entry_dict["update_url"] = update_url
@@ -251,5 +249,3 @@ python orchestrator.py policies.json
 
 touch "$DEVINSTALL_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
-echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH.
-DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"
