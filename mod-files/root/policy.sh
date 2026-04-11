@@ -161,9 +161,11 @@ PYEOF
 	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
 	rm -f /tmp/_pol_conv.py
 
-	echo -e "${B}Extracting user OpenNetworkConfiguration from policy.json...${N}"
-	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration.value /root/policy.json)
-
+	echo -e "${B}Extracting user OpenNetworkConfiguration, Web Apps, and Managed Bookmarks from policy.json...${N}"
+	oncSettings=$(jq '.policyValues.chrome.policies.OpenNetworkConfiguration.value // null' /root/policy.json)
+	managedBookmarks=$(jq '.policyValues.chrome.policies.ManagedBookmarks.value // null' /root/policy.json)
+	webApp=$(jq '.policyValues.chrome.policies.WebAppInstallForceList.value // null' /root/policy.json)
+	
 	echo -e "${B}Extracting extension configs from extracted.json...${N}"
 	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
 
@@ -207,6 +209,8 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
 		"VpnConfigAllowed": true,
+	"ManagedBookmarks": ${managedBookmarks},
+	"WebAppInstallForceList": ${webApp},
     "ExtensionSettings": ${extSettings},
 		"OpenNetworkConfiguration": ${oncSettings}
   },
