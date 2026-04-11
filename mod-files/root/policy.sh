@@ -35,7 +35,7 @@ fi
 if [[ -f "$POLTEST_FILE" ]]; then
     echo -e "${G}Setup already complete. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
-		/root/.unhang.sh
+		/root/.unhang.sh &
 		python orchestrator.py policies.json
 		echo -e "${G}Done!${N}"
 		kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
@@ -226,7 +226,7 @@ emerge chrome-binary-tests
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
 sleep 3
-/root/.unhang.sh
+/root/.unhang.sh &
 python orchestrator.py policies.json
 echo -e "${G}Done!${N}"
 kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
