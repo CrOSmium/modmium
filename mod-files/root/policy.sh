@@ -35,11 +35,11 @@ fi
 if [[ -f "$POLTEST_FILE" ]]; then
     echo -e "${G}Setup already complete. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
-    python orchestrator.py policies.json
+		/root/.unhang.sh
+		python orchestrator.py policies.json
 		echo -e "${G}Done!${N}"
-		echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH."
-		echo -e "DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"
-    exit 0
+		kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
+		exit 0
 fi
 
 if [[ ! -f $DEVINSTALL_FILE ]]; then
@@ -103,7 +103,8 @@ cat > /root/.policy-test-tool/policies.json << EOF
     "NetworkPredictionOptions": 0,
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
-    "UserBorealisAllowed": true
+    "UserBorealisAllowed": true,
+		"VpnConfigAllowed": true
   },
   "device": {}
 }
@@ -205,6 +206,7 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
+		"VpnConfigAllowed": true,
     "ExtensionSettings": ${extSettings},
 		"OpenNetworkConfiguration": ${oncSettings}
   },
@@ -221,31 +223,13 @@ fi
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
 
-
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
 sleep 3
-cat > /tmp/_ext_links.py << 'PYEOF'
-import json, sys
-with open(sys.argv[1]) as f:
-    data = json.load(f)
-forcelist = data.get("user", {}).get("ExtensionInstallForcelist", [])
-urls = []
-for entry in forcelist:
-    if ";" in entry:
-        ext_id, update_url = entry.split(";", 1)
-    else:
-        ext_id = entry
-        update_url = "https://clients2.google.com/service/update2/crx"
-    if update_url.strip() == "https://clients2.google.com/service/update2/crx":
-        urls.append(f"https://chromewebstore.google.com/detail/a/{ext_id}")
-with open(sys.argv[1], "w") as f:
-    f.write("\n".join(urls) + "\n")
-PYEOF
-python3 /tmp/_ext_links.py /usr/local/share/policy-test-tool/extracted.json
-rm -f /tmp/_ext_links.py
-
+/root/.unhang.sh
 python orchestrator.py policies.json
-
+echo -e "${G}Done!${N}"
+kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
 touch "$DEVINSTALL_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
+exit 0
