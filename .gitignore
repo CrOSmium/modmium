@@ -9,3 +9,5 @@ id_rsa*
 *DS_Store*
 userkeys
 .realuser
+tests/
+*.pyc
