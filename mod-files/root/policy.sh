@@ -163,8 +163,8 @@ PYEOF
 
 	echo -e "${B}Extracting user OpenNetworkConfiguration, Web Apps, and Managed Bookmarks from policy.json...${N}"
 	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration?.value /root/policy.json)
-	managedBookmarks=$(jq -r '.policyValues.chrome.policies.ManagedBookmarks?.value | fromjson' /root/policy.json)
-	webApp=$(jq -r '.policyValues.chrome.policies.WebAppInstallForceList?.value | fromjson' /root/policy.json)
+	managedBookmarks=$(jq -r .policyValues.chrome.policies.ManagedBookmarks?.value /root/policy.json)
+	webApp=$(jq -r .policyValues.chrome.policies.WebAppInstallForceList?.value /root/policy.json)
 	
 	echo -e "${B}Extracting extension configs from extracted.json...${N}"
 	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
