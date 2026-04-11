@@ -162,9 +162,9 @@ PYEOF
 	rm -f /tmp/_pol_conv.py
 
 	echo -e "${B}Extracting user OpenNetworkConfiguration, Web Apps, and Managed Bookmarks from policy.json...${N}"
-	oncSettings=$(jq '.policyValues.chrome.policies.OpenNetworkConfiguration.value // null' /root/policy.json)
-	managedBookmarks=$(jq '.policyValues.chrome.policies.ManagedBookmarks.value // null' /root/policy.json)
-	webApp=$(jq '.policyValues.chrome.policies.WebAppInstallForceList.value // null' /root/policy.json)
+	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration?.value /root/policy.json)
+	managedBookmarks=$(jq .policyValues.chrome.policies.ManagedBookmarks?.value /root/policy.json)
+	webApp=$(jq .policyValues.chrome.policies.WebAppInstallForceList?.value /root/policy.json)
 	
 	echo -e "${B}Extracting extension configs from extracted.json...${N}"
 	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
