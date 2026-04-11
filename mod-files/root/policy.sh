@@ -134,7 +134,7 @@ cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
 cd /usr/local/share/policy-test-tool 
 
 if [[ -f /root/policy.json ]]; then
-	echo -e "${B}Extracting extension list from policy.json...${N}"
+	echo -e "${B}Extracting important values from policy.json...${N}"
 	python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
 	cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
@@ -161,10 +161,9 @@ PYEOF
 	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
 	rm -f /tmp/_pol_conv.py
 
-	echo -e "${B}Extracting user OpenNetworkConfiguration, Web Apps, and Managed Bookmarks from policy.json...${N}"
-	oncSettings=$(jq .policyValues.chrome.policies.OpenNetworkConfiguration?.value /root/policy.json)
-	managedBookmarks=$(jq -c '.policyValues.chrome.policies.ManagedBookmarks?.value' /root/policy.json)
-	webApp=$(jq -c '.policyValues.chrome.policies.WebAppInstallForceList?.value' /root/policy.json)
+	for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
+		export ${policy}="$(echo "\"${policy}\": "$(jq .policyValues.chrome.policies.${policy}?value /root/policy.json)",")"
+	done
 	
 	echo -e "${B}Extracting extension configs from extracted.json...${N}"
 	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
@@ -175,6 +174,10 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
   "managed_users": ["*"],
   "use_universal_signing_keys": true,
   "user": {
+		${ManagedBookmarks}
+		${OpenNetworkConfiguration}
+		${WebAppInstallForceList}
+		"ExtensionSettings": ${extSettings},
     "URLBlocklist": [],
     "EditBookmarksEnabled": true,
     "ChromeOsMultiProfileUserBehavior": "unrestricted",
@@ -208,11 +211,7 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
-		"VpnConfigAllowed": true,
-	"ManagedBookmarks": ${managedBookmarks},
-	"WebAppInstallForceList": ${webApp},
-    "ExtensionSettings": ${extSettings},
-		"OpenNetworkConfiguration": ${oncSettings}
+		"VpnConfigAllowed": true
   },
   "extensions": ${extBlock},
   "device": {}
