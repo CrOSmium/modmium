@@ -46,6 +46,18 @@ if [[ ! -f $DEVINSTALL_FILE ]]; then
 	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
 	echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
 fi
+
+cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
+
+cleanup(){
+	mv /etc/.chrome_dev.conf /etc/chrome_dev.conf
+	exit $?
+}
+
+trap cleanup EXIT
+
+
+
 echo -e "\
 ${G}+##############################################+
 | Policy Test Tool                             |

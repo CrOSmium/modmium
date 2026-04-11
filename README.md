@@ -52,7 +52,7 @@ Speaking of which; if you pass policy.json your enterprise extensions will insta
    * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `modFiles/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
 * `build-image.sh`
    * builder for installing modmium to recovery images.
-* `DEPENDENCIES.md`
+* `docs/DEPENDENCIES.md`
    * the dependencies required to build modmium on various linux distros.
 * `modmium.sh`
    * the devfw installation helper (will be hosted on crosbreaker cdn).
