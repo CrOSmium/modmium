@@ -201,7 +201,11 @@ def get_proto_default(field_desc):
                               field_desc.TYPE_FIXED32, field_desc.TYPE_FIXED64):
         return 0
     elif field_desc.type == field_desc.TYPE_ENUM:
-        return field_desc.enum_type.values[0].name.lower()
+        values = [v for v in field_desc.enum_type.values
+                  if "unspecified" not in v.name.lower() and "unknown" not in v.name.lower()]
+        if not values:
+            return field_desc.enum_type.values[0].number
+        return values[0].number
     else:
         return None
 
