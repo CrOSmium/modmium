@@ -263,7 +263,7 @@ full_menu(){
 					echo -e "${Y}Reverting changes!${N}"
 					pushd /var/lib/devicesettings &> /dev/null
 					mv owner.key.bak.enterprise owner.key &> /dev/null
-					local policyBackup=$(ls policy.*.bak.enterprise &> /dev/null)
+					local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
 					mv ${policyBackup} ${policyBackup%.bak.enterprise} &> /dev/null
 					popd &> /dev/null
 					rm -rf $jsonFile
