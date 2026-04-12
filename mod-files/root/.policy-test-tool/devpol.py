@@ -241,6 +241,8 @@ def main():
     policy_data, ds = read_existing_policy(POLICY_PATH)
 
     for key, value in unquote_numbers(simple_policies["device"]).items():
+        if value is None:
+            continue
         proto_path = device_schema.get(key)
         if not proto_path:
             print(f"Warning: device policy '{key}' not found in schema, skipping.")
