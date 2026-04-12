@@ -243,7 +243,7 @@ full_menu(){
 				'[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
 				'[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
 			esac
-		elif [[ "$key" =~ [1-5] ]]; then
+		elif [[ "$key" =~ [1-6] ]]; then
 			mainSelectedIndex=$((key - 1))
 		elif [[ "$key" == "" ]]; then
 			case $mainSelectedIndex in
