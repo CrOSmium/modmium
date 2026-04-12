@@ -188,6 +188,24 @@ def populate_message_from_dict(message, data_dict):
             setattr(message, key, convert_scalar(field_descriptor, value))
 
 
+def get_proto_default(field_desc):
+    if field_desc.label == field_desc.LABEL_REPEATED:
+        return []
+    elif field_desc.type == field_desc.TYPE_BOOL:
+        return False
+    elif field_desc.type == field_desc.TYPE_STRING:
+        return ""
+    elif field_desc.type in (field_desc.TYPE_INT32, field_desc.TYPE_INT64,
+                              field_desc.TYPE_UINT32, field_desc.TYPE_UINT64,
+                              field_desc.TYPE_SINT32, field_desc.TYPE_SINT64,
+                              field_desc.TYPE_FIXED32, field_desc.TYPE_FIXED64):
+        return 0
+    elif field_desc.type == field_desc.TYPE_ENUM:
+        return field_desc.enum_type.values[0].name.lower()
+    else:
+        return None
+
+
 def dump_policy(input_path: str, output_path: str):
     policy_data, ds = read_existing_policy(input_path)
     f2p = build_field_to_policy(load_map())
@@ -214,6 +232,19 @@ def dump_policy(input_path: str, output_path: str):
                 device_dict[f2p.get(path, path)] = convert_scalar_for_dump(field, val)
 
     walk(ds, raw)
+
+    device_schema = generate_device_policy_schema(MANUAL_MAP_PATH)
+    for policy_name, proto_path in device_schema.items():
+        if policy_name in device_dict:
+            continue
+        parts = proto_path.split(".")
+        message = ds
+        for part in parts[:-1]:
+            message = getattr(message, part)
+        field_desc = message.DESCRIPTOR.fields_by_name.get(parts[-1])
+        if field_desc:
+            device_dict[policy_name] = get_proto_default(field_desc)
+
     output = {"policy_user": policy_data.username, "managed_users": ["*"], "device": device_dict}
     json.dump(output, open(output_path, "w", encoding="utf-8"), indent=2)
     print(f"dumped {len(device_dict)} policies to {output_path}")
