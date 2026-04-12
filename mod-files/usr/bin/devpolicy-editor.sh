@@ -20,7 +20,7 @@ D='\033[1;90m'
 if [[ ! -f $jsonFile ]]; then
 	echo -e "${B}Installing required dependencies...${N}"
 	. /root/.bashrc
-	emerge pyyaml cryptography &> /dev/null
+	emerge cryptography nano pyyaml &> /dev/null
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
 	echo -e "${G}Done! Starting editor...${N}"
@@ -94,10 +94,10 @@ editJsonValue(){
 		if [[ "$currentVal" =~ ^[\{\[] ]] && echo "$currentVal" | jq . >/dev/null 2>&1; then
 			allowInput
 			echo -e "${Y}Editing compressed object for ${N}$key"
-			echo "Press enter to open it in ${EDITOR:-vi}"
+			echo "Press enter to open it in ${EDITOR:-nano}"
 			read -s      
 			echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
-			"${EDITOR:-vi}" "/tmp/mosh_tmp.json"      
+			"${EDITOR:-nano}" "/tmp/mosh_tmp.json"      
 			if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
    			local minified=$(jq -c . "/tmp/mosh_tmp.json")
 				jq --arg newval "$minified" ".device.$key = \$newval" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
@@ -126,10 +126,10 @@ editJsonValue(){
 	else
 		allowInput
 		echo -e "${Y}Warning: $key is a complicated object.${N}"
-		echo "Press enter to open this it in ${EDITOR:-vi}."
+		echo "Press enter to open this it in ${EDITOR:-nano}."
 		read -s    
 		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
-		"${EDITOR:-vi}" "/tmp/mosh_tmp.json"    
+		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"    
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
 			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = \$newval" "$jsonFile" > "${jsonFile}.tmp" && cp "${jsonFile}.tmp" "$jsonFile"
 		else
