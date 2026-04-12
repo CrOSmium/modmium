@@ -41,7 +41,7 @@ RUN='\033[24m' #reset underline
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Misc" "6) Exit")
+	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Edit Device Policies" "6) Misc" "7) Exit")
     num_options=${#options[@]}
 }
 
@@ -127,9 +127,12 @@ selector() {
 			runscript "bash /usr/bin/update-modmium.sh"
 			;;
 		5*)
-			runscript "bash /usr/bin/mosh-misc.sh"
+			runscript "bash /usr/bin/devpolicy-editor.sh"
 			;;
 		6*)
+			runscript "bash /usr/bin/mosh-misc.sh"
+			;;
+		7*)
 			stty echo
 			tput cnorm
 			clear
