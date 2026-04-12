@@ -218,7 +218,7 @@ main_menu_logo(){
 	echo -e "Press enter to select and esc to go back.\n"
 }
 
-mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies (will restart ChromeOS UI)")
+mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies (will restart ChromeOS UI)" "6) Reset All Changes")
 mainSelectedIndex=0
 mainNumOptions=${#mainMenuOptions[@]}
 
@@ -257,7 +257,19 @@ full_menu(){
 					python devpol.py $jsonFile
 					exit 0 
 					;;
-			esac
+				5)
+					allowInput
+					echo -e "${Y}Reverting changes!${N}"
+					pushd /var/lib/devicesettings &> /dev/null
+					mv owner.key.bak.enterprise owner.key &> /dev/null
+					local policyBackup=$(ls policy.*.bak.enterprise)
+					mv ${policyBackup} ${policyBackup%.bak.enterprise} &> /dev/null
+					popd &> /dev/null
+					rm -rf $jsonFile
+					echo -e "${G}Done!${N}"
+					sleep 2
+					exit 0
+				esac
 		fi
 	done
 }
