@@ -3,11 +3,6 @@
 . /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
 FLAGS $@
-if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
-	userkeys=true
-else
-	userkeys=false
-fi
 
 # -- FLAGS --
 menu_text="Modmium pre-enrollment script!"
@@ -78,7 +73,7 @@ doubleecho(){
 selectBackup(){
 	BACKUP=/tmp/backupdir
 	mkdir -p $BACKUP
-	if [[ $userkeys == "false" ]]; then
+	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
   	echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
 		read -ep "(D/P): " resp 
@@ -148,7 +143,7 @@ flashDevFW(){
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
 		/usr/share/vboot/bin/set_gbb_flags.sh 0xa0b1 || futility gbb -s --flash --flags=0xa0b1
-  	if [[ $userkeys == "false" ]]; then
+  	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 			/usr/share/vboot/bin/make_dev_ssd.sh --force
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
 		else

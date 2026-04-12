@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO, SEPARATE NON-NECESSARY BUILD FUNCTIONS FROM BUILD FUNCTIONS SECTION (stricty for organizational purposes, not necessary as of now)
-
 DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
@@ -21,33 +19,10 @@ if [[ -f .realuser ]]; then
 	USER=$(cat .realuser)
 fi
 
-credits(){
-	echo -e "\
-Credits:
-${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
-\033[38;5;78mdmd: Project lead; made MOSH, devfw stuff, mpkeys manager, a bunch of small changes.${N}
-\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
-${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
-\033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
-\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
-\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes."
+asUser(){
+	silence su $USER -c "$1" # we do this to make sure permisisons aren't janky
 }
-silence(){
-	"$@" >/dev/null 2>&1
-}
-cleanup(){ # to be used in case of failure, not for successful building
-	silence umount mnt
-	silence losetup -d $loopDev 
-	silence rm -rf mnt .realuser
-	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
-		silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
-	done
-}
-fail(){
-	echo -e "$1"
-	cleanup
-	exit 1
-}
+
 checkDependencies(){
 	for dep in $DEPENDENCIES; do
 		if ! silence command -v $dep; then
@@ -60,13 +35,39 @@ checkDependencies(){
 	fi
 }
 
-# args=$@ 
-# I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
-# after a day of thinking i realize it's because $@ is the arguments passed into the function, of which there are none unless i did something like getFlags($@). i think. lemme test it.
-# yep that was it. just gonna remove this variable because it's redudant now. these comments are staying because it's funny though xD
+cleanup(){ # to be used in case of failure, not for successful building
+	silence umount mnt
+	silence losetup -d $loopDev 
+	silence rm -rf mnt modmium*.bin .realuser
+	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
+		silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+	done
+}
+trap cleanup EXIT
+
+credits(){
+	echo -e "\
+Credits:
+${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
+\033[38;5;78mdmd: Project lead; made MOSH, devfw stuff, mpkeys manager, a bunch of small changes.${N}
+\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
+${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
+\033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
+\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
+\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes."
+}
+
+fail(){
+	echo -e "$1"
+	cleanup
+	exit 1
+}
+
+silence(){
+	"$@" >/dev/null 2>&1
+}
 # end of checks
 
-# begin functions
 # begin flag functions
 getFlags(){
 	load_shflags
@@ -91,6 +92,7 @@ $0 -b <board> -v <version> [flags]"
     exit 1
 	fi
 }
+
 checkFlagValidity(){
 	if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
 		fail "${R}File not found, please provide a path to an actual recovery image.${N}"
@@ -141,7 +143,7 @@ removeVerity(){
 		keydir=build-utils/keys/devkeys
 	fi
 	if [[ -n $FLAGS_image ]]; then
-		if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image}) ]]; then # checks if tmp has enough room for the image
+		if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image} | awk '{print $1}') ]]; then # checks if tmp has enough room for the image
 			tempDir=$(mktemp -d)
 		else
 			echo -e "${B}/tmp is not large enough, using disk...${N}"
@@ -192,6 +194,7 @@ removeVerity(){
 	echo -e "${G}Cleaning up kernel backups and configs...${N}"
 	rm -rf cros_sign_backups config*
 }
+
 dropModFiles(){
 	echo -e "${G}Mounting loop device...${N}"
 	mount "$loopDev"p3 mnt --mkdir
@@ -251,34 +254,34 @@ dropModFiles(){
 	rm -rf .realuser
 	echo -e "${G}Finished!${N}"
 }
+# end build functions
+
+# begin optional build functions
 bootsplash(){
 	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
-	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
-		unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
-		echo -e "Converting ${G}$(basename $splash)${N} to png..."
-		while [[ $unresolved == "true" ]]; do
-			echo -ne "Resolution: ${N}"
-			read -rep "" width height
-			for dimension in width height; do
-				if [[ ( -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ) || -z ${!dimension} ]]; then
-					echo -e "${R}Invalid ${dimension}!${N}"
-					export ${dimension}Valid=false
-				else
-					export ${dimension}Valid=true
-				fi
-			done
-			if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
-				unresolved=false
+	local unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
+	while [[ $unresolved == "true" ]]; do
+		echo -ne "Resolution: ${N}"
+		read -rep "" width height
+		for dimension in width height; do
+			if [[ ( -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ) || -z ${!dimension} ]]; then
+				echo -e "${R}Invalid ${dimension}!${N}"
+				export ${dimension}Valid=false
+			else
+				export ${dimension}Valid=true
 			fi
 		done
-		echo -e "${G}Valid dimensions set! Converting...${N}"
+		if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
+			unresolved=false
+		fi
+	done
+	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
+		echo -e "Converting ${G}$(basename $splash)${N} to png..."
 		mkdir -p mod-files/bootsplash
 		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
 }
-asUser(){
-	su $USER -c "$1" >/dev/null 2>&1 # we do this to make sure permisisons aren't janky
-}
+
 genUserKeys(){
 	echo -e "${G}Generating user keys...${N}"
 	silence pushd build-utils/keygeneration
@@ -297,7 +300,8 @@ genUserKeys(){
 	done
 	silence popd
 }
-backupSigningKeys(){
+
+backupUserKeys(){
 	# lol this one is taken from modmium.sh
 	BACKUPDIR=/tmp/backupdir
   echo -e "These are the external drives connected to your device:"
@@ -305,6 +309,11 @@ backupSigningKeys(){
   echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX, not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
   read -ep "Drive: " driveloc
   driveloc="${driveloc%/}"
+	echo -e "Are you absolutely ${UN}CERTAIN${RUN} you want to ${R}WIPE ${driveloc}${N}?"
+	read -r -n 2 -s -p "(Press yy to continue)"; echo
+	if [[ $REPLY != yy ]]; then
+		fail "${R}Exiting...${N}"
+	fi
   if [[ $driveloc == *"/dev/"* ]]; then
 		if ! mkfs.vfat -I -F 32 $driveloc; then fail "${R}Unable to wipe device...${N}"; fi
     mkdir -p $BACKUPDIR
@@ -323,6 +332,7 @@ backupSigningKeys(){
 	cp -r build-utils/keys/userkeys $BACKUPDIR
 	umount $BACKUPDIR
 }
+
 buildKernel(){ # unused until we actually need buildcharge, but useful
 	silence pushd build-utils/buildcharge
 	make fullclean
@@ -337,7 +347,7 @@ buildKernel(){ # unused until we actually need buildcharge, but useful
 	# this method keeps p4 on the recovery image intact, meaning the standard dev resigned cros kernel will be on disk
 	# of course, this is just a concept, kxtz may implement it differently and we'll adjust accorindgly
 }
-# end build functions
+# end optional build functions
 
 # begin downloading functions
 downloadImage(){
@@ -378,7 +388,7 @@ main(){
 		if [[ ! -d build-utils/keys/userkeys ]]; then
 			genUserKeys
 		fi
-		backupSigningKeys
+		backupUserKeys
 	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
