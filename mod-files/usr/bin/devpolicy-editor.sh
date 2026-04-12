@@ -131,7 +131,7 @@ editJsonValue(){
 		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
 		"${EDITOR:-vi}" "/tmp/mosh_tmp.json"    
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
-			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = $newval" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = $newval" "$jsonFile" > "${jsonFile}.tmp" && cp "${jsonFile}.tmp" "$jsonFile"
 		else
 			echo -e "${R}Invalid JSON syntax. Changes discarded.${N}"
 			sleep 2
