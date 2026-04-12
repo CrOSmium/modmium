@@ -104,9 +104,17 @@ def convert_scalar(field, val):
     if field.type == field.TYPE_ENUM and field.name in STRING_ENUM_PREFIXES:
         pfx = STRING_ENUM_PREFIXES[field.name]
         if isinstance(val, list):
-            return [item.upper().removeprefix(pfx).lower() if isinstance(item, str) else item for item in val]
+            converted = []
+            for item in val:
+                if isinstance(item, str):
+                    enum_val = field.enum_type.values_by_name.get(pfx + item.upper())
+                    converted.append(enum_val.number if enum_val else item)
+                else:
+                    converted.append(item)
+            return converted
         elif isinstance(val, str):
-            return val.upper().removeprefix(pfx).lower()
+            enum_val = field.enum_type.values_by_name.get(pfx + val.upper())
+            return enum_val.number if enum_val else val
     elif field.type == field.TYPE_ENUM:
         if isinstance(val, str):
             enum_val = field.enum_type.values_by_name.get(val.upper())
@@ -132,6 +140,16 @@ def convert_scalar(field, val):
     return val
 
 
+def convert_scalar_for_dump(field, val):
+    if field.type == field.TYPE_ENUM and field.name in STRING_ENUM_PREFIXES:
+        pfx = STRING_ENUM_PREFIXES[field.name]
+        if isinstance(val, list):
+            return [item.upper().removeprefix(pfx).lower() if isinstance(item, str) else item for item in val]
+        elif isinstance(val, str):
+            return val.upper().removeprefix(pfx).lower()
+    return convert_scalar(field, val)
+
+
 def convert_message_by_desc(desc, d):
     result = {}
     for field in desc.fields:
@@ -151,6 +169,23 @@ def convert_message_by_desc(desc, d):
         else:
             result[field.name] = convert_scalar(field, val)
     return result
+
+
+def populate_message_from_dict(message, data_dict):
+    for key, value in data_dict.items():
+        field_descriptor = message.DESCRIPTOR.fields_by_name.get(key)
+        if not field_descriptor:
+            continue
+        if field_descriptor.type == field_descriptor.TYPE_MESSAGE:
+            nested_message = getattr(message, key)
+            if field_descriptor.label == field_descriptor.LABEL_REPEATED:
+                for sub_dict in value:
+                    new_item = nested_message.add()
+                    populate_message_from_dict(new_item, sub_dict)
+            else:
+                populate_message_from_dict(nested_message, value)
+        else:
+            setattr(message, key, convert_scalar(field_descriptor, value))
 
 
 def dump_policy(input_path: str, output_path: str):
@@ -176,7 +211,7 @@ def dump_policy(input_path: str, output_path: str):
             elif field.message_type and isinstance(val, dict) and path not in f2p:
                 walk(getattr(msg, field.name), val, f"{path}.")
             else:
-                device_dict[f2p.get(path, path)] = convert_scalar(field, val)
+                device_dict[f2p.get(path, path)] = convert_scalar_for_dump(field, val)
 
     walk(ds, raw)
     output = {"policy_user": policy_data.username, "managed_users": ["*"], "device": device_dict}
@@ -204,7 +239,34 @@ def main():
     simple_policies = json.load(open(sys.argv[1], encoding="utf-8"))
     device_schema = generate_device_policy_schema(MANUAL_MAP_PATH)
     policy_data, ds = read_existing_policy(POLICY_PATH)
-    apply_device_policies(unquote_numbers(simple_policies["device"]), ds, device_schema)
+
+    for key, value in unquote_numbers(simple_policies["device"]).items():
+        proto_path = device_schema.get(key)
+        if not proto_path:
+            print(f"Warning: device policy '{key}' not found in schema, skipping.")
+            continue
+        parts = proto_path.split(".")
+        message = ds
+        for part in parts[:-1]:
+            message = getattr(message, part)
+        final_field = parts[-1]
+        field_desc = message.DESCRIPTOR.fields_by_name.get(final_field)
+        if not field_desc:
+            print(f"Warning: field '{final_field}' not found, skipping.")
+            continue
+        if isinstance(value, list) and value and isinstance(value[0], dict):
+            repeated = getattr(message, final_field)
+            del repeated[:]
+            for item_dict in value:
+                populate_message_from_dict(repeated.add(), convert_message_by_desc(field_desc.message_type, item_dict))
+        elif isinstance(value, list):
+            repeated = getattr(message, final_field)
+            del repeated[:]
+            repeated.extend(convert_scalar(field_desc, value))
+        elif isinstance(value, dict):
+            setattr(message, final_field, json.dumps(value))
+        else:
+            setattr(message, final_field, convert_scalar(field_desc, value))
 
     pk, pub = generate_keypair()
     write_devicesettings(public_key_to_der(pub), build_policy_fetch_response(pk, ds, policy_data))
