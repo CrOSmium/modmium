@@ -19,6 +19,7 @@ D='\033[1;90m'
 
 if [[ ! -f $jsonFile ]]; then
 	echo -e "${B}Installing required dependencies...${N}"
+	. /root/.bashrc
 	emerge pyyaml cryptography &> /dev/null
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
