@@ -111,16 +111,16 @@ editJsonValue(){
 			allowInput
 			echo -e "${B}Editing ${N}$key"
 			echo -e "Current value: $currentVal"
-			read -p "Enter new value: " new_val
-			jq ".device.$key = \"$new_val\"" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+			read -p "Enter new value: " newval
+			jq ".device.$key = \"$newval\"" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
 			disallowInput
 		fi
 	elif [ "$currentType" == "number" ]; then
 		allowInput
 		echo -e "${B}Editing ${N}$key"
 		echo -e "Current value: $currentVal"
-		read -p "Enter new value: " new_val
-		jq ".device.$key = $new_val" "$jsonFile" > "${jsonFile}.tmp" 2>/dev/null
+		read -p "Enter new value: " newval
+		jq ".device.$key = $newval" "$jsonFile" > "${jsonFile}.tmp" 2>/dev/null
 		if [ $? -eq 0 ]; then mv "${jsonFile}.tmp" "$jsonFile"; fi
 		disallowInput
 	else
@@ -131,7 +131,7 @@ editJsonValue(){
 		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
 		"${EDITOR:-vi}" "/tmp/mosh_tmp.json"    
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
-			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = $newval" "$jsonFile" > "${jsonFile}.tmp" && cp "${jsonFile}.tmp" "$jsonFile"
+			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = \$newval" "$jsonFile" > "${jsonFile}.tmp" && cp "${jsonFile}.tmp" "$jsonFile"
 		else
 			echo -e "${R}Invalid JSON syntax. Changes discarded.${N}"
 			sleep 2
