@@ -9,13 +9,13 @@ tput civis
 clear
 
 # TUI colors :D
-B='\033[38;5;45m'
-G='\033[38;5;46m'
-Y='\033[38;5;220m'
-R='\033[38;5;203m'
-P='\033[38;5;135m'
-N='\033[0m'
-D='\033[1;90m'
+B=$'\033[38;5;45m'
+G=$'\033[38;5;46m'
+Y=$'\033[38;5;220m'
+R=$'\033[38;5;203m'
+P=$'\033[38;5;135m'
+N=$'\033[0m'
+D=$'\033[1;90m'
 
 if [[ ! -f $jsonFile ]]; then
 	echo -e "${B}Installing required dependencies...${N}"
@@ -152,43 +152,44 @@ submenu(){
 		options=()
 		for k in "${keys[@]}"; do
 			local val=$(jq -r ".device.$k" "$jsonFile")
-			local vtype=$(jq -r ".device.$k | type" "$jsonFile")      
+			local vtype=$(jq -r ".device.$k | type" "$jsonFile")
+			local dispName="${k:0:35}"
+			[[ ${#k} -gt 35 ]] && dispName="${dispName}..."
 			if [ "$vtype" == "boolean" ]; then
 				if [ "$val" == "true" ]; then 
-					options+=("[${G}ON${N}]  $k")
+					options+=("[${G}ON${N}]  $dispName")
 				else 
-					options+=("[${R}OFF${N}] $k")
+					options+=("[${R}OFF${N}] $dispName")
 				fi
 			elif [ "$vtype" == "array" ] || [ "$vtype" == "object" ]; then
-				options+=("[${Y}{..}${N}] $k")
+				options+=("[${Y}{..}${N}] $dispName")
 			else
 				if [[ "$vtype" == "string" && "$val" =~ ^[\{\[] ]] && echo "$val" | jq . >/dev/null 2>&1; then
-					options+=("[${Y}{\"${N}] $k") 
+					options+=("[${Y}{\"${N}] $dispName") 
 				else
 					local dispVal="${val:0:20}"
 					[[ ${#val} -gt 20 ]] && dispVal="${dispVal}..."
 					dispVal="${dispVal//$'\n'/ }"
-					options+=("[${B}$dispVal${N}] $k")
+					options+=("[${B}$dispVal${N}] $dispName")
 				fi
 			fi
 		done
 		options+=("<-- Back to Main Menu")
 	}
 	loadData
-  clear
+	clear
 
 	while :; do
-		tput cup 0 0 
+		clear
 		echo -e "${P}=== $title ===${N}\n"
 		local numOptions=${#options[@]}
 		for i in "${!options[@]}"; do
 			if [[ $i -eq $subSelectedIndex ]]; then
-				printf "\e[7m > %-60s \e[0m\n" "${options[$i]}" | sed 's/\\033//g'
+				printf "\e[7m > %-60s \e[0m\n" "${options[$i]}"
 			else
-				printf "   %-61s\n" "${options[$i]}" | sed 's/\\033//g'
+				printf "   %-61s\n" "${options[$i]}"
 			fi
 		done
-		tput ed
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
 			read -rsn2 -t 0.05 keyseq
