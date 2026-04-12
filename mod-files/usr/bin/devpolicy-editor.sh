@@ -100,7 +100,7 @@ editJsonValue(){
 			"${EDITOR:-vi}" "/tmp/mosh_tmp.json"      
 			if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
    			local minified=$(jq -c . "/tmp/mosh_tmp.json")
-				jq --arg newval "$minified" ".device.$key = \"$newval\"" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+				jq --arg newval "$minified" ".device.$key = "$newval" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
 			else
 				echo -e "${R}Invalid syntax, changes discarded.${N}"
 				sleep 2
