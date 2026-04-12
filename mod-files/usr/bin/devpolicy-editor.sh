@@ -184,7 +184,7 @@ submenu(){
 			if [[ $i -eq $subSelectedIndex ]]; then
 				printf "\e[7m > %-60s \e[0m\n" "${options[$i]}" | sed 's/\\033//g'
 			else
-				printf "   %-60s\n" "${options[$i]}" | sed 's/\\033//g'
+				printf "   %-61s\n" "${options[$i]}" | sed 's/\\033//g'
 			fi
 		done
 		tput ed
