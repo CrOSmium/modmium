@@ -102,7 +102,7 @@ editJsonValue(){
 		if [[ "$currentVal" =~ ^[\{\[] ]] && echo "$currentVal" | jq . >/dev/null 2>&1; then
 			allowInput
 			echo -e "${Y}Editing compressed object for ${N}$key"
-			echo "Press enter to open it in ${EDITOR:-nano}"
+			confirmOrCancel || { disallowInput; return; }
 			read -s      
 			echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
 			"${EDITOR:-nano}" "/tmp/mosh_tmp.json"      
@@ -118,7 +118,7 @@ editJsonValue(){
 		else
 			allowInput
 			echo -e "${B}Editing ${N}$key"
-			echo -e "Current value: $currentVal"
+			confirmOrCancel || { disallowInput; return; }
 			read -p "Enter new value: " newval
 			jq ".device.$key = \"$newval\"" "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
 			disallowInput
@@ -126,7 +126,7 @@ editJsonValue(){
 	elif [ "$currentType" == "number" ]; then
 		allowInput
 		echo -e "${B}Editing ${N}$key"
-		echo -e "Current value: $currentVal"
+		confirmOrCancel || { disallowInput; return; }
 		read -p "Enter new value: " newval
 		jq ".device.$key = $newval" "$jsonFile" > "${jsonFile}.tmp" 2>/dev/null
 		if [ $? -eq 0 ]; then mv "${jsonFile}.tmp" "$jsonFile"; fi
@@ -134,7 +134,7 @@ editJsonValue(){
 	else
 		allowInput
 		echo -e "${Y}Warning: $key is a complicated object.${N}"
-		echo "Press enter to open this it in ${EDITOR:-nano}."
+		confirmOrCancel || { disallowInput; return; }
 		read -s    
 		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
 		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"    
