@@ -215,7 +215,7 @@ submenu(){
 
 main_menu_logo(){
 	echo -e "${B}MOSH device policy editor${N}"
-	echo -e "Press enter to select and esc to go back.\n"
+	echo -e "Press enter to select and esc to go back (from inside a submenu).\n To return to MOSH, press Ctrl+C"
 }
 
 mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies (will restart ChromeOS UI)" "6) Reset All Changes")
