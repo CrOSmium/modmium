@@ -80,6 +80,13 @@ disallowInput(){
 	clear
 }
 
+confirmOrCancel(){
+	echo -e "${D}(Press Enter to edit, Esc to cancel)${N}"
+	read -rsn1 key
+	[[ "$key" == $'\x1b' ]] && return 1
+	return 0
+}
+
 editJsonValue(){
 	local key="$1"
 	local currentType=$(jq -r ".device.$key | type" $jsonFile)
