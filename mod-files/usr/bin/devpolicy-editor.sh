@@ -81,10 +81,19 @@ disallowInput(){
 }
 
 confirmOrCancel(){
-	echo -e "Current value: ${currentVal}"
+	case ${currentType} in
+		'string')
+			if [[ ! $currentVal =~ ^[\{\[] ]]; then
+				echo "Current value: ${currentVal}"
+			fi
+			;;
+		'number')
+			echo "Current value: ${currentVal}"
+			;;
+	esac
 	echo -e "${D}(Press Enter to edit, Esc to cancel)${N}"
-	read -rsn1 key
-	[[ "$key" == $'\x1b' ]] && return 1
+	read -rsn1 k 
+	[[ "$k" == $'\x1b' ]] && return 1
 	return 0
 }
 
@@ -135,7 +144,7 @@ editJsonValue(){
 		allowInput
 		echo -e "${Y}Warning: $key is a complicated object.${N}"
 		confirmOrCancel || { disallowInput; return; }
-		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
+		jq ".device."$key"" "$jsonFile" > "/tmp/mosh_tmp.json"
 		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"    
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
 			jq --argfile newval "/tmp/mosh_tmp.json" ".device.$key = \$newval" "$jsonFile" > "${jsonFile}.tmp" && cp "${jsonFile}.tmp" "$jsonFile"
