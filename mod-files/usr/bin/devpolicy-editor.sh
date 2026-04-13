@@ -183,7 +183,7 @@ editJsonValue(){
 	local currentVal=$(jq -r --arg k "$key" '.device[$k]' "$jsonFile")
 
 	if [ "$currentType" == "boolean" ]; then
-		local newVal="true"; [[ "$currentVal" == "true" ]] && newVal="false"
+		newVal="true"; [ "$currentVal" == "true" ] && newVal="false"
 		jq --arg k "$key" --argjson v "$newVal" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
 	elif [[ "$currentType" == "string" ]]; then
 		if [[ "$currentVal" =~ ^[\{\[] ]] && echo "$currentVal" | jq . >/dev/null 2>&1; then
@@ -246,8 +246,8 @@ submenu(){
 		for k in "${keys[@]}"; do
 			local val=$(jq -r --arg k "$k" '.device[$k]' "$jsonFile")
 			local vtype=$(jq -r --arg k "$k" '.device[$k] | type' "$jsonFile")
-			local dispName="${k:0:35}"
-			[[ ${#k} -gt 35 ]] && dispName="${dispName}.."
+			local dispName="${k:0:28}"
+			[[ ${#k} -gt 28 ]] && dispName="${dispName}.."
 			if [ "$vtype" == "boolean" ]; then
 				[[ "$val" == "true" ]] && options+=("[${G}ON${N}]  $dispName") || options+=("[${R}OFF${N}] $dispName")
 			elif [ "$vtype" == "array" ] || [ "$vtype" == "object" ]; then
@@ -256,15 +256,16 @@ submenu(){
 				if [[ "$vtype" == "string" && "$val" =~ ^[\{\[] ]] && echo "$val" | jq . >/dev/null 2>&1; then
 					options+=("[${Y}{\"${N}] $dispName") 
 				else
-					local dispVal="${val:0:15}"
-					[[ ${#val} -gt 15 ]] && dispVal="${dispVal}.."
+					local dispVal="${val:0:12}"
+					[[ ${#val} -gt 12 ]] && dispVal="${dispVal}.."
 					options+=("[${B}${dispVal//$'\n'/ }${N}] $dispName")
 				fi
 			fi
 		done
-		options+=("<-- Back to main menu")
+		options+=("<-- Back")
 	}
-	
+
+	clear
 	loadData
 	while :; do
 		local numOptions=${#options[@]}
@@ -301,8 +302,7 @@ submenu(){
 
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
-			read -rsn2 -t 0.05 keyseq
-			while read -rsn1 -t 0.01 _; do :; done
+			read -rsn2 -t 0.01 keyseq
 			[[ -z "$keyseq" ]] && break
 			case "$keyseq" in
 				'[A') subSelectedIndex=$(((subSelectedIndex - 1 + numOptions) % numOptions)) ;;
@@ -330,15 +330,15 @@ main_menu_logo(){
 	echo -e "Use arrows to navigate. Enter to select. Esc to go back."
 }
 
-mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies(will restart ChromeOS UI)" "6) Reset All Changes")
+mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies" "6) Reset All Changes")
 mainSelectedIndex=0
 mainNumOptions=${#mainMenuOptions[@]}
 
 full_menu(){
-	clear
 	while :; do
 		tput cup 0 0
 		main_menu_logo
+		echo ""
 		for i in "${!mainMenuOptions[@]}"; do
 			if [[ $i -eq $mainSelectedIndex ]]; then
 				printf "\e[7m > %-40s \e[0m\n" "${mainMenuOptions[$i]}"
@@ -351,7 +351,6 @@ full_menu(){
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
 			read -rsn2 -t 0.05 keyseq
-			while read -rsn1 -t 0.01 _; do :; done
 			case "$keyseq" in
 				'[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
 				'[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
@@ -367,14 +366,14 @@ full_menu(){
 				4) 
 					allowInput
 					echo -e "${G}Applying device policies!${N}"
-					python devpol.py $jsonFile && exit 0 ;;
+					python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
 				5)
 					allowInput
 					echo -e "${Y}Reverting changes!${N}"
 					pushd /var/lib/devicesettings &> /dev/null
 					mv owner.key.bak.enterprise owner.key &> /dev/null
 					local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
-					mv ${policyBackup} ${policyBackup%.bak.enterprise} &> /dev/null
+					[[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
 					popd &> /dev/null
 					rm -rf $jsonFile
 					echo -e "${G}Done!${N}"; sleep 2; exit 0 ;;
