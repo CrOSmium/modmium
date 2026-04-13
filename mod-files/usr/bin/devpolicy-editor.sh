@@ -262,7 +262,7 @@ submenu(){
 				fi
 			fi
 		done
-		options+=("<-- Back")
+		options+=("<-- Back to main menu")
 	}
 	
 	loadData
@@ -301,7 +301,7 @@ submenu(){
 
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
-			read -rsn2 -t 0.01 keyseq
+			read -rsn2 -t 0.05 keyseq
 			[[ -z "$keyseq" ]] && break
 			case "$keyseq" in
 				'[A') subSelectedIndex=$(((subSelectedIndex - 1 + numOptions) % numOptions)) ;;
@@ -328,15 +328,15 @@ main_menu_logo(){
 	echo -e "Use arrows to navigate. Enter to select. Esc to go back."
 }
 
-mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies" "6) Reset All Changes")
+mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies(will restart ChromeOS UI)" "6) Reset All Changes")
 mainSelectedIndex=0
 mainNumOptions=${#mainMenuOptions[@]}
 
 full_menu(){
+	clear
 	while :; do
 		tput cup 0 0
 		main_menu_logo
-		echo ""
 		for i in "${!mainMenuOptions[@]}"; do
 			if [[ $i -eq $mainSelectedIndex ]]; then
 				printf "\e[7m > %-40s \e[0m\n" "${mainMenuOptions[$i]}"
@@ -364,14 +364,14 @@ full_menu(){
 				4) 
 					allowInput
 					echo -e "${G}Applying device policies!${N}"
-					python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
+					python devpol.py $jsonFile && exit 0 ;;
 				5)
 					allowInput
 					echo -e "${Y}Reverting changes!${N}"
 					pushd /var/lib/devicesettings &> /dev/null
 					mv owner.key.bak.enterprise owner.key &> /dev/null
 					local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
-					[[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
+					mv ${policyBackup} ${policyBackup%.bak.enterprise} &> /dev/null
 					popd &> /dev/null
 					rm -rf $jsonFile
 					echo -e "${G}Done!${N}"; sleep 2; exit 0 ;;
