@@ -19,7 +19,6 @@ as_system() {
 
 # -- { DO NOT MODIFY } --
 selected_index=0
-MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
 branch=$(cat /.branch)
 # -----------------------
 
@@ -39,6 +38,16 @@ RUN='\033[24m' #reset underline
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
+
+milestone() { 
+    if [[ -f /root/.milestone ]]; then
+        MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
+    else
+        MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
+        as_system "echo $MILESTONE > /root/.milestone"
+    fi
+}
+milestone
 
 menu_reset() {
 	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Open Cr3nroll" "4) ${R}Emergency Revert${N}" "5) Go back")

@@ -19,7 +19,6 @@ as_system() {
 
 # -- { DO NOT MODIFY } --
 selected_index=0
-MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
 branch=$(cat /.branch)
 # -----------------------
 
@@ -39,6 +38,16 @@ RUN='\033[24m' #reset underline
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
+
+milestone() { 
+    if [[ -f /root/.milestone ]]; then
+        MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
+    else
+        MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
+        as_system "echo $MILESTONE > /root/.milestone"
+    fi
+}
+milestone
 
 menu_reset() {
 	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Edit Device Policies" "6) Misc" "7) Exit")
@@ -68,6 +77,7 @@ get_largest_cros_blockdev() {
   done
   echo "$largest"
 }
+
 format_part_number() {
   echo -n "$1"
   echo "$1" | grep -q '[0-9]$' && echo -n p
