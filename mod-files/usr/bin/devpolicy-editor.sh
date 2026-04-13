@@ -81,6 +81,7 @@ disallowInput(){
 }
 
 confirmOrCancel(){
+	echo -e "Current value: ${currentVal}"
 	echo -e "${D}(Press Enter to edit, Esc to cancel)${N}"
 	read -rsn1 key
 	[[ "$key" == $'\x1b' ]] && return 1
@@ -103,7 +104,6 @@ editJsonValue(){
 			allowInput
 			echo -e "${Y}Editing compressed object for ${N}$key"
 			confirmOrCancel || { disallowInput; return; }
-			read -s      
 			echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
 			"${EDITOR:-nano}" "/tmp/mosh_tmp.json"      
 			if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
@@ -135,7 +135,6 @@ editJsonValue(){
 		allowInput
 		echo -e "${Y}Warning: $key is a complicated object.${N}"
 		confirmOrCancel || { disallowInput; return; }
-		read -s    
 		jq ".device.$key" "$jsonFile" > "/tmp/mosh_tmp.json"
 		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"    
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
