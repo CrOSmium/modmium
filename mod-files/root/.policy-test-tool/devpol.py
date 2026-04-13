@@ -26,6 +26,8 @@ POLICY_PATH = f"{DEVICESETTINGS_DIR}/policy.1"
 
 STRING_ENUM_PREFIXES = {"allowed_connection_types": "CONNECTION_TYPE_"}
 
+BOOL_TRUE_DEFAULTS = {"DeviceWiFiAllowed", "DeviceAllowBluetooth", "DevicePowerwashAllowed", "DeviceHardwareVideoDecodingEnabled", "DeviceUserInitiatedFirmwareUpdatesEnabled"}
+
 
 def generate_keypair():
     pk = rsa.generate_private_key(65537, 2048, default_backend())
@@ -188,11 +190,11 @@ def populate_message_from_dict(message, data_dict):
             setattr(message, key, convert_scalar(field_descriptor, value))
 
 
-def get_proto_default(field_desc):
+def get_proto_default(policy_name, field_desc):
     if field_desc.label == field_desc.LABEL_REPEATED:
         return []
     elif field_desc.type == field_desc.TYPE_BOOL:
-        return False
+        return True if policy_name in BOOL_TRUE_DEFAULTS else False
     elif field_desc.type == field_desc.TYPE_STRING:
         return ""
     elif field_desc.type in (field_desc.TYPE_INT32, field_desc.TYPE_INT64,
@@ -247,7 +249,7 @@ def dump_policy(input_path: str, output_path: str):
             message = getattr(message, part)
         field_desc = message.DESCRIPTOR.fields_by_name.get(parts[-1])
         if field_desc:
-            device_dict[policy_name] = get_proto_default(field_desc)
+            device_dict[policy_name] = get_proto_default(policy_name, field_desc)
 
     output = {"policy_user": policy_data.username, "managed_users": ["*"], "device": device_dict}
     json.dump(output, open(output_path, "w", encoding="utf-8"), indent=2)
