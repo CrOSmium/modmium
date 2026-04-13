@@ -302,7 +302,8 @@ submenu(){
 
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
-			read -rsn2 -t 0.01 keyseq
+			read -rsn2 -t 0.05 keyseq
+			while read -rsn1 -t 0.01 _; do :; done
 			[[ -z "$keyseq" ]] && break
 			case "$keyseq" in
 				'[A') subSelectedIndex=$(((subSelectedIndex - 1 + numOptions) % numOptions)) ;;
@@ -351,6 +352,7 @@ full_menu(){
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
 			read -rsn2 -t 0.05 keyseq
+			while read -rsn1 -t 0.01 _; do :; done
 			case "$keyseq" in
 				'[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
 				'[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
