@@ -130,7 +130,7 @@ selector() {
 			stty echo
 			tput cnorm
 			clear
-			exit 0
+			exec /usr/bin/crosh
 	esac
 }
 

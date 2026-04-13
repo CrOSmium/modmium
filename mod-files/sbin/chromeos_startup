@@ -48,6 +48,7 @@ ChromeOS is trying to kill itself.
 ChromeOS detected developer mode and is trying to disable it to
 comply with FWMP. If auto-repair fails, boot some kind of code exec and run "vpd -i RW_VPD -s block_devmode=0 && crossystem block_devmode=0"
 EOF
+
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
 fanxql touched your system in a way that made it feel funny
 detouching system (repairing system)
@@ -85,7 +86,7 @@ echo "your firmware is updating!! (if you see this message, report an issue ASAP
 crossystem block_devmode=0
 vpd -i RW_VPD -s block_devmode=0 
 device_management_client --action=remove_firmware_management_parameters
-device_management_client --action=set_firmware_management_parameters --flags=0x0000
+device_management_client --action=set_firmware_management_parameters --flags=0
 
 # THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
 # before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)

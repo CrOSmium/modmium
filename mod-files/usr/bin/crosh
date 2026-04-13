@@ -130,7 +130,8 @@ selector() {
 			runscript "bash /usr/bin/devpolicy-editor.sh"
 			;;
 		6*)
-			runscript "bash /usr/bin/mosh-misc.sh"
+            clear
+			exec /usr/bin/mosh-misc.sh # exec instead of runscript because it is faster
 			;;
 		7*)
 			stty echo
