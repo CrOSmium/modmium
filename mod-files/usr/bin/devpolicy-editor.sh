@@ -1,6 +1,7 @@
 #!/bin/bash
 # written by mariah carey	
 
+. /root/.bashrc # to get $EDITOR
 cd /usr/local/share/policy-test-tool
 jsonFile="dump.json"
 
