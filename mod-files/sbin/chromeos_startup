@@ -147,5 +147,8 @@ fi
 echo "Launching sshd..."
 /usr/sbin/sshd -f /ssh/config &
 
+echo "Mounting Nix..."
+[[ -d /usr/local/nix ]] && mkdir -p /nix && mount --bind /usr/local/nix /nix 2>/dev/null
+
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
