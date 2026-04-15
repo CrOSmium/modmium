@@ -21,7 +21,7 @@ esac
 
 
 if [[ -d /usr/local/nix/store ]]; then
-	if [[ ! mountpoint -q /nix ]]; then
+	if ! mountpoint -q /nix; then
 		mkdir -p /nix
     mount --bind /usr/local/nix /nix
 	fi
