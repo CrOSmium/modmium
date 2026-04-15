@@ -20,6 +20,10 @@ case ":$PATH:" in
 esac
 
 
+if [[ -d /usr/local/nix/store ]] && ! mountpoint -q /nix; then
+    mkdir -p /nix
+    mount --bind /usr/local/nix /nix
+fi
 if [[ -d /usr/local/nix/store ]]; then
     . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
 fi
