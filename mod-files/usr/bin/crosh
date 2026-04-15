@@ -131,7 +131,6 @@ selector() {
 			runscript "cd /home/chronos; sudo -i -u chronos"
 			;;
 		3*)
-            "\033]0;crosh\007"
 			runscript /usr/bin/crosh.old
 			;;
 		4*)
