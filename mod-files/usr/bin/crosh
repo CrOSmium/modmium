@@ -133,7 +133,6 @@ selector() {
 		3*)
             "\033]0;crosh\007"
 			runscript /usr/bin/crosh.old
-            "\033]0;MOSH\007"
 			;;
 		4*)
 			runscript "bash /usr/bin/update-modmium.sh"
