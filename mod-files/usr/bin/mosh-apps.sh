@@ -15,6 +15,11 @@ index() {
     paths=()
     options=()
 
+
+    if [[ ! -f /root/.mosh-apps ]]; then
+        mv /root/.mosh-apps-template /root/.mosh-apps
+    fi
+    
     while IFS='|' read -r path name; do
         [[ "$path" =~ ^#.* ]] || [[ -z "$path" ]] && continue
         path=$(echo "$path" | xargs)

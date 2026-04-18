@@ -1,0 +1,5 @@
+# You can edit and add whatever you want to this list [ ONLY 9 APPS MAX, DO NOT ADD MORE THAN 9 ]
+# FORMAT: 'COMMAND | NAME'
+
+vi /root/.mosh-apps | Edit .mosh-apps
+/usr/bin/crosh | Go Back
