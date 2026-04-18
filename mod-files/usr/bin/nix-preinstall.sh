@@ -130,7 +130,7 @@ selector() {
 			stty echo
 			tput cnorm
 			clear
-			exec /usr/bin/crosh
+			exec /usr/bin/mosh-misc.sh
 	esac
 }
 
