@@ -11,16 +11,15 @@ source /usr/lib/libmosh.sh
 tput civis # :whale:
 milestone
 
+if [[ ! -f /root/.mosh-apps ]]; then
+    as_system "mv /root/.mosh-apps-template /root/.mosh-apps"
+fi
+
 index() {
     paths=()
     options=()
-
-
-    if [[ ! -f /root/.mosh-apps ]]; then
-       runscript "mv /root/.mosh-apps-template /root/.mosh-apps"
-    fi
     
-    while IFS='|' read -r path name; do
+    while IFS='|' read -r path name || [[ -n "$path" ]]; do
         [[ "$path" =~ ^#.* ]] || [[ -z "$path" ]] && continue
         path=$(echo "$path" | xargs)
         name=$(echo "$name" | xargs)
