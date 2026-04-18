@@ -17,7 +17,7 @@ index() {
 
 
     if [[ ! -f /root/.mosh-apps ]]; then
-        mv /root/.mosh-apps-template /root/.mosh-apps
+       runscript "mv /root/.mosh-apps-template /root/.mosh-apps"
     fi
     
     while IFS='|' read -r path name; do
