@@ -23,7 +23,7 @@ fi
 case "$1" in
     install)
         if [ -z "$2" ]; then
-            echo "usage: mix install <pkg1> [pkg2...]"
+            echo "Usage: mix install <pkg1> [pkg2...]"
         else
             pkgs=()
             for p in "${@:2}"; do
