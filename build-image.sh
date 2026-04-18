@@ -231,6 +231,8 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
+	local arch=$(file mnt/bin/bash | awk -F', ' '{print $2}' | sed 's/-/_/') # we want x86_64 instead of x86-64, hence the sed
+	cp mod-files/lib/minioverride-${arch}.so mnt/lib/minioverride.so
 	rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
