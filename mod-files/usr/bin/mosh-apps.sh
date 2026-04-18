@@ -23,7 +23,7 @@ index() {
         paths+=("$path")
         display_num=$(( ${#paths[@]} ))
         options+=("$display_num) $name")
-    done < .mosh-apps
+    done < /root/.mosh-apps
 
     num_options=${#options[@]}
     selected_index=0
