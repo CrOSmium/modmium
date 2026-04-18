@@ -1,7 +1,7 @@
 murkmod walked, so we could fly
 
-# modmium
-modmium is a chromeOS modification built to allow the freedom of an unrestricted device on a managed device. 
+# Modmium
+Modmium is a chromeOS modification built to allow the freedom of an unrestricted device on a managed device. 
 ## Features
 * Reports as verified in the Google Admin Console (GAC)
 * Allows modification of all policies 
@@ -11,9 +11,8 @@ modmium is a chromeOS modification built to allow the freedom of an unrestricted
   * Stable: where changes are pushed after a public beta
 * Custom bootsplashes for those who wish to install them
   * Thanks to Casper1051, Moonstone, and pilgorr for creating the default ones :D
-* Nix installer for developers to easily install packages
-  * note to devs, i haven't made an option in mosh for this yet, i can do it or dmd can if they want to)
-* Comes with [smiko](https://github.com/HavenOverflow/Smiko) installed
+* Nix installer for developers to easily install packages (You can use 'Mix' for APT-like syntax!)
+* Comes with [Smiko](https://github.com/HavenOverflow/Smiko) pre-installed
 
 ## Getting started
 * To build modmium, see [docs/building.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/building.md)
