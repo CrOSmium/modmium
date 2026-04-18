@@ -11,7 +11,7 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
   * Stable: where changes are pushed after a public beta
 * Custom bootsplashes for those who wish to install them
   * Thanks to Casper1051, Moonstone, and pilgorr for creating the default ones :D
-* Nix installer for developers to easily install packages (You can use 'Mix' for APT-like syntax!)
+* Nix installer for developers to easily install packages (You can use `mix` for APT-like syntax!)
 * Comes with [Smiko](https://github.com/HavenOverflow/Smiko) pre-installed
 
 ## Getting started
