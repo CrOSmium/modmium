@@ -49,12 +49,7 @@ milestone() {
 }
 milestone
 
-menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Edit Device Policies" "6) Apps" "7) Misc" "8) Exit")
-    num_options=${#options[@]}
-}
 
-menu_reset
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
@@ -116,43 +111,57 @@ runscript() {
 	tput cnorm
 	echo "$1"
 	employ as_system "$1"
-	menu_reset
 	full_menu
 }
 
-selector() {
-	sel="${options[$selected_index]}"
+index() {
+    paths=()
+    options=()
 
-	case "$sel" in
-		1*)
-			runscript bash
-			;;
-		2*)
-			runscript "cd /home/chronos; sudo -i -u chronos"
-			;;
-		3*)
-			runscript /usr/bin/crosh.old
-			;;
-		4*)
-			runscript "bash /usr/bin/update-modmium.sh"
-			;;
-		5*)
-			runscript "bash /usr/bin/devpolicy-editor.sh"
-			;;
-        6*)
-			exec /usr/bin/mosh-apps.sh
-			;;
-		7*)
-            clear
-			exec /usr/bin/mosh-misc.sh
-			;;
-		8*)
-			stty echo
-			tput cnorm
-			clear
-			exit 0
-	esac
+    while IFS='|' read -r path name; do
+        [[ "$path" =~ ^#.* ]] || [[ -z "$path" ]] && continue
+        path=$(echo "$path" | xargs)
+        name=$(echo "$name" | xargs)
+        [[ -z "$path" ]] && continue
+        paths+=("$path")
+        display_num=$(( ${#paths[@]} ))
+        options+=("$display_num) $name")
+    done < /root/.mosh-apps
+
+    num_options=${#options[@]}
+    selected_index=0
+    if [[ " ${options[*]} " == *" Edit .mosh-apps "* ]]; then
+        nopt=1
+    fi
+    if [[ $num_options -gt 9 ]]; then
+        clear
+        echo -e "${R}Error: More than 9 apps added! ${N}"
+        echo -e "INFO: You can only add a ${B}maximum of 9 apps${N} to '/root/.mosh-apps'!"
+        sleep 1
+        echo -e "Returning to MOSH..."
+        sleep 3
+        exec /usr/bin/crosh
+    fi
 }
+index
+
+selector() {
+    torun="${paths[$selected_index]}"
+
+    if [[ -z "$torun" ]]; then
+        return
+    fi
+
+    case "$torun" in
+        *crosh)
+            exec /usr/bin/crosh
+            ;;
+        *)
+            runscript "$torun"
+            ;;
+    esac
+}
+
 
 full_menu() {
   clear
@@ -216,7 +225,9 @@ display_menu() {
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
-
+  if [[ $nopt == 1 ]];then
+    echo -e "\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/root/.mosh-apps'\n(The formatting is 'COMMAND | NAME' on each line)"
+  fi
   echo ""
   for i in "${!options[@]}"; do
   	if [[ $i -eq $selected_index ]]; then
