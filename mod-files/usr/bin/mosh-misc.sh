@@ -136,7 +136,7 @@ selector() {
         runscript "bash /usr/bin/emergencyrevert.sh"
         ;;
     5*)
-        runscript "bash /usr/bin/nix-preinstall.sh"
+        exec /usr/bin/nix-preinstall.sh
         ;;
 	6*)
 		stty echo
