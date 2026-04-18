@@ -50,7 +50,7 @@ milestone() {
 milestone
 
 menu_reset() {
-	options=("1) Modify Bootsplash" "2) Toggle Enrollment" "3) Open Cr3nroll" "4) ${R}Emergency Revert${N}" "5) Install Nix" "6) Go back")
+	options=("1) Install Nix" "2) Go Back")
     num_options=${#options[@]}
 }
 
@@ -124,25 +124,13 @@ selector() {
 
 	case "$sel" in
 		1*)
-			runscript "bash /usr/bin/modify-bootsplash.sh"
+			runscript "bash /usr/bin/.nix-install.sh"
 			;;
 		2*)
-			runscript "bash /usr/bin/toggle-enrollment.sh"
-			;;
-    3*)
-        runscript "bash /usr/bin/cr3nroll.sh"
-        ;;
-    4*)
-        runscript "bash /usr/bin/emergencyrevert.sh"
-        ;;
-    5*)
-        runscript "bash /usr/bin/nix-preinstall.sh"
-        ;;
-	6*)
-		stty echo
-		tput cnorm
-		clear
-		exec /usr/bin/crosh
+			stty echo
+			tput cnorm
+			clear
+			exec /usr/bin/crosh
 	esac
 }
 
@@ -210,6 +198,7 @@ display_menu() {
   fi
 
   echo ""
+  echo -e "This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}\nYou can use '${B}mix${N} [arg]' in a root shell to use Nix like a regular package manager like apt, or if you're just lazy.\n"
   for i in "${!options[@]}"; do
   	if [[ $i -eq $selected_index ]]; then
     	printf "\e[7m > ${options[$i]} \e[0m\n"

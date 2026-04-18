@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# this is a tiny wrapper for skids to use nix easier
+
+
+# TUI colors :D
+B='\033[38;5;45m'
+G='\033[38;5;46m'
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+P='\033[38;5;135m'
+N='\033[0m'
+D='\033[1;90m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
+
+if [[ -f /usr/bin/.mix ]]; then
+mv /usr/bin/.mix /usr/bin/mix
+echo -e "Mix has been updated! please re-run this command."
+exit 1
+fi
+case "$1" in
+    install)
+        if [ -n "$2" ]; then
+            nix-env -iA "nixpkgs.$2"
+        else
+            echo "Usage: mix install <package>"
+        fi
+        ;;
+    search)
+        if [ -n "$2" ]; then
+            echo "Searching packages for '$2', this may take a moment.."
+            nix search nixpkgs "$2" --extra-experimental-features "nix-command flakes"
+        else
+            echo "Usage: mix search <query>"
+        fi
+        ;;
+    list)
+        nix-env -q
+        ;;
+    revert)
+        nix-env --rollback
+        ;;
+    upgrade)
+        nix-env -u
+        nix-collect-garbage -d
+        ;;
+    help)
+        echo -e "${G}MIX${N} (${G}M${N}odmium s${G}I${N}mplified ni${G}X${N})\nUsage: mix {install|search|list|revert|upgrade|remove|help} [args]\n-- Mix is a ${UN}command wrapper${RUN} for Nix --"
+        ;;
+    remove)
+        if [ -n "$2" ]; then
+            nix-env -e "$2"
+            nix-collect-garbage -d
+        else
+            echo "Usage: mix remove <package>"
+        fi
+        ;;
+    *)
+        echo "Usage: mix {install|search|list|revert|upgrade|remove|help} [args]"
+        exit 1
+        ;;
+esac
