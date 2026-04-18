@@ -28,8 +28,8 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 * `build-utils/`
    * contains scripts, libraries, and signing keys used for building the image
 * `mod-files/`
-   * is a rootfs overlay (for example, `modFiles/usr/bin/crosh` is mosh (modmium shell)
-   * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `modFiles/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
+   * is a rootfs overlay (for example, `mod-files/usr/bin/crosh` is mosh (modmium shell)
+   * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `mod-files/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
 * `build-image.sh`
    * builder for installing modmium to recovery images.
 * `docs/`
@@ -37,6 +37,5 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 * `modmium.sh`
    * the devfw installation helper (will be hosted on crosbreaker cdn).
 
-about the code of conduct:
-Note from mariah scary. "For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
-Your minds are incredible things, don't let them go to waste please."
+"For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
+Your minds are incredible things, don't let them go to waste please." - Mariah Scary
