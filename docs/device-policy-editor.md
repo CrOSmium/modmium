@@ -1,8 +1,8 @@
 ## How it works
-Policies are signed by a private key, and the corresponding public key is used to verify them. For testing new policies, google created the flag `--disable-policy-key-verification` (which modmium automatically places into /etc/chrome_dev.conf). With this, we can dump the device policy to a JSON file, edit it, and use the modified JSON to create a new device policy file with new values.
+Policies are signed by a private key, and the corresponding public key is used to verify them. For testing new policies, Google created the flag `--disable-policy-key-verification` (which modmium automatically places into /etc/chrome_dev.conf). With this, we can dump the device policy to a JSON file, edit it, and use the modified JSON to create a new device policy file with new values.
 ## Device policy editor instructions
 1. Open MOSH (see [./usage.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/usage.md) if you don't know how)
-2. Find the policy you wish to edit (see the google [policy list](https://chromeenterprise.google/policies) to search for policy names)
+2. Find the policy you wish to edit (see the Google [policy list](https://chromeenterprise.google/policies) to search for policy names)
 > [!NOTE]
 > The categories of Restrictions, Reporting, Enterprise Settings, and Misc are not official, just how we organize them.
 
@@ -10,7 +10,7 @@ Policies are signed by a private key, and the corresponding public key is used t
 > If you modify *any* device policies, it'll stop sending new reports to the GAC and appear as offline. 
 > Use `Reset All Changes` to send reports to the GAC again.
 * For most users, relevant ones are:
-    * Restrictions/DeviceAllowNewUsers (if true, will allow any google account to sign in)
+    * Restrictions/DeviceAllowNewUsers (if true, will allow any Google account to sign in)
     * Restrictions/DeviceUnaffiliatedCrostiniAllowed (enabling the linux container)
     * Restrictions/DeviceUserAllowlist (can be used to be more specific than DeviceAllowNewUsers, (for example specifying a specific account instead of using a wildcard) for most people, adding `"*@gmail.com",` is good enough)
     * Restrictions/DeviceBorealisAllowed (enabling steam, also needs to be turned on in chrome://flags)
