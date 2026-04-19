@@ -45,7 +45,7 @@ if [[ -f /.deprovision ]]; then
 	echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		vpd -i RW_VPD -s "MODMIUM_CLOBBER_STATE_DO_NOT_DELETE"="carbon_40k_vrp_stealer_will_steal_this_tuff_method"
+		echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
 	else
 		fail # :whale:
 	fi
