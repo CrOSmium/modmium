@@ -137,6 +137,7 @@ flashDevFW(){
 		device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 ) \
 	|| \
 	( initctl stop tcsd >/dev/null 2>&1; \
+		initctl stop trunksd >/dev/null 2>&1 \
 		tpmc clear; tpmc def 0x100a 0x28 0x12000; \
 		tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 	
