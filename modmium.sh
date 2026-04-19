@@ -75,7 +75,7 @@ selectBackup(){
 	mkdir -p $BACKUP
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
-  	echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
+  	echo -e "Backing up to a (d)rive is highly recommended, but if you know what you're doing, [or already have a mount (p)oint], you can use a directory"
 		read -ep "(D/P): " resp 
   	if [[ $resp =~ ^[Dd]$ ]]; then
       echo -e "These are the drives connected to your device:"
