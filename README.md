@@ -15,11 +15,11 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 * Comes with [Smiko](https://github.com/HavenOverflow/Smiko) pre-installed
 
 ## Getting started
-* To build modmium, see [docs/building.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/building.md)
-  * Note, see [docs/dependencies.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/dependencies.md) before building to ensure you have the necessary dependencies
+* To build modmium, see [docs/building.md](docs/building.md)
+  * Note, see [docs/dependencies.md](docs/dependencies.md) before building to ensure you have the necessary dependencies
   * Feel free to submit a PR adding the dependency list for other distros!
-* To install modmium, see [docs/installation.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/installation.md)
-* To learn other usage instructions (policy editors, MOSH, etc..), see [docs/usage.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/usage.md)
+* To install modmium, see [docs/installation.md](docs/installation.md)
+* To learn other usage instructions (policy editors, MOSH, etc..), see [docs/usage.md](docs/usage.md)
 
 ## repo layout
 (thank you mariah!)
