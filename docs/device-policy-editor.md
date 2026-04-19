@@ -4,7 +4,7 @@ Policies are signed by a private key, and the corresponding public key is used t
 1. Open MOSH (see [./usage.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/usage.md) if you don't know how)
 2. Find the policy you wish to edit (see the Google [policy list](https://chromeenterprise.google/policies) to search for policy names)
 > [!NOTE]
-> The categories of Restrictions, Reporting, Enterprise Settings, and Misc are not official, just how we organize them.
+> The policy categories of Restrictions, Reporting, Enterprise Settings, and Misc are not official, it's just how we organize them.
 
 > [!Caution]
 > If you modify *any* device policies, it'll stop sending new reports to the GAC and appear as offline. 
