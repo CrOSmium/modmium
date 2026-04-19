@@ -2,21 +2,7 @@
 # written by mariah carey & dmd
 # using qs for 142- suggested by xz8f
 
-
-# TODO (xz8f): add powerwashing to MOSH for use with this by skids (and maybe a prompt in here too(?))
-# colors
-B='\033[38;5;45m'
-G='\033[38;5;46m'
-Y='\033[38;5;220m'
-R='\033[38;5;203m'
-P='\033[38;5;135m'
-N='\033[0m'
-D='\033[1;90m'
-UN='\033[4m' #underline
-RUN='\033[24m' #reset underline
-
-
-
+. /usr/lib/libmosh.sh
 
 fail() {
 	if [[ "$1" == "" ]]; then
@@ -32,20 +18,26 @@ fail() {
 	fi
 }
 
-if [[ -f /.deprovision ]]; then
-	echo -e "${B}You are currently ${R}unenrolled${B}, would you like to toggle [${G}allow${B}] enrollment? [y/N]${N}"
-	# read -re REPLY
-	read -re
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		rm /.deprovision
-		fail "${G}Done! Powerwash to re-enroll...${N}"
-	else
-		fail # :whale:
-	fi
+promptPowerwash(){
 	echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+		echo -e "${G}Done! Rebooting...${N}"
+		sleep 1
+		reboot
+	else
+		fail # :whale:
+	fi
+}
+
+if [[ -f /.deprovision ]]; then
+	echo -e "${B}You are currently ${R}unenrolled${B}, would you like to toggle [${G}allow${B}] enrollment? [y/N]${N}"
+	read -re
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+		rm /.deprovision
+		echo -e "${G}Done!${N}"
+		promptPowerwash
 	else
 		fail # :whale:
 	fi
@@ -54,7 +46,8 @@ else
 	read -re
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo $(grep MILESTONE /etc/lsb-release | sed 's|^.*=||g') >/.deprovision
-		fail "${G}Done! You will now be unenrolled on your next powerwash.${N}"
+		echo -e "${G}Done!${N}"
+		promptPowerwash
 	else
 		fail # :whale:
 	fi
