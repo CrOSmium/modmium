@@ -1,5 +1,5 @@
 ## The problem
-If you enroll while using modmium then modmium gets corrupted to the point where it's unable to boot, recovering with a modmium image is no longer possible because FWMP will prevent booting a developer image (note to devs, i think this may be because we remove rootfs verification instead of simply replacing the keys, i'll look into this later). Thankfully, it is fairly trivial to clear FWMP so long as you have code execution.
+If you enroll while using modmium and at some point modmium gets corrupted to the point where it's unable to boot, recovering with a modmium image is no longer possible because FWMP will prevent booting a developer image (note to devs, i think this may be because we remove rootfs verification instead of simply replacing the keys, i'll look into this later). Thankfully, it is fairly trivial to clear FWMP so long as you have code execution.
 ## Getting code execution.
 Thanks to the GBB flags set by `modmium.sh`, shims can be booted with **[Ctrl+U]]** on the developer mode boot screen, regardless of the recovery key (meaning they will also work on boards that are typically keyrolled(1)).
 * Download the shim for your board from [crosbreaker's DL site](https://dl.crosbreaker.com/).
