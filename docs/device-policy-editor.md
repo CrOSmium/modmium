@@ -1,7 +1,7 @@
 ## How it works
 Policies are signed by a private key, and the corresponding public key is used to verify them. For testing new policies, Google created the flag `--disable-policy-key-verification` (which modmium automatically places into /etc/chrome_dev.conf). With this, we can dump the device policy to a JSON file, edit it, and use the modified JSON to create a new device policy file with new values.
 ## Device policy editor instructions
-1. Open MOSH (see [./usage.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/usage.md) if you don't know how)
+1. Open MOSH (see [./usage.md](usage.md) if you don't know how)
 2. Find the policy you wish to edit (see the Google [policy list](https://chromeenterprise.google/policies) to search for policy names)
 > [!NOTE]
 > The policy categories of Restrictions, Reporting, Enterprise Settings, and Misc are not official, it's just how we organize them.
