@@ -5,7 +5,7 @@
 # -- Pre TUI init --
 stty -echo 
 source /usr/lib/libmosh.sh
-
+[[ -d /nix ]] && mount --bind /usr/local/nix /nix
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
