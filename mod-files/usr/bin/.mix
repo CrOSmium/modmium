@@ -15,11 +15,6 @@ D='\033[1;90m'
 UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
-if [[ -f /usr/bin/.mix ]]; then
-mv /usr/bin/.mix /usr/bin/mix
-echo -e "Mix has been updated! please re-run this command."
-exit 1
-fi
 case "$1" in
     install)
         if [ -z "$2" ]; then

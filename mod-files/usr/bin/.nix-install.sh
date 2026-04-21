@@ -13,6 +13,6 @@ for i in $(seq 1 32); do
         -c "Nix build user $i" nixbld$i 2>/dev/null || true
 done
 
-curl -L https://nixos.org/nix/install -o /usr/local/tmp/install.sh && mv /usr/bin/.mix /usr/bin/mix
+curl -L https://nixos.org/nix/install -o /usr/local/tmp/install.sh && cp /usr/bin/.mix /usr/bin/mix
 TMPDIR=/usr/local/tmp sh /usr/local/tmp/install.sh
 sync
