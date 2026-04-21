@@ -52,7 +52,7 @@ ${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) co
 \033[38;5;78mdmd: Project lead; made MOSH, devfw stuff, mpkeys manager, a bunch of small changes.${N}
 \033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
-\033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
+\033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
 \033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes."
 }
