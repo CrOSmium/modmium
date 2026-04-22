@@ -29,6 +29,8 @@ selector() {
 			runscript "cd /home/chronos; sudo -i -u chronos"
 			;;
 		3*)
+			stty echo
+			tput cnorm
 			employ exec /usr/bin/crosh.old
 			;;
 		4*)
