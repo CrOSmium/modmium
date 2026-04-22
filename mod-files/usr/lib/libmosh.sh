@@ -8,9 +8,11 @@ STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this fi
 as_system() {
     # this bypasses permissions on /.rootkey preventing ssh from working
 		# /.rootkey does have proper permissions now, so this shouldn't be necessary anymore ideally
-    local ROOTKEY
-    ROOTKEY=$(cat /.rootkey)
-    ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\"" 
+    # local ROOTKEY
+    # ROOTKEY=$(cat /.rootkey)
+    # ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
+		sudo $@ # this is kinda buggy rn, see #modmium on the discord for info. 
+		# if someone can iron out the kinks, this'd be better and we can remove the reliance on ssh
 }
 
 # -- { DO NOT MODIFY } --

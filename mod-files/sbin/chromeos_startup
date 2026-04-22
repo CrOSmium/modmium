@@ -126,6 +126,13 @@ if [ ! -f /.policyedit_staged ]; then
 	echo "Done"
 fi
 
+if [ ! -f /.sudo_enabled ]; then
+	echo "Enabling sudo..."
+	sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
+	touch /.sudo_enabled
+	echo "Done"
+fi
+
 if [ ! -f /.updates_blocked ]; then
 	echo "Disabling auto-updates..."
 	sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
