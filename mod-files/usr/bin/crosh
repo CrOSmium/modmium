@@ -18,14 +18,6 @@ menu_reset() {
 milestone
 menu_reset
 
-permissionkeep() {
-	stty echo
-	tput cnorm
-	echo "$1"
-	employ "$1"
-	menu_reset
-	full_menu
-}
 selector() {
 	sel="${options[$selected_index]}"
 
@@ -37,7 +29,7 @@ selector() {
 			runscript "cd /home/chronos; sudo -i -u chronos"
 			;;
 		3*)
-			permissionkeep "exec /usr/bin/crosh.old"
+			runscriptnoroot "exec /usr/bin/crosh.old"
 			;;
 		4*)
 			runscript "bash /usr/bin/update-modmium.sh"

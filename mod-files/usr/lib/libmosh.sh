@@ -154,6 +154,15 @@ employ() { # this named employ to scare fanxql away
   clear
 }
 
+runscriptnoroot() {
+	stty echo
+	tput cnorm
+	echo "$1"
+	employ "$1"
+	menu_reset
+	full_menu
+}
+
 display_menu() {
 	tput sc
   menu_logo
