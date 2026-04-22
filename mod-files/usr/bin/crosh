@@ -29,7 +29,7 @@ selector() {
 			runscript "cd /home/chronos; sudo -i -u chronos"
 			;;
 		3*)
-			runscript /usr/bin/crosh.old
+			employ exec /usr/bin/crosh.old
 			;;
 		4*)
 			runscript "bash /usr/bin/update-modmium.sh"
