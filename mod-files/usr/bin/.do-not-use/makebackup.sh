@@ -2,7 +2,7 @@
 # ill work on this when I have time
 
 
-call_codename() {
+get_codename() {
     hwidp="$1"
     # ok I need to switch to normal chromeos to do some testing for getting the HWID. This function will just get the HWID, then remove whatever comes after the space and anything after "-" if there is one 
 }
