@@ -246,10 +246,10 @@ selector() {
 							echo "Importing from: $impdirec"
 							echo -ne "Is this correct? [Y/n]"
 							read -n1
-							if [[ $REPLY =~ ^[Yy]$ ]]; then
+							if [[ ! $REPLY =~ ^[Nn]$ ]]; then
 								validDir=true
 							else
-								echo "Reprompting..."
+								echo -e "\nReprompting..."
 							fi
 						else
 							echo -e "${R}Invalid directory (no export found)${N}"
@@ -486,10 +486,10 @@ selector() {
 						echo "Importing from: $sdirec"
 						echo -ne "Is this correct? [Y/n]"
 						read -n1
-						if [[ $REPLY =~ ^[Yy]$ ]]; then
+						if [[ ! $REPLY =~ ^[Nn]$ ]]; then
 							validDir=true
 						else
-							echo "Reprompting..."
+							echo -e "\nReprompting..."
 						fi
 					else
 						echo -e "${R}Invalid directory (does not exist)${N}"
