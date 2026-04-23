@@ -12,7 +12,7 @@ get_hwid() { # this will be useful later
 }
 
 get_codename() {
-    hwid = "$(crossystem hwid)"
+    hwid = "$(get_hwid)"
     echo "${hwid%% *}"
 }
 # ^^^ nvm I didnt wanna have to do setup
