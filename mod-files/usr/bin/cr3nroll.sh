@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SCRIPT VERSION: v1.1.1
+# SCRIPT VERSION: v1.1.2
 
 # -- CUSTOM FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
@@ -468,51 +468,40 @@ selector() {
         menu_logo
         echo -e "Backup Enrollment Info"
         echo ""
-        if [[ -d "/tmp/aurora" ]]; then
-            echo -e "It looks like you're booted in Sh1mmer (via Aurora), automatically backing up VPD to '/tmp/aurora/vpd/RO.vpd' and '/tmp/aurora/vpd/RW.vpd'"
-            mkdir -p /tmp/aurora/vpd
-            vpd -i RO_VPD -l >/tmp/aurora/vpd/RO.vpd
-            vpd -i RW_VPD -l >/tmp/aurora/vpd/RW.vpd
+        echo -e "Where would you like to backup your VPD to? (makes a new directory '/vpd/' underneath the selected one)"
+        echo -ne "Directory: "
+        read sdirec
+        sleep 0.67
+        if [[ -d "$sdirec" ]]; then
+            vpd -i RO_VPD -l
             sleep 0.67
-            echo -e "Backup complete! Returning to menu..."
-            menu_reset
-            full_menu
-        else
-            echo -e "Where would you like to backup your VPD to? (makes a new directory '/vpd/' underneath the selected one)"
-            echo -ne "Directory: "
-            read sdirec
+            vpd -i RW_VPD -l
             sleep 0.67
-            if [[ -d "$sdirec" ]]; then
-                vpd -i RO_VPD -l
+            mkdir $sdirec/vpd
+            vpd -i RO_VPD -l >$sdirec/vpd/RO.vpd
+            vpd -i RW_VPD -l >$sdirec/vpd/RW.vpd
+            echo -e "Copy complete, Validating..."
+            if [[ -f "$sdirec/vpd/RO.vpd" ]]; then
+                echo -e "Validated!"
                 sleep 0.67
-                vpd -i RW_VPD -l
-                sleep 0.67
-                mkdir $sdirec/vpd
-                vpd -i RO_VPD -l >$sdirec/vpd/RO.vpd
-                vpd -i RW_VPD -l >$sdirec/vpd/RW.vpd
-                echo -e "Copy complete, Validating..."
-                if [[ -f "$sdirec/vpd/RO.vpd" ]]; then
-                    echo -e "Validated!"
-                    sleep 0.67
-                    echo -e "Backup complete! Returning to menu..."
-                    sleep 3.2
-                    menu_reset
-                    full_menu
-                else
-                    echo ""
-                    echo -e "Validation failed, check if you're in the correct environment, or if the directory is writeable."
-                    sleep 4
-                    echo -e "Returning to menu..."
-                    sleep 1.2
-                    menu_reset
-                    full_menu
-                fi
+                echo -e "Backup complete! Returning to menu..."
+                sleep 3.2
+                menu_reset
+                full_menu
             else
-                echo -e "Not a valid directory! Returning to menu..."
+                echo ""
+                echo -e "Validation failed, check if you're in the correct environment, or if the directory is writeable."
+                sleep 4
+                echo -e "Returning to menu..."
                 sleep 1.2
                 menu_reset
                 full_menu
             fi
+        else
+            echo -e "Not a valid directory! Returning to menu..."
+            sleep 1.2
+            menu_reset
+            full_menu
         fi
     fi
     if [[ "${options[$selected_index]}" == "${G}Backup Factory Enrollment Info (Recommended)${N}" ]]; then
