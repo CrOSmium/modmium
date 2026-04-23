@@ -23,7 +23,7 @@ selector() {
 
 	case "$sel" in
 		1*)
-			employ sudo cd /root; bash
+			runscript bash
 			;;
 		2*)
 			runscript "cd /home/chronos; sudo -i -u chronos"
