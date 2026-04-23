@@ -21,6 +21,9 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 * To install modmium, see [docs/installation.md](docs/installation.md)
 * To learn other usage instructions (policy editors, MOSH, etc..), see [docs/usage.md](docs/usage.md)
 
+# Support
+If you need any kind of support, please join [the crosbreaker discord server](https://discord.gg/nrMVY29MUb) for help
+
 ## repo layout
 (thank you mariah!)
 * `bootsplash/`
