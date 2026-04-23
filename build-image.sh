@@ -335,14 +335,15 @@ backupUserKeys(){
 	umount $BACKUPDIR
 }
 
-buildRAMfs(){ # unused until we actually need buildcharge, but useful
+buildBootloader(){ # unused until we actually need buildcharge, but useful
 	silence pushd build-utils/buildcharge
 	make fullclean
+	cp configs/default.${arch} .config
 	sed -i \
 		'/^.*MODMIUM_BOOTLOADER/s/n/y/' \
 		'/^.*MODMIUM_UPDATER/s/n/y' \
 		'/^.*CONFIG_KERNEL/s/y/n' \
-		.config	
+		.config
 	make $arch -j`nproc` KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0
 	mv build/ramfs/buildcharge.${arch}.cpio* ../..
 	silence popd
