@@ -12,7 +12,7 @@ tput civis # :whale:
 milestone
 
 if [[ ! -f /usr/local/mosh/.mosh-apps ]]; then
-	mkdir -p /usr/local/mosh
+	as_system mkdir -p /usr/local/mosh
     as_system "cp /root/.mosh-apps-template /usr/local/mosh/.mosh-apps"
 fi
 
