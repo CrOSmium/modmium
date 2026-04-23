@@ -237,39 +237,47 @@ selector() {
         echo -e "${R}THIS WILL OVERWRITE YOUR ENTIRE VPD WITH THE CONTENTS OF THE FILES YOU PROVIDE!!${N}"
         echo ""
         echo -e "\n\nEnter directory to import from (must contain RO.vpd and RW.vpd):"
-        echo -ne "Directory: "
-        read impdirec
-        sleep 0.67
-        if [[ -d "$impdirec" ]]; then
-            if [[ -f "$impdirec/RO.vpd" ]] && [[ -f "$impdirec/RW.vpd" ]]; then
-                echo -e "Importing VPD from '$impdirec/RO.vpd' and '$impdirec/RW.vpd'... ${R}[THIS MAY TAKE A WHILE]${N}"
-
-                sudo vpd -i RW_VPD -l >RW_backup.txt # this is to make sure you can recover if my sh1tty script fucks up
-                sudo vpd -i RO_VPD -l >RO_backup.txt
-                sleep 1
-                echo -e "Importing RW_VPD..."
-                sudo vpd -i RW_VPD -O
-                while IFS= read -r line; do
-                    clean_line=$(echo "$line" | tr -d '"')
-                    sudo vpd -i RW_VPD -s "$clean_line"
-                done <"$impdirec/RW.vpd"
-                echo -e "Imported RW_VPD!"
-                sleep 1.6
-                echo -e "Importing RO_VPD..."
-                sudo vpd -i RO_VPD -O
-                while IFS= read -r line; do
-                    clean_line=$(echo "$line" | tr -d '"')
-                    sudo vpd -i RO_VPD -s "$clean_line"
-                done <"$impdirec/RO.vpd"
-                menu_reset
-                full_menu
-            else
-                echo -e "File not found! Returning to menu..."
-                sleep 1.2
-                menu_reset
-                full_menu
-            fi
-        fi
+        local validDir=false
+				while [[ $validDir == "false" ]]; do
+					echo -ne "Directory: "
+        	read impdirec
+        	if [[ -d "$impdirec" ]]; then
+						if [[ -f "$impdirec/RO.vpd" ]] && [[ -f "$impdirec/RW.vpd" ]]; then
+							echo "Importing from: $impdirec"
+							echo -ne "Is this correct? [Y/n]"
+							read -n1
+							if [[ $REPLY =~ ^[Yy]$ ]]; then
+								validDir=true
+							else
+								echo "Reprompting..."
+							fi
+						else
+							echo -e "${R}Invalid directory (no export found)${N}"
+						fi
+					else
+						echo -e "${R}Invalid directory (does not exist)${N}"
+					fi
+				done
+				echo -e "Importing VPD from '$impdirec/RO.vpd' and '$impdirec/RW.vpd'... ${R}[THIS MAY TAKE A WHILE]${N}"
+				sudo vpd -i RW_VPD -l >RW_backup.txt # this is to make sure you can recover if my sh1tty script fucks up
+				sudo vpd -i RO_VPD -l >RO_backup.txt
+				sleep 1
+				echo -e "Importing RW_VPD..."
+				sudo vpd -i RW_VPD -O
+				while IFS= read -r line; do
+					clean_line=$(echo "$line" | tr -d '"')
+					sudo vpd -i RW_VPD -s "$clean_line"
+				done <"$impdirec/RW.vpd"
+				echo -e "Imported RW_VPD!"
+				sleep 1.6
+				echo -e "Importing RO_VPD..."
+				sudo vpd -i RO_VPD -O
+				while IFS= read -r line; do
+					clean_line=$(echo "$line" | tr -d '"')
+					sudo vpd -i RO_VPD -s "$clean_line"
+				done <"$impdirec/RO.vpd"
+				menu_reset
+				full_menu
     fi
     if [[ "${options[$selected_index]}" == "${R}Restore Factory Enrollment Info${N}" ]]; then
         echo -e "Are you sure you want to restore saved enrollment keys from factory? This will overwrite your currently active keys."
@@ -469,10 +477,24 @@ selector() {
         echo -e "Backup Enrollment Info"
         echo ""
         echo -e "Where would you like to backup your VPD to? (makes a new directory '/vpd/' underneath the selected one)"
-        echo -ne "Directory: "
-        read sdirec
-        sleep 0.67
-        if [[ -d "$sdirec" ]]; then
+        local validDir=false
+				while [[ $validDir == "false" ]]; do
+					echo -ne "Directory: "
+					read sdirec
+        	sleep 0.67
+        	if [[ -d "$sdirec" ]]; then
+						echo "Importing from: $sdirec"
+						echo -ne "Is this correct? [Y/n]"
+						read -n1
+						if [[ $REPLY =~ ^[Yy]$ ]]; then
+							validDir=true
+						else
+							echo "Reprompting..."
+						fi
+					else
+						echo -e "${R}Invalid directory (does not exist)${N}"
+					fi
+				done
             vpd -i RO_VPD -l
             sleep 0.67
             vpd -i RW_VPD -l
@@ -496,14 +518,8 @@ selector() {
                 sleep 1.2
                 menu_reset
                 full_menu
-            fi
-        else
-            echo -e "Not a valid directory! Returning to menu..."
-            sleep 1.2
-            menu_reset
-            full_menu
+						fi	
         fi
-    fi
     if [[ "${options[$selected_index]}" == "${G}Backup Factory Enrollment Info (Recommended)${N}" ]]; then
         menu_logo
         echo -e "Backup Factory Enrollment Info"
