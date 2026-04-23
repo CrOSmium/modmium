@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # written by mariah carey
+# modified by xz8f for makebackup.sh
+
+get_hwid() { # this will be useful later
+    echo "$(crossystem hwid)" # just "crossystem hwid" would probably be fine but just in case idk ill do echo
+}
 
 extractCoreboot(){
   eval $(cat /tmp/machine-info | grep customization_id)
@@ -43,6 +48,12 @@ extractCoreboot(){
         fi
         if cp $_unpacked/$_bios_image coreboot-$_version.bin; then
                 echo "Extracted coreboot-$_version.bin"
+                for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
+                        echo "Copying coreboot-$_version.bin to $downloadsDir..."
+                        cp "coreboot-$_version.bin" "$downloadsDir/coreboot/coreboot-$_version.bin"
+                        mv "$downloadsDir/coreboot/coreboot-$_version.bin" "$downloadsDir/coreboot/BIOS_$(get_hwid | tr ' ' '_').bin"
+                        echo "Done copying, make sure you save this backup image incase you brick your chromebook"
+                done
         fi
         rm -rf "$_unpacked"
 }
