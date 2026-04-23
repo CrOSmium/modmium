@@ -11,7 +11,7 @@ source /usr/lib/libmosh.sh
 tput civis # :whale:
 milestone
 
-if [[ ! -f /usr/local/mosh/.mosh-apps ]]; then
+if [[ ! -f /usr/local/config/apps.conf ]]; then
 	as_system mkdir -p /usr/local/config
     as_system "cp /root/.mosh-apps-template /usr/local/config/apps.conf"
 fi
