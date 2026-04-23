@@ -231,7 +231,7 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
-	local arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
+	arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
 	cp mod-files/lib/minioverride-${arch}.so mnt/lib/minioverride.so
 	rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
@@ -335,19 +335,17 @@ backupUserKeys(){
 	umount $BACKUPDIR
 }
 
-buildKernel(){ # unused until we actually need buildcharge, but useful
+buildRAMfs(){ # unused until we actually need buildcharge, but useful
 	silence pushd build-utils/buildcharge
 	make fullclean
 	sed -i \
 		'/^.*MODMIUM_BOOTLOADER/s/n/y/' \
 		'/^.*MODMIUM_UPDATER/s/n/y' \
+		'/^.*CONFIG_KERNEL/s/y/n' \
 		.config	
-	make $arch KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0 # note $arch is a dummy variable rn, could do something like arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
-	mv out/buildcharge.${arch}.kpart ../..
+	make $arch -j`nproc` KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0
+	mv build/ramfs/buildcharge.${arch}.cpio* ../..
 	silence popd
-	# note, due to using a different kernel, we will most definitely have to modify removeVerity(). we can likely overwrite p12 with the kernel (and use leftover partition space to store things like the policy json, bootsplashes, etc..) then modify postinstall to give the buildcharge kernel max priority, while also not overwriting the other kernels on disk :D 
-	# this method keeps p4 on the recovery image intact, meaning the standard dev resigned cros kernel will be on disk
-	# of course, this is just a concept, kxtz may implement it differently and we'll adjust accorindgly
 }
 # end optional build functions
 
