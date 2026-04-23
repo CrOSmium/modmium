@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# written by mariah carey
+
 extractCoreboot(){
   eval $(cat /tmp/machine-info | grep customization_id)
   _board=${customization_id}
