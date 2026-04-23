@@ -49,7 +49,7 @@ credits(){
 	echo -e "\
 Credits:
 ${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
-\033[38;5;78mdmd: Project lead; made MOSH, devfw stuff, mpkeys manager, a bunch of small changes.${N}
+\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw stuff, mpkeys manager, a bunch of small changes.${N}
 \033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
 \033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
