@@ -12,8 +12,8 @@ tput civis # :whale:
 milestone
 
 if [[ ! -f /usr/local/mosh/.mosh-apps ]]; then
-	as_system mkdir -p /usr/local/mosh
-    as_system "cp /root/.mosh-apps-template /usr/local/mosh/.mosh-apps"
+	as_system mkdir -p /usr/local/config
+    as_system "cp /root/.mosh-apps-template /usr/local/config/apps.conf"
 fi
 
 index() {
@@ -28,17 +28,17 @@ index() {
         paths+=("$path")
         display_num=$(( ${#paths[@]} ))
         options+=("$display_num) $name")
-    done < /usr/local/mosh/.mosh-apps
+    done < /usr/local/config/apps.conf
 
     num_options=${#options[@]}
     selected_index=0
-    if [[ " ${options[*]} " == *" Edit .mosh-apps "* ]]; then
+    if [[ " ${options[*]} " == *" Edit apps.conf "* ]]; then
         nopt=1
     fi
     if [[ $num_options -gt 9 ]]; then
         clear
         echo -e "${R}Error: More than 9 apps added! ${N}"
-        echo -e "INFO: You can only add a ${B}maximum of 9 apps${N} to '/usr/local/mosh/.mosh-apps'!"
+        echo -e "INFO: You can only add a ${B}maximum of 9 apps${N} to '/usr/local/config/apps.conf'!"
         sleep 1
         echo -e "Returning to MOSH..."
         sleep 3
@@ -108,7 +108,7 @@ display_menu() {
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
   if [[ $nopt == 1 ]];then
-    echo -e "\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/mosh/.mosh-apps'\n(The formatting is 'COMMAND | NAME' on each line)"
+    echo -e "\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
   fi
   echo ""
   for i in "${!options[@]}"; do
