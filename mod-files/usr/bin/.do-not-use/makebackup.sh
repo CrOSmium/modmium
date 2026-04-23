@@ -1,6 +1,7 @@
 # this file *should* be able to reconstruct a firmware backup by using https://github.com/coreboot/coreboot/blob/main/util/chromeos/crosfirmware.sh and fixing the vpd and gbb
 # ill work on this when I have time
 
+# okay i'm gonna make this not be ran on the chromebook and instead have a list of all the info that needs to be copied to the image then have the user put that in a separate script thats ran on the machine used to build the image
 
 # reminders:
 # futility gbb -s --flags=0x80b1 filename.bin
