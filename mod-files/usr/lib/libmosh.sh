@@ -105,35 +105,7 @@ runscript() {
 	full_menu
 }
 
-full_menu() {
-  clear
-	stty -echo
-  tput civis
-  while true; do
-		display_menu
-    read -rsn1 key
-    if [[ "$key" == $'\x1b' ]]; then
-    	read -rsn2 -t 1 keyseq
-      case "$keyseq" in
-        '[A')
-          selected_index=$(((selected_index - 1 + num_options) % num_options))
-          ;;
-        '[B')
-          selected_index=$(((selected_index + 1) % num_options))
-          ;;
-      esac
-    elif [[ "$key" =~ [1-9] ]]; then
-    	target_index=$((key - 1))
-      if [ "$target_index" -lt "$num_options" ]; then
-        selected_index=$target_index
-      fi
-    elif [[ "$key" == "" ]]; then
-    	break
-    fi
-  	tput rc
-  done
-  selector
-}
+
 
 
 selector() {
@@ -182,13 +154,41 @@ display_menu() {
   echo ""
   for i in "${!options[@]}"; do
   	if [[ $i -eq $selected_index ]]; then
-    	printf "\e[7m > ${options[$i]} \e[0m\n"
+			printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
     else
-    	printf "   ${options[$i]}      \n"
+    	printf "   $(($i + 1))) ${options[$i]}      \n"
   	fi
   done
 }
-
+full_menu() {
+  clear
+	stty -echo
+  tput civis
+  while true; do
+		display_menu
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+    	read -rsn2 -t 1 keyseq
+      case "$keyseq" in
+        '[A')
+          selected_index=$(((selected_index - 1 + num_options) % num_options))
+          ;;
+        '[B')
+          selected_index=$(((selected_index + 1) % num_options))
+          ;;
+      esac
+    elif [[ "$key" =~ [1-9] ]]; then
+    	target_index=$((key - 1))
+      if [ "$target_index" -lt "$num_options" ]; then
+        selected_index=$target_index
+      fi
+    elif [[ "$key" == "" ]]; then
+    	break
+    fi
+  	tput rc
+  done
+  selector
+}
 quit(){
 	stty echo
 	tput cnorm
