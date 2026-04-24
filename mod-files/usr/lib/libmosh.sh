@@ -45,7 +45,7 @@ milestone() {
 get_largest_cros_blockdev() {
   local largest size dev_name tmp_size remo
   size=0
-  command -v sfdisk >/dev/null 2>&1 || return 0
+  command -v sfdisk >/dev/null 2>&1 || command return 0
   for blockdev in /sys/block/*; do
   	dev_name="${blockdev##*/}"
     echo "$dev_name" | grep -q '^\(loop\|ram\)' && continue
