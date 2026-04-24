@@ -5,15 +5,38 @@
 # -- Pre TUI init --
 stty -echo 
 . /usr/lib/libmosh.sh
-. /usr/lib/mosh-functions.sh
 [[ -d /nix ]] && mount --bind /usr/local/nix /nix
+
+# -- FUNCTIONS --
+
+rootsh(){
+	runscript "sudo -i -u root"
+}
+chronosh(){
+	runscript "sudo -i -u chronos"
+}
+crosh(){
+	runscriptnoroot "exec /usr/bin/crosh.old"
+}
+update(){
+	runscript "bash /usr/bin/update-modmium.sh"
+}
+devpol(){
+	runscript "bash /usr/bin/devpolicy-editor.sh"
+}
+apps(){
+	exec /usr/bin/mosh-apps.sh
+}
+misc(){
+	exec /usr/bin/mosh-misc.sh
+}
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
 	options=("Root Shell" "Chronos Shell" "Crosh" "Update Modmium [NOT CHROMEOS]" "Edit Device Policies" "Apps" "Misc" "Exit")
-	functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "exit")
+	functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
 	num_options=${#options[@]}
 }
 

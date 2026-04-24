@@ -6,13 +6,13 @@ STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this fi
 
 # -- Root escalation --
 as_system() {
-    # this bypasses permissions on /.rootkey preventing ssh from working
-		# /.rootkey does have proper permissions now, so this shouldn't be necessary anymore ideally
-    # local ROOTKEY
-    # ROOTKEY=$(cat /.rootkey)
-    # ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
-		sudo $@ # this is kinda buggy rn, see #modmium on the discord for info. 
-		# if someone can iron out the kinks, this'd be better and we can remove the reliance on ssh
+	sudo $@
+}
+
+legacy_as_system() {
+    local ROOTKEY
+    ROOTKEY=$(cat /.rootkey)
+    ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
 }
 
 # -- { DO NOT MODIFY } --
@@ -188,3 +188,19 @@ display_menu() {
   	fi
   done
 }
+
+quit(){
+	stty echo
+	tput cnorm
+	clear
+	command exit 0
+}
+
+goback(){
+	stty echo
+	tput cnorm
+	clear
+	exec /usr/bin/crosh
+}
+
+
