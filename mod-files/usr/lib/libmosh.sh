@@ -109,8 +109,11 @@ runscript() {
 
 
 selector() {
-echo ""
-# left empty on purpose so it can be properly implemented in the script using libmosh
+	for option in ${!options[@]}; do
+		if [[ $selected_index == $option ]]; then
+			${functions[$option]}
+		fi
+	done
 }
 
 menu_logo() {

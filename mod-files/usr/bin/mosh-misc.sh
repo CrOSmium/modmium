@@ -32,16 +32,8 @@ menu_reset() {
 	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "goback")
 	num_options=${#options[@]}
 }
+
 menu_reset
-
-selector() {
-	for option in ${!options[@]}; do
-		if [[ $selected_index == $option ]]; then
-			${functions[$option]}
-		fi
-	done
-}
-
 clear
 full_menu
 tput cnorm
