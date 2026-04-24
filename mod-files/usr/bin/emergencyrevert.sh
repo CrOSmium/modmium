@@ -11,7 +11,7 @@ source /usr/lib/libmosh.sh
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Full factory revert [restore OS & MPkeys]" "2) Revert lost MPkeys" "3) Go back")
+	options=("Full factory revert [restore OS & MPkeys]" "Revert lost MPkeys" "Go back")
     num_options=${#options[@]}
 }
 
