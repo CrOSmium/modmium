@@ -4,52 +4,28 @@
 
 # -- Pre TUI init --
 stty -echo 
-source /usr/lib/libmosh.sh
+. /usr/lib/libmosh.sh
+. /usr/lib/mosh-functions.sh
 [[ -d /nix ]] && mount --bind /usr/local/nix /nix
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
-	options=("1) Root Shell" "2) Chronos Shell" "3) Crosh" "4) Update Modmium [NOT CHROMEOS]" "5) Edit Device Policies" "6) Apps" "7) Misc" "8) Exit")
-    num_options=${#options[@]}
+	options=("Root Shell" "Chronos Shell" "Crosh" "Update Modmium [NOT CHROMEOS]" "Edit Device Policies" "Apps" "Misc" "Exit")
+	functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "exit")
+	num_options=${#options[@]}
 }
 
 milestone
 menu_reset
 
 selector() {
-	sel="${options[$selected_index]}"
-
-	case "$sel" in
-		1*)
-			runscript "sudo -i -u root" # this may look weird, but DON'T TOUCH IT!!!!!
-			;;
-		2*)
-			runscript "sudo -i -u chronos"
-			;;
-		3*)
-			runscriptnoroot "exec /usr/bin/crosh.old"
-			;;
-		4*)
-			runscript "bash /usr/bin/update-modmium.sh"
-			;;
-		5*)
-			runscript "bash /usr/bin/devpolicy-editor.sh"
-			;;
-        6*)
-			exec /usr/bin/mosh-apps.sh
-			;;
-		7*)
-            clear
-			exec /usr/bin/mosh-misc.sh
-			;;
-		8*)
-			stty echo
-			tput cnorm
-			clear
-			exit 0
-	esac
+	for option in ${!options[@]}; do
+		if [[ $selected_index == $option ]]; then
+			${functions[$option]}
+		fi
+	done
 }
 clear
 full_menu
