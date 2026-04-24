@@ -47,17 +47,17 @@ extractCoreboot(){
 }
 extractCoreboot
 newBios=$(find ./ -name 'coreboot*.bin') # this assumes extractCoreboot was already ran
-regions=("RO_VPD" "RW_VPD")
+regions=("GBB" "RO_VPD" "RW_VPD")
 installCbfstool(){
-  pushd $(mktemp -d)
+  pushd $(mktemp -d) &>/dev/null
   curl -LO https://mrchromebox.tech/files/util/cbfstool.tar.gz
   tar -zxf cbfstool.tar.gz
   chmod +x cbfstool
   cp ./cbfstool /usr/bin/cbfstool
-  popd
+  popd &>/dev/null
  }
 getRegions(){
-  if ! command cbfstool &>/dev/null; then
+  if ! which cbfstool &>/dev/null; then
     echo -e "${B}Installing cbfstool...${N}"
     installCbfstool
   fi
@@ -68,7 +68,7 @@ getRegions(){
   done
 }
 flashRegions(){
-  echo -e "${B}Writing VPD to clean bios...${N}"
+  echo -e "${B}Writing VPD and GBB to clean bios...${N}"
   for region in ${regions[@]}; do
     cbfstool $newBios write -r $region -f ${region}.bin
   done
