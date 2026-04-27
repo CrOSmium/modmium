@@ -27,6 +27,9 @@ if [[ ! -f $jsonFile ]]; then
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
 	echo -e "${G}Done! Starting editor...${N}"
 	sleep 2
+	stty -echo
+	tput civis
+	clear
 fi
 
 # there's gotta be a better way to do this but whatever :sob:
