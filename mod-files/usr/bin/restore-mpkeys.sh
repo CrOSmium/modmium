@@ -49,6 +49,7 @@ unkeyroll(){
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             flashrom --wp-range 0,0 || flashrom --wp-range 0 0
             flashrom --wp-enable
+			
         fi
     fi
 }
@@ -67,13 +68,17 @@ main(){
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
                 sleep 2
-                flashrom -r /pre-restorefw.rom # secretly backup the fw in case something fails
-                # before you think about removing the weird backup, i put it there because the longer it takes the more time someone will have to realize they missed something (like their battery being low, or not plugged in)
-                echo -e "Restoring firmware, ${R}do not turn off your device${N}!"
-                chromeos-firmwareupdate --mode=factory --force
+				echo -e "Preparing for restore..."
+				flashrom -r /pre-restorefw.rom > /dev/null 2>&1 # backup the fw in case something fails
+                echo -e "Restoring firmware, ${R}DO NOT turn off your device${N}!"
+				echo -e "This may take a while..."
+				# before you think about removing the weird backup, i put it there because the longer it takes the more time someone will have to realize they missed something (like their battery being low, or not plugged in)
+                chromeos-firmwareupdate --mode=factory --force > /dev/null 2>&1
                 vpd -i RW_VPD -d "dev_firmware"
+				echo -e "Firmware restore complete!"
                 sleep 0.75
                 echo -e "Do you want your device to be 'factory'? [y/N]\nThis means your device will pass APROV, but will be keyrolled (if it can be), and GBB flags will be 0x0.\n(if you press [N], the post restore will continue)"
+				echo -e "Press [N] if you want to have the option to change your GBB flags and (or) unkeyroll now."
                 read -re
                 if [[ $REPLY =~ ^[Yy]$ ]]; then
                     echo -e "Your device is now factory! Modmium will not boot after your device reboots, so please make sure you have a regular recovery image for [$board] on hand."
