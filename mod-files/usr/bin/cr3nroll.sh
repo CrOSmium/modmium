@@ -1,6 +1,6 @@
 #!/bin/bash
 # written by DMD
-VERSION="2.0.0(a)"
+VERSION="2.0.0(b)"
 
 # -- FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
@@ -269,6 +269,7 @@ savecurrentkeys() {
 	echo -e "Returning to menu..."
 	sleep 0.4
 	menu_reset
+	full_menu
 }
 
 genkeys() {
