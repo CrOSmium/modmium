@@ -27,6 +27,7 @@ menu_reset() {
 	functions=("factoryReset" "restoreMPkeys" "quit")
 	num_options=${#options[@]}
 	menuText="SPECIAL NOTE: 'Revert lost MPkeys' should only be used if you ${UN}${R}lost${RUN}${N} your backup and need to revert to factory."
+	num_options=${#options[@]}
 }
 
 milestone

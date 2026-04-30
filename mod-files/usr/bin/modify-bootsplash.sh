@@ -134,10 +134,11 @@ remove() {
 menu_reset(){
 	options=("${G}Replace bootsplash with modmium bootsplash${N}" "${G}Replace bootsplash with custom image${N}" "${G}Restore stock bootsplash${N}" "${G}Download stock bootsplash and save to backup${N}" "${G}Remove bootsplash${N}" "Go Back")
 	functions=("replace" "replace_custom" "restore" "download_backup" "remove" "quit")
-	if [[ $remove_broken == $FLAGS_TRUE ]]; then
+	if [[ $replace_broken == $FLAGS_TRUE ]]; then
 		unset options[0]
 		unset functions[0]
 	fi
+	num_options=${#options[@]}
 }
 
 milestone
