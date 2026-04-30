@@ -16,15 +16,6 @@ fail() {
 cros_assets="/usr/share/chromeos-assets/images_100_percent"
 cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
 
-cat <<EOF | xargs -0 echo -ne
-${P}+##############################################+
-| Bootsplash Replacer                          |
-| -------------------------------------------- |
-| Replaces the stock ChromeOS bootsplash       |
-+##############################################+${N}
-${D}(Hit Ctrl+C to return to MOSH)${N}
-EOF
-
 # gets chosen bootsplash
 get_installed_bootsplashes() {
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
@@ -140,6 +131,15 @@ menu_reset(){
 			target=("${target[@]:1}")
 		done
 	fi
+	menuText=$(cat <<EOF
+${P}+##############################################+
+| Bootsplash Replacer                          |
+| -------------------------------------------- |
+| Replaces the stock ChromeOS bootsplash       |
++##############################################+${N}
+${D}(Hit Ctrl+C to return to MOSH)${N}
+EOF
+	)
 	num_options=${#options[@]}
 }
 
