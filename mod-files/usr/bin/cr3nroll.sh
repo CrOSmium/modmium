@@ -1,11 +1,12 @@
 #!/bin/bash
 # written by DMD
-VERSION="2.0.0(b)"
+VERSION="2.0.1"
 
 # -- FLAGS --
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
 BROKER_ENABLED="false"  # enable or disable launching br0ker for supported versions
-INSIDE_SHIM="false" # set to 'true' if you want bash as an option and reboot on exit
+INSIDE_SHIM="false" # set to 'true' if you want bash and other sh1mmer like features as options
+REBOOT_ON_EXIT="false" # setting this to 'true' enables reboot on exit
 PAYLOAD_MODE="true" # set to 'true' if you do not want deprovision/unenroll as an option
 # -----------
 
@@ -970,7 +971,7 @@ selector() {
 			unblockdev ;;
         0*)
             fixinput
-			if [[ "$INSIDE_SHIM" == "true" ]]; then
+			if [[ "$REBOOT_ON_EXIT" == "true" ]]; then
 				echo -e "Exiting..."
 				reboot
 			else
