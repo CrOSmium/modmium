@@ -135,8 +135,10 @@ menu_reset(){
 	options=("${G}Replace bootsplash with modmium bootsplash${N}" "${G}Replace bootsplash with custom image${N}" "${G}Restore stock bootsplash${N}" "${G}Download stock bootsplash and save to backup${N}" "${G}Remove bootsplash${N}" "Go Back")
 	functions=("replace" "replace_custom" "restore" "download_backup" "remove" "quit")
 	if [[ $replace_broken == $FLAGS_TRUE ]]; then
-		unset options[0]
-		unset functions[0]
+		for array in options functions; do
+			declare -n target=$array
+			target=("${target[@]:1}")
+		done
 	fi
 	num_options=${#options[@]}
 }
