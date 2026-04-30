@@ -3,7 +3,7 @@
 
 # -- Pre TUI init --
 stty -echo 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 
 # -- FUNCTIONS --
 

@@ -5,7 +5,6 @@
 stty -echo 
 source /usr/lib/libmosh.sh
 
-
 # -- MAIN SCRIPT --
 tput civis # :whale:
 

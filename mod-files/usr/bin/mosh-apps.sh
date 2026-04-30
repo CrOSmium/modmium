@@ -1,7 +1,6 @@
 #!/bin/bash
 # written by DMD
 
-
 # -- Pre TUI init --
 stty -echo 
 source /usr/lib/libmosh.sh

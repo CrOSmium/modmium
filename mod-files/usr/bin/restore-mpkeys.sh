@@ -1,7 +1,7 @@
 #!/bin/bash
 # created by DMD
 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 board=$(grep -F "RELEASE_BOARD" /etc/lsb-release | sed 's/^.*=//' | sed 's/-.*^*//') # thanks mariah!
 
 if [ $(id -u) -ne 0 ]; then

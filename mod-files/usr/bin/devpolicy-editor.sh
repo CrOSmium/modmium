@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by mariah carey	
 
-. /root/.bashrc # to get $EDITOR
+source /root/.bashrc # to get $EDITOR
 cd /usr/local/share/policy-test-tool
 jsonFile="dump.json"
 
@@ -9,7 +9,7 @@ stty -echo
 tput civis
 clear
 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 
 if [[ ! -f $jsonFile ]]; then
 	echo -e "${B}Installing required dependencies...${N}"

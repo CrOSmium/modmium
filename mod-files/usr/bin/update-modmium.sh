@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by mariah carey
 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 
 branch=$(cat /.branch)
 

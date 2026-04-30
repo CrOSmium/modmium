@@ -3,7 +3,7 @@
 # written by DMD
 
 STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
-. /usr/share/misc/shflags
+source /usr/share/misc/shflags
 
 # -- Root escalation --
 as_system() {

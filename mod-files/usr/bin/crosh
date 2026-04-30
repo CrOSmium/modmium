@@ -3,7 +3,7 @@
 
 # -- Pre TUI init --
 stty -echo 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 if [[ -d /usr/local/nix/store ]]; then 
 	# issues can get caused if a user has a custom shell.
 	# before, this code only ran if .bashrc was sourced,

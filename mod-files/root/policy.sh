@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by lxrd and mariah carey
 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 
 # Root check
 if [ $(id -u) -ne 0 ]; then

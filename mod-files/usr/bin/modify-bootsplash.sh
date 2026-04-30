@@ -2,7 +2,7 @@
 # originally written by xz8f
 # partially rewritten by mariah carey for MOSH
 
-. /usr/lib/libmosh.sh
+source /usr/lib/libmosh.sh
 
 fail() {
 	echo -e "$1"
