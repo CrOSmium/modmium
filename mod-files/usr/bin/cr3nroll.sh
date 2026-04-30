@@ -6,7 +6,7 @@ VERSION="2.0.0(a)"
 BROKER_PATH="broker.sh" # if you put broker in another spot, put the path here :3
 BROKER_ENABLED="false"  # enable or disable launching br0ker for supported versions
 INSIDE_SHIM="false" # set to 'true' if you want bash as an option and reboot on exit
-PAYLOAD_MODE="false" # set to 'true' if you do not want deprovision/unenroll as an option
+PAYLOAD_MODE="true" # set to 'true' if you do not want deprovision/unenroll as an option
 # -----------
 
 
