@@ -3,6 +3,7 @@
 # written by DMD
 
 STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
+. /usr/share/misc/shflags
 
 # -- Root escalation --
 as_system() {
@@ -105,9 +106,6 @@ runscript() {
 	full_menu
 }
 
-
-
-
 selector() {
 	for option in ${!options[@]}; do
 		if [[ $selected_index == $option ]]; then
@@ -153,8 +151,9 @@ display_menu() {
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
+	
+	echo -e "$menuText" # this is so you can add extra text to menus like nix-preinstall.sh without rewriting the display_menu function in it
 
-  echo ""
   for i in "${!options[@]}"; do
   	if [[ $i -eq $selected_index ]]; then
 			printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
@@ -198,12 +197,3 @@ quit(){
 	clear
 	command exit 0
 }
-
-goback(){
-	stty echo
-	tput cnorm
-	clear
-	exec /usr/bin/crosh
-}
-
-

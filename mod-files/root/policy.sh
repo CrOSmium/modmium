@@ -1,16 +1,7 @@
 #!/bin/bash
 # written by lxrd and mariah carey
 
-# colors!
-B='\033[38;5;45m'
-G='\033[38;5;46m'
-Y='\033[38;5;220m'
-R='\033[38;5;203m'
-P='\033[38;5;135m'
-N='\033[0m'
-D='\033[1;90m'
-UN='\033[4m' #underline
-RUN='\033[24m' #reset underline
+. /usr/lib/libmosh.sh
 
 # Root check
 if [ $(id -u) -ne 0 ]; then
@@ -23,7 +14,6 @@ POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
 echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
 echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
-. /usr/share/misc/shflags
 DEFINE_boolean reinstall "$FLAGS_FALSE" "Whether or not to reinstall." "r"
 FLAGS $@
 if [[ "$FLAGS_reinstall" == "$FLAGS_TRUE" ]]; then

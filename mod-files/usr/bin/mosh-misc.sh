@@ -20,7 +20,7 @@ erevert(){
 	runscript "bash /usr/bin/emergencyrevert.sh"
 }
 prenix(){
-	exec /usr/bin/nix-preinstall.sh
+	runscript /usr/bin/nix-preinstall.sh
 }
 
 # -- MAIN SCRIPT --
@@ -29,7 +29,7 @@ milestone
 
 menu_reset() {
 	options=("Modify Bootsplash" "Toggle Enrollment" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Go back")
-	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "goback")
+	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "quit")
 	num_options=${#options[@]}
 }
 
