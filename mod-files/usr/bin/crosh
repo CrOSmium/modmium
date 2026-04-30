@@ -29,16 +29,16 @@ crosh(){
 	runscriptnoroot "exec /usr/bin/crosh.old"
 }
 update(){
-	runscript "bash /usr/bin/update-modmium.sh"
+	runscript /usr/bin/update-modmium.sh
 }
 devpol(){
-	runscript "bash /usr/bin/devpolicy-editor.sh"
+	runscript /usr/bin/devpolicy-editor.sh
 }
 apps(){
-	exec /usr/bin/mosh-apps.sh
+	runscript /usr/bin/mosh-apps.sh
 }
 misc(){
-	exec /usr/bin/mosh-misc.sh
+	runscript /usr/bin/mosh-misc.sh
 }
 
 # -- MAIN SCRIPT --
