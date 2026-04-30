@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by mariah carey & dmd
+# written by mariah carey & DMD
 # using qs for 142- suggested by xz8f
 
 . /usr/lib/libmosh.sh

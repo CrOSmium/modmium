@@ -1,5 +1,5 @@
 #!/bin/bash
-# originally written by xz8f (and currently maintained by her)
+# originally written by xz8f
 # partially rewritten by mariah carey for MOSH
 
 . /usr/lib/libmosh.sh

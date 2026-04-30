@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # written by DMD
 
 # -- Pre TUI init --
@@ -10,44 +9,28 @@ source /usr/lib/libmosh.sh
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
+factoryReset(){
+	cat <<EOF | xargs -0 echo -ne
+This option does not exist yet, but the basics for it will be:
+1. Restore MPkeys (either from backup or with restore-mpkeys.sh
+2. Recovery ChromeOS
+3. Ask if the user wants to keep gbb flags are 0xa0b1 or restore them to 0x0 to pass aprov
+This will exit in 5 seconds :3
+EOF
+	sleep 5
+}
+restoreMPkeys(){
+	runscript /usr/bin/restore-mpkeys.sh
+}
 menu_reset() {
-	options=("Full factory revert [restore OS & MPkeys]" "Revert lost MPkeys" "Go back")
-    num_options=${#options[@]}
+	options=("Full factory revert [restore OS & MPkeys]" "Revert lost MPkeys" "Go Back")
+	functions=("factoryReset" "restoreMPkeys" "quit")
+	num_options=${#options[@]}
+	menuText="SPECIAL NOTE: 'Revert lost MPkeys' should only be used if you ${UN}${R}lost${RUN}${N} your backup and need to revert to factory."
 }
 
 milestone
 menu_reset
-
-selector() {
-	sel="${options[$selected_index]}"
-
-	case "$sel" in
-		1*)
-			echo -e "This option does not exist yet, but the basics for it will be:\n1. Restore MPkeys (either from backup or with restore_mpkeys.sh\n2. Recover ChromeOS\n3. ask if the user wants to keep the gbb flags as 0xa0b1 or restore them to 0x0"
-            echo -e "this will exit in 5 seconds :3" 
-            sleep 5
-			;;
-        2*)
-            runscript "bash /usr/bin/restore-mpkeys.sh"
-            ;;
-		3*)
-			stty echo
-			tput cnorm
-			clear
-			exit 0
-	esac
-}
-menu_logo() {
-	echo -ne "\033]0;MOSH\007"
-  echo -e "Welcome to MOSH, the Modmium developer shell
-
-If you got here by mistake, don't panic! Just close this tab and carry on.
-
-This shell contains a list of utilities for performing various actions on a chromebook running Modmium.
-
-SPECIAL NOTE: 'Revert lost MPkeys' should only be used if you ${UN}${R}lost${RUN}${N} your backup and need to revert to factory.
-"
-}
 clear
 full_menu
 tput cnorm

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# written by DMD
 # SCRIPT VERSION: v1.1.2
 
 # -- CUSTOM FLAGS --
