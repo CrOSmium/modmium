@@ -10,12 +10,6 @@ as_system() {
 	sudo $@
 }
 
-legacy_as_system() {
-    local ROOTKEY
-    ROOTKEY=$(cat /.rootkey)
-    ssh-agent bash -c "echo '$ROOTKEY' | ssh-add - >/dev/null 2>&1; ssh -t -p 1337 -oStrictHostKeyChecking=no root@127.0.0.1 \"$*\""
-}
-
 # -- { DO NOT MODIFY } --
 selected_index=0
 branch=$(cat /.branch)
@@ -33,7 +27,7 @@ UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
 
 
-milestone() { 
+milestone() {
     if [[ -f /root/.milestone ]]; then
         MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
     else
@@ -151,7 +145,7 @@ display_menu() {
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
-	
+
 	echo -e "$menuText" # this is so you can add extra text to menus like nix-preinstall.sh without rewriting the display_menu function in it
 
   for i in "${!options[@]}"; do
