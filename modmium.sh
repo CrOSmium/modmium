@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /usr/share/misc/shflags
+source /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
 FLAGS $@
 
@@ -17,16 +17,16 @@ N='\033[0m'
 D='\033[1;90m'
 
 # -- MAIN SCRIPT --
-logo() { 
+logo() {
     echo -e "
- ██████   ██████              █████                  ███                            
-▒▒██████ ██████              ▒▒███                  ▒▒▒                             
- ▒███▒█████▒███   ██████   ███████  █████████████   ████  █████ ████ █████████████  
- ▒███▒▒███ ▒███  ███▒▒███ ███▒▒███ ▒▒███▒▒███▒▒███ ▒▒███ ▒▒███ ▒███ ▒▒███▒▒███▒▒███ 
- ▒███ ▒▒▒  ▒███ ▒███ ▒███▒███ ▒███  ▒███ ▒███ ▒███  ▒███  ▒███ ▒███  ▒███ ▒███ ▒███ 
- ▒███      ▒███ ▒███ ▒███▒███ ▒███  ▒███ ▒███ ▒███  ▒███  ▒███ ▒███  ▒███ ▒███ ▒███ 
+ ██████   ██████              █████                  ███
+▒▒██████ ██████              ▒▒███                  ▒▒▒
+ ▒███▒█████▒███   ██████   ███████  █████████████   ████  █████ ████ █████████████
+ ▒███▒▒███ ▒███  ███▒▒███ ███▒▒███ ▒▒███▒▒███▒▒███ ▒▒███ ▒▒███ ▒███ ▒▒███▒▒███▒▒███
+ ▒███ ▒▒▒  ▒███ ▒███ ▒███▒███ ▒███  ▒███ ▒███ ▒███  ▒███  ▒███ ▒███  ▒███ ▒███ ▒███
+ ▒███      ▒███ ▒███ ▒███▒███ ▒███  ▒███ ▒███ ▒███  ▒███  ▒███ ▒███  ▒███ ▒███ ▒███
  █████     █████▒▒██████ ▒▒████████ █████▒███ █████ █████ ▒▒████████ █████▒███ █████
-▒▒▒▒▒     ▒▒▒▒▒  ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒ 
+▒▒▒▒▒     ▒▒▒▒▒  ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒
 "
     echo -e $menu_text
 }
@@ -76,7 +76,7 @@ selectBackup(){
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
   	echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
-		read -ep "(d/p): " resp 
+		read -ep "(d/p): " resp
   	if [[ $resp =~ ^[Dd]$ ]]; then
       echo -e "These are the drives connected to your device:"
       lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
@@ -140,7 +140,7 @@ flashDevFW(){
 		initctl stop trunksd >/dev/null 2>&1 \
 		tpmc clear; tpmc def 0x100a 0x28 0x12000; \
 		tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
-	
+
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
 		/usr/share/vboot/bin/set_gbb_flags.sh 0xa0b1 || futility gbb -s --flash --flags=0xa0b1
@@ -153,7 +153,7 @@ flashDevFW(){
 		fi
 		sync # sync because I dont trust ChromeOS
   	vpd -i RO_VPD -s "dev_firmware"=1
-  else 
+  else
     fail "You are already using DevFW (Devkeys)!" keepflag
   fi
   sleep 0.5
@@ -162,7 +162,7 @@ flashDevFW(){
   fi
 }
 
-main(){ 
+main(){
   logo
 	doubleecho "This requires write protection to be disabled, and it will be checked before this script attempts anything"
   doubleecho "Checking for Firmware Write Protection..."
