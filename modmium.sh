@@ -69,7 +69,26 @@ doubleecho(){
 	echo
 	echo -e "$@"
 }
-
+get_largest_cros_blockdev() {
+  local largest size dev_name tmp_size remo
+  size=0
+  command -v sfdisk >/dev/null 2>&1 || return 0
+  for blockdev in /sys/block/*; do
+  	dev_name="${blockdev##*/}"
+    echo "$dev_name" | grep -q '^\(loop\|ram\)' && continue
+    tmp_size=$(cat "$blockdev"/size)
+    remo=$(cat "$blockdev"/removable)
+    if [ "$tmp_size" -gt "$size" ] && [ "${remo:-0}" -eq 0 ]; then
+      case "$(sfdisk -d "/dev/$dev_name" 2>/dev/null)" in
+      	*'name="STATE"'*'name="KERN-A"'*'name="ROOT-A"'*)
+          largest="/dev/$dev_name"
+          size="$tmp_size"
+        ;;
+      esac
+  	fi
+  done
+  echo "$largest"
+}
 selectBackup(){
 	BACKUP=/tmp/backupdir
 	mkdir -p $BACKUP
@@ -79,7 +98,7 @@ selectBackup(){
 		read -ep "(d/p): " resp
   	if [[ $resp =~ ^[Dd]$ ]]; then
       echo -e "These are the drives connected to your device:"
-      lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
+			lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|zram" || fail "${R}No connected drives, exiting...${N}"
       echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
       read -ep "Drive: " driveloc
       driveloc="${driveloc%/}"
