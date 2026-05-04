@@ -54,18 +54,18 @@ case "$1" in
 				fi
         ;;
     help)
-        echo -e "${G}MIX${N} (${G}M${N}odmium s${G}I${N}mplified ni${G}X${N})\nUsage: mix {install|search|list|revert|upgrade|uninstall|help} [args]\n-- Mix is a ${UN}command wrapper${RUN} for Nix --\n-- You can search for packages on https://search.nixos.org/packages --"
+        echo -e "${G}MIX${N} (${G}M${N}odmium s${G}I${N}mplified ni${G}X${N})\nUsage: mix {install|search|list|revert|upgrade|remove|help} [args]\n-- Mix is a ${UN}command wrapper${RUN} for Nix --\n-- You can search for packages on https://search.nixos.org/packages --"
         ;;
-    uninstall)
+    remove)
         if [ -n "$2" ]; then
             nix-env -e "$2"
             nix-collect-garbage -d
         else
-            echo "Usage: mix uninstall <package>"
+            echo "Usage: mix remove <package>"
         fi
         ;;
     *)
-        echo "Usage: mix {install|search|list|revert|upgrade|uninstall|help} [args]"
+        echo "Usage: mix {install|search|list|revert|upgrade|remove|help} [args]"
         exit 1
         ;;
 esac
