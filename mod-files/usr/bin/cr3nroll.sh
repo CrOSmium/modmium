@@ -31,7 +31,7 @@ UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
 
-milestone() { 
+milestone() {
     CROS_DEV=$(get_largest_cros_blockdev)
     MNT=$(mktemp -d)
     for i in 3 5; do
@@ -145,10 +145,10 @@ echo ""
 
 menu_logo() {
     echo -e "
- ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗     
-██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║     
-██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║     
-██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║     
+ ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗
+██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║
+██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║
+██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║
 ╚██████╗██║  ██║██████╔╝██║ ╚████║██║  ██║╚██████╔╝███████╗███████╗
  ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
 "
@@ -352,7 +352,7 @@ genkeys() {
     echo -e "Returning to menu..."
     sleep 0.4
     menu_reset
-    full_menu 
+    full_menu
 }
 
 loadsavedkeys() {
@@ -375,7 +375,7 @@ loadsavedkeys() {
 	else
 		options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
 		num_options=${#options[@]}
-	
+
 		PS3=$'\nSelection: '
 		select key in "${options[@]}"; do
 			case "$key" in
@@ -396,7 +396,7 @@ loadsavedkeys() {
 				fi
 				clear
 				menu_logo
-	
+
 				if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
 					vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
 					echo -e "if you see this that means that you don't have your factory SDS (stable_device_secret) backed up, It will be backed up in the next step."
@@ -428,7 +428,7 @@ loadsavedkeys() {
 					echo -e "Writing in: 1"
 					sleep 2
 					clear
-	
+
 					echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
 					echo -e "${R}Writing keys...${N}"
 					sleep 0.8
@@ -467,7 +467,7 @@ loadsavedkeys() {
 	fi
 }
 
-importkeys() { 
+importkeys() {
 	clear
 	menu_logo
 	echo -e "Import Enrollment Info (from a file)"
@@ -546,7 +546,7 @@ editkeys() {
 				if [[ "$confirmation" != "yy" ]]; then
 					menu_reset
 					full_menu
-				fi	
+				fi
 				clear
 				menu_logo
 				sleep 0.2
@@ -822,14 +822,14 @@ removeqs() {
 helpmenu() {
 	clear
 	echo -e "
- ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗     
-██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║     
-██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║     
-██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║     
+ ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗
+██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║
+██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║
+██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║
 ╚██████╗██║  ██║██████╔╝██║ ╚████║██║  ██║╚██████╔╝███████╗███████╗
- ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ [v$VERSION]   \n\n                 
-██  ██ ██████ ██     █████▄ 
-██████ ██▄▄   ██     ██▄▄█▀ 
+ ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ [v$VERSION]   \n\n
+██  ██ ██████ ██     █████▄
+██████ ██▄▄   ██     ██▄▄█▀
 ██  ██ ██▄▄▄▄ ██████ ██     \n"
 	echo -e "\n-- Q/A --\n\nQ: What are enrollment keys?\nA:Enrollment keys are a combination of your SDS (stable_device_secret) and SN (serial number) in your Chromebook's VPD.\n\nQ: What does the factory backup option do?\nA:The factory backup option backs up your 'Enrollment Keys' to a unique spot in RO_VPD."
 	echo -e "\n\n-- What is Cr3nroll for? --"
@@ -839,7 +839,7 @@ helpmenu() {
 	echo -e "\n\n\n\n\n${B}-- Press enter to return to menu -- ${N}"
 	stty echo
 	read lol
-	[[ $lol == $'\e[A\e[A\e[B\e[B\e[D\e[C\e[D\e[Cba' ]] && clear && echo -e "try stealing this, jackwagon!" && sleep 3 
+	[[ $lol == $'\e[A\e[A\e[B\e[B\e[D\e[C\e[D\e[Cba' ]] && clear && echo -e "try stealing this, jackwagon!" && sleep 3
 	menu_reset
 	full_menu
 }
@@ -875,7 +875,7 @@ unblockdev() {
 	full_menu
 }
 
-wipestate() { 
+wipestate() {
 	clear
 	menu_logo
 	echo -e "Are you sure you want to wipe stateful?"

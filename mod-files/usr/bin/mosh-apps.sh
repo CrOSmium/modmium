@@ -2,7 +2,7 @@
 # written by DMD
 
 # -- Pre TUI init --
-stty -echo 
+stty -echo
 source /usr/lib/libmosh.sh
 
 # -- MAIN SCRIPT --
@@ -17,7 +17,7 @@ fi
 index() {
     paths=()
     options=()
-    
+
     while IFS='|' read -r path name || [[ -n "$path" ]]; do
         [[ "$path" =~ ^#.* ]] || [[ -z "$path" ]] && continue
         path=$(echo "$path" | xargs)

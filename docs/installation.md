@@ -12,4 +12,3 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 8. After it reboots, go through OOBE as normal and you'll be enrolled.
 > [!NOTE]
 > You still have access to VT's even in verified, and rootFS verification is disabled in verified. This is thanks to devfw allowing us to use resigned kernels and unverified root filesystems.
-

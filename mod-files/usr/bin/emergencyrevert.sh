@@ -2,7 +2,7 @@
 # written by DMD
 
 # -- Pre TUI init --
-stty -echo 
+stty -echo
 source /usr/lib/libmosh.sh
 
 # -- MAIN SCRIPT --

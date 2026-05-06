@@ -39,12 +39,12 @@ update() {
 	else
 		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	fi
-	echo -e "${G}Successfully cloned repository!${N} Dropping new files..." 
+	echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of any changes you made if applicable...${N}"
 	echo -e "${G}Done! Cleaning up...${N}"
 	rm -rf /mnt/stateful_partition/git/modmium
 	sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
-	sleep 3 
+	sleep 3
 	return
 }
 

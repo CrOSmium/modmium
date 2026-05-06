@@ -37,7 +37,7 @@ checkDependencies(){
 
 cleanup(){ # to be used in case of failure, not for successful building
 	silence umount mnt
-	silence losetup -d $loopDev 
+	silence losetup -d $loopDev
 	silence rm -rf mnt .realuser
 	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
 		silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
@@ -73,10 +73,10 @@ getFlags(){
 	load_shflags
 	# thanks sh1mmer wax.sh for teaching me how to use shflags lmao
 	FLAGS_HELP="Usage:
-$0 -i <path/to/recovery.bin> [flags] 
+$0 -i <path/to/recovery.bin> [flags]
 OR
 $0 -b <board> -v <version> [flags]"
-	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i" 
+	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
@@ -84,9 +84,9 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
-	if ! [[ 
-		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) || 
-		( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image ) 
+	if ! [[
+		( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) ||
+		( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image )
 	]]; then
     flags_help
     exit 1
@@ -159,7 +159,7 @@ removeVerity(){
 		mv $downloadedImage $newImage
 	fi
 	echo -e "${G}Setting up loop device...${N}"
-	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
+	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}")
 	echo -e "${G}Disabling verity...${N}"
 	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2 --keys ${keydir}
 	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key --keys ${keydir}
@@ -175,7 +175,7 @@ removeVerity(){
 			" config_4.txt
 		fi
 		sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
-		
+
 		if [[ -n $FLAGS_kernver ]]; then
 			kernver=$FLAGS_kernver
 		else
@@ -240,7 +240,7 @@ dropModFiles(){
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
-	
+
 	echo $branch >mnt/.branch
 
 	umount mnt
@@ -363,7 +363,7 @@ downloadImage(){
 		| sort_by(.last_modified)
 		| last
 		| .url // empty
-	')	
+	')
 	if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
 		echo -e "${G}Recovery URL found!${N}"
 	else

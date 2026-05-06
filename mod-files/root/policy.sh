@@ -33,7 +33,7 @@ if [[ -f "$POLTEST_FILE" ]]; then
 fi
 
 if [[ ! -f $DEVINSTALL_FILE ]]; then
-	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
+	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 &
 	echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
 fi
 
@@ -133,7 +133,7 @@ done
 rm -rf .googleStatus .devinstall-log
 
 cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
-cd /usr/local/share/policy-test-tool 
+cd /usr/local/share/policy-test-tool
 
 if [[ -f /root/policy.json ]]; then
 	echo -e "${B}Extracting important values from policy.json...${N}"

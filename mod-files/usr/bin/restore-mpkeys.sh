@@ -41,7 +41,7 @@ unkeyroll(){
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             flashrom --wp-range 0,0 || flashrom --wp-range 0 0
             flashrom --wp-enable
-			
+
         fi
     fi
 }
@@ -56,7 +56,7 @@ main(){
     read -re
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${R}are you ${UN}really${RUN}, REALLY sure? ${N}[${R}y${N}/N]"
-        read -re 
+        read -re
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
                 sleep 2

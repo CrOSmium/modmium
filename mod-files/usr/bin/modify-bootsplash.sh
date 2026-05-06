@@ -89,7 +89,7 @@ restore() {
 		for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.old'); do
 			mv ${splashframe} ${splashframe%.*}
 		done
-	done	
+	done
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
 }
@@ -113,7 +113,7 @@ download_backup() {
 remove() {
 	echo -e "${Y}This will remove the bootsplash ENTIRELY. Use restore to fix it.${N}"
 	read -p "Contnue? (y/N) " -n 1 -r
-	echo   
+	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo -e "${Y}Removing bootsplash...${N}"
 		rm "$cros_assets/boot_splash_frame*.png"

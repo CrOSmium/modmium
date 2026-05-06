@@ -2,9 +2,9 @@
 # written by DMD
 
 # -- Pre TUI init --
-stty -echo 
+stty -echo
 source /usr/lib/libmosh.sh
-if [[ -d /usr/local/nix/store ]]; then 
+if [[ -d /usr/local/nix/store ]]; then
 	# issues can get caused if a user has a custom shell.
 	# before, this code only ran if .bashrc was sourced,
 	# but the shell wouldn't open if .bashrc wasn't sourced
