@@ -98,7 +98,7 @@ selectBackup(){
 		read -ep "(d/p): " resp
   	if [[ $resp =~ ^[Dd]$ ]]; then
       echo -e "These are the drives connected to your device:"
-			lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|zram" || fail "${R}No connected drives, exiting...${N}"
+			lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|ram" || fail "${R}No connected drives, exiting...${N}"
       echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
       read -ep "Drive: " driveloc
       driveloc="${driveloc%/}"
