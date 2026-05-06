@@ -1,35 +1,20 @@
 #!/bin/bash
-# originally written by xz8f (and currently maintained by her)
+# originally written by xz8f
 # partially rewritten by mariah carey for MOSH
 
-# colors :pray:
-B='\033[38;5;45m'
-G='\033[38;5;46m'
-Y='\033[38;5;220m'
-R='\033[38;5;203m'
-P='\033[38;5;135m'
-N='\033[0m'
-D='\033[1;90m'
-UN='\033[4m' #underline
-RUN='\033[24m' #reset underline
+source /usr/lib/libmosh.sh
 
 fail() {
 	echo -e "$1"
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
-		rm -rf ${downloadsDir}/bootsplashes
+		# rm -rf ${downloadsDir}/bootsplashes
+		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes"
 	done # we do this because you can't delete them in the files app for some reason? idk man
 	sleep 3
 	return
 }
 cros_assets="/usr/share/chromeos-assets/images_100_percent"
 cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
-
-echo -e "${P}+##############################################+"
-echo -e "| Bootsplash Replacer                          |"
-echo -e "| -------------------------------------------- |"
-echo -e "| Replaces the stock ChromeOS bootsplash       |"
-echo -e "+##############################################+${N}"
-echo -e "${D}(Hit Ctrl+C to return to MOSH)${N}"
 
 # gets chosen bootsplash
 get_installed_bootsplashes() {
@@ -57,8 +42,7 @@ Open the Files app to see them."
 
 # checks if image was built with bootsplashes
 if [[ ! -d /bootsplash ]]; then
-  echo -e "${R}${UN}IMAGE WAS BUILT WITHOUT BOOTSPLASHES. OPTION #1 WILL BREAK.${RUN}${N}"
-	replace_broken=true
+	replace_broken="$FLAGS_TRUE"
 fi
 
 move_images() {
@@ -138,37 +122,30 @@ remove() {
 	fi
 }
 
-if [[ $replace_broken == "true" ]]; then
-	echo -e "${R}1. Replace bootsplash with modmium bootsplash${N}"
-else
-	echo -e "${G}1. Replace bootsplash with modmium bootsplash${N}"
-fi
-echo -e "${G}2. Replace bootsplash with custom image${N}"
-echo -e "${G}3. Restore stock bootsplash${N}"
-echo -e "${G}4. Download stock bootsplash and save to backup${N}"
-echo -e "${G}5. Remove bootsplash${N}"
+menu_reset(){
+	options=("${G}Replace bootsplash with modmium bootsplash${N}" "${G}Replace bootsplash with custom image${N}" "${G}Restore stock bootsplash${N}" "${G}Download stock bootsplash and save to backup${N}" "${G}Remove bootsplash${N}" "Go Back")
+	functions=("replace" "replace_custom" "restore" "download_backup" "remove" "quit")
+	if [[ $replace_broken == $FLAGS_TRUE ]]; then
+		for array in options functions; do
+			declare -n target=$array
+			target=("${target[@]:1}")
+		done
+	fi
+	menuText=$(cat <<EOF
+${P}+##############################################+
+| Bootsplash Replacer                          |
+| -------------------------------------------- |
+| Replaces the stock ChromeOS bootsplash       |
++##############################################+${N}
+${D}(Hit Ctrl+C to return to MOSH)${N}
+EOF
+	)
+	num_options=${#options[@]}
+}
 
-
-read -rep "Choose an option: " choice
-case $choice in
-	"1")
-		replace
-		;;
-	"2")
-		replace_custom
-		;;
-	"3")
-		restore
-		;;
-	"4")
-		download_backup
-		;;
-	"5")
-		remove
-		;;
-	*)
-		echo -e "Invalid option, select either 1 (replace), 2 (replace with custom image), 3 (restore), 4 (download stock), or 5 (remove)"
-		;;
-esac
-
-fail "Returning..." # not truly a "fail" but it's less clunky and more consistent with how other scripts go back to menu
+milestone
+menu_reset
+clear
+full_menu
+tput cnorm
+selector

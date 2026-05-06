@@ -1,0 +1,71 @@
+#!/bin/bash
+# created by dmd
+
+
+# this is a tiny wrapper for skids (and myself) to use nix easier
+
+# TUI colors :D
+B='\033[38;5;45m'
+G='\033[38;5;46m'
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+P='\033[38;5;135m'
+N='\033[0m'
+D='\033[1;90m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
+
+case "$1" in
+    install)
+        if [ -z "$2" ]; then
+            echo "Usage: mix install <pkg1> [pkg2...]"
+        else
+            pkgs=()
+            for p in "${@:2}"; do
+                pkgs+=("nixpkgs.$p")
+            done
+            nix-env -iA "${pkgs[@]}"
+        fi
+        ;;
+    search)
+        if [ -n "$2" ]; then
+            echo "Searching packages for '$2', this may take a moment.."
+            nix search nixpkgs "$2" --extra-experimental-features "nix-command flakes"
+        else
+            echo "Usage: mix search <query>"
+        fi
+        ;;
+    list)
+        nix-env -q
+        ;;
+    revert)
+        nix-env --rollback
+        ;;
+    upgrade)
+        if [ -z "$2" ]; then
+					nix-channel --update
+					nix-env --upgrade
+				else
+					pkgs=()
+					for p in "${@:2}"; do
+						pkgs+=("$p")
+					done
+					nix-env --upgrade "${pkgs[@]}"
+				fi
+        ;;
+    help)
+        echo -e "${G}MIX${N} (${G}M${N}odmium s${G}I${N}mplified ni${G}X${N})\nUsage: mix {install|search|list|revert|upgrade|remove|help} [args]\n-- Mix is a ${UN}command wrapper${RUN} for Nix --\n-- You can search for packages on https://search.nixos.org/packages --"
+        ;;
+    remove)
+        if [ -n "$2" ]; then
+            nix-env -e "$2"
+            nix-collect-garbage -d
+        else
+            echo "Usage: mix remove <package>"
+        fi
+        ;;
+    *)
+        echo "Usage: mix {install|search|list|revert|upgrade|remove|help} [args]"
+        exit 1
+        ;;
+esac

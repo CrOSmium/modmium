@@ -1,20 +1,11 @@
 #!/bin/bash
 # written by lxrd and mariah carey
 
-# colors!
-B='\033[38;5;45m'
-G='\033[38;5;46m'
-Y='\033[38;5;220m'
-R='\033[38;5;203m'
-P='\033[38;5;135m'
-N='\033[0m'
-D='\033[1;90m'
-UN='\033[4m' #underline
-RUN='\033[24m' #reset underline
+source /usr/lib/libmosh.sh
 
 # Root check
 if [ $(id -u) -ne 0 ]; then
-    echo "Please run this script as root. You can do so by using 'sudo su'."
+    echo "Please run this script as root. You can do so by using 'sudo -i'."
     exit 1
 fi
 
@@ -23,7 +14,9 @@ POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
 echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
 echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
-if [[ "$1" == "--reinstall" ]]; then
+DEFINE_boolean reinstall "$FLAGS_FALSE" "Whether or not to reinstall." "r"
+FLAGS $@
+if [[ "$FLAGS_reinstall" == "$FLAGS_TRUE" ]]; then
     rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
     echo -e "${G}Reinstall flag detected, removed .devinstall_complete and .policytesttool_setup markers. Rerun the script to do a full setup.${N}"
     exit 0
@@ -32,17 +25,29 @@ fi
 if [[ -f "$POLTEST_FILE" ]]; then
     echo -e "${G}Setup already complete. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
-    python orchestrator.py policies.json
+		/root/.unhang.sh &
+		python orchestrator.py policies.json
 		echo -e "${G}Done!${N}"
-		echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH."
-		echo -e "DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"
-    exit 0
+		kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
+		exit 0
 fi
 
 if [[ ! -f $DEVINSTALL_FILE ]]; then
 	nohup dev_install --reinstall --yes >.devinstall-log 2>&1 & 
 	echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
 fi
+
+cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
+
+cleanup(){
+	mv /etc/.chrome_dev.conf /etc/chrome_dev.conf
+	exit $?
+}
+
+trap cleanup EXIT
+
+
+
 echo -e "\
 ${G}+##############################################+
 | Policy Test Tool                             |
@@ -100,7 +105,8 @@ cat > /root/.policy-test-tool/policies.json << EOF
     "NetworkPredictionOptions": 0,
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
-    "UserBorealisAllowed": true
+    "UserBorealisAllowed": true,
+		"VpnConfigAllowed": true
   },
   "device": {}
 }
@@ -130,7 +136,7 @@ cp -r /root/.policy-test-tool /usr/local/share/policy-test-tool
 cd /usr/local/share/policy-test-tool 
 
 if [[ -f /root/policy.json ]]; then
-	echo -e "${B}Extracting extension list from policy.json...${N}"
+	echo -e "${B}Extracting important values from policy.json...${N}"
 	python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
 	cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
@@ -144,8 +150,6 @@ for entry in forcelist:
     else:
         ext_id = entry
         update_url = "https://clients2.google.com/service/update2/crx"
-    if update_url == "https://clients2.google.com/service/update2/crx":
-        continue
     entry_dict = ext_settings.get(ext_id, {})
     entry_dict["installation_mode"] = "normal_installed"
     entry_dict["update_url"] = update_url
@@ -158,12 +162,29 @@ for line in lines[1:]:
 PYEOF
 	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
 	rm -f /tmp/_pol_conv.py
+
+	for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
+		val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
+		if [[ "$val" != "null" && -n "$val" ]]; then
+			export ${policy}="\"${policy}\": ${val},"
+		else
+			export ${policy}=""
+		fi
+	done
+
+	echo -e "${B}Extracting extension configs from extracted.json...${N}"
+	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
+
 cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
   "policy_user": "$email",
   "managed_users": ["*"],
   "use_universal_signing_keys": true,
   "user": {
+		${ManagedBookmarks}
+		${OpenNetworkConfiguration}
+		${WebAppInstallForceList}
+		"ExtensionSettings": ${extSettings},
     "URLBlocklist": [],
     "EditBookmarksEnabled": true,
     "ChromeOsMultiProfileUserBehavior": "unrestricted",
@@ -197,8 +218,9 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
-    "ExtensionSettings": $extSettings
+		"VpnConfigAllowed": true
   },
+  "extensions": ${extBlock},
   "device": {}
 }
 EOF
@@ -211,33 +233,13 @@ fi
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
 
-
 echo -e "${G}Running fake_dmserver in 3 seconds...
 (Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
 sleep 3
-cat > /tmp/_ext_links.py << 'PYEOF'
-import json, sys
-with open(sys.argv[1]) as f:
-    data = json.load(f)
-forcelist = data.get("user", {}).get("ExtensionInstallForcelist", [])
-urls = []
-for entry in forcelist:
-    if ";" in entry:
-        ext_id, update_url = entry.split(";", 1)
-    else:
-        ext_id = entry
-        update_url = "https://clients2.google.com/service/update2/crx"
-    if update_url.strip() == "https://clients2.google.com/service/update2/crx":
-        urls.append(f"https://chromewebstore.google.com/detail/a/{ext_id}")
-with open(sys.argv[1], "w") as f:
-    f.write("\n".join(urls) + "\n")
-PYEOF
-python3 /tmp/_ext_links.py /usr/local/share/policy-test-tool/extracted.json
-rm -f /tmp/_ext_links.py
-
+/root/.unhang.sh &
 python orchestrator.py policies.json
-
+echo -e "${G}Done!${N}"
+kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}') # kill .unhang.sh
 touch "$DEVINSTALL_FILE" "$POLTEST_FILE"
 echo -e "${G}Done!${N}"
-echo -e "${G}${UN}BE SURE TO RUN \"Install Enterprise Webstore Extensions\" IN MOSH.
-DUE TO TECHNICAL REASONS, THEY CAN'T BE INSTALLED WITH THE ENTERPRISE'S CUSTOM EXTENSIONS.${RUN}${N}"
+exit 0

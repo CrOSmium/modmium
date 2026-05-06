@@ -542,9 +542,6 @@ main() {
   local num_signed=0
   local num_given=$(echo "$FLAGS_partitions" | wc -w)
   local kaltdir=$(dirname $0)/keys
-  if [ -d "$kaltdir" ]; then
-   FLAGS_keys=$kaltdir
-  fi
   # Check parameters
   if [ "$FLAGS_recovery_key" = "$FLAGS_TRUE" ]; then
     KERNEL_KEYBLOCK="$FLAGS_keys/recovery_kernel.keyblock"

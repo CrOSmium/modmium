@@ -4,6 +4,18 @@
 
 # stripped & rewritten by DMD
 
+B='\033[38;5;45m'
+G='\033[38;5;46m'
+Y='\033[38;5;220m'
+R='\033[38;5;203m'
+P='\033[38;5;135m'
+N='\033[0m'
+D='\033[1;90m'
+UN='\033[4m' #underline
+RUN='\033[24m' #reset underline
+
+echo -e "${G}-------------------------- chromeos_startup --------------------------${N}" # lol this is so its easier to understand what happens when for me ig
+
 get_largest_cros_blockdev() {
     local largest size dev_name tmp_size remo
     size=0
@@ -36,6 +48,7 @@ ChromeOS is trying to kill itself.
 ChromeOS detected developer mode and is trying to disable it to
 comply with FWMP. If auto-repair fails, boot some kind of code exec and run "vpd -i RW_VPD -s block_devmode=0 && crossystem block_devmode=0"
 EOF
+
 cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/self_repair.txt
 fanxql touched your system in a way that made it feel funny
 detouching system (repairing system)
@@ -64,42 +77,19 @@ Please ensure that you have DevFW enabled, otherwise ChromeOS WILL NOT BOOT.
 Your device will attempt to boot in DevFW verified in 30 seconds...
 EOF
 
+cat <<EOF >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
+your firmware is updating!! (if you see this message, report an issue ASAP)
+https://github.com/crosmium/modmium
+EOF
+
 # single-liners
 echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-assets/text/boot_messages/en/power_wash.txt
 
-echo "your firmware is updating!! (if you see this message, report an issue ASAP) " >/usr/share/chromeos-assets/text/boot_messages/en/update_firmware.txt
-
 # chromeOS disenfuckinators
 crossystem block_devmode=0
-vpd -i RW_VPD -s block_devmode=0 
+vpd -i RW_VPD -s block_devmode=0
 device_management_client --action=remove_firmware_management_parameters
-device_management_client --action=set_firmware_management_parameters --flags=0x0000
-
-# THIS SECTION WAS TAKEN FROM MURKMOD FOR CONSISTENCY [and lightly edited] (credit to rainestorme)
-# before you yell at me for skidding this, remember, we are trying to keep modmium as a murkmod rewrite, not a completely new standard. I am keeping this part solely because rewriting it would be reduntant. (and i dont wanna have to rewrite MOSH)
-if [ ! -f /.sshd_staged ]; then
-    echo "Staging sshd..."
-    mkdir -p /ssh/root
-    chmod -R 777 /ssh/root
-
-    echo "Generating ssh keypair..."
-    ssh-keygen -f /ssh/root/key -N '' -t rsa >/dev/null
-    cp /ssh/root/key /.rootkey
-    chmod 600 /ssh/root
- 		chmod 600 /ssh/root/key
-		chmod 644 /.rootkey
-
-    echo "Creating config..."
-    cat >/ssh/config <<-EOF
-AuthorizedKeysFile /ssh/%u/key.pub
-StrictModes no
-HostKey /ssh/root/key
-Port 1337
-EOF
-
-    touch /.sshd_staged
-    echo "Staged sshd."
-fi
+device_management_client --action=set_firmware_management_parameters --flags=0
 
 if [ ! -f /.policyedit_staged ]; then
 	echo "Staging policyedit..."
@@ -110,6 +100,13 @@ if [ ! -f /.policyedit_staged ]; then
 	echo "Done"
 fi
 
+if [ ! -f /.sudo_enabled ]; then
+	echo "Enabling sudo..."
+	sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
+	touch /.sudo_enabled
+	echo "Done"
+fi
+
 if [ ! -f /.updates_blocked ]; then
 	echo "Disabling auto-updates..."
 	sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
@@ -117,16 +114,19 @@ if [ ! -f /.updates_blocked ]; then
 	echo "Done"
 fi
 
-if [ -f /.delete_user ]; then
-	email=$(cat /.delete_user)
-	echo "Removing user's cryptohome..."
-	cryptohome --action=remove --user=$email --force
-	echo "Done"
-	rm -rf /.delete_user
+if [ -f /.deprovision ]; then
+	version=$(cat /.deprovision)
+	if [[ $version -lt 143 ]]; then
+		vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
+	else
+		sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+		echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
+	fi
+# TODO (xz8f): add powerwash flag check
+elif [ ! -f /.deprovision ]; then
+	vpd -i RW_VPD -d re_enrollment_key
+	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
 fi
 
-echo "Launching sshd..."
-/usr/sbin/sshd -f /ssh/config &
-
-echo "Handing startup back to ChromeOS :D"
+echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=("futility" "jq" "wget" "7z")
+DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_modmium.sh
@@ -11,37 +11,19 @@ if [[ "$(basename $PWD)" != "modmium" ]]; then
 fi
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root, elevating with sudo..."
+	 echo $USER >.realuser
 	 sudo "$0" "$@"
 	 exit $?
 fi
+if [[ -f .realuser ]]; then
+	USER=$(cat .realuser)
+fi
 
-credits() {
-	echo -e "\
-Credits:
-${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
-\033[38;5;78mdmd: The TUI guy; made MOSH and devfw installer.${N}
-\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
-${Y}lxrd: Discovered policy-test-tool, worked with mariah to get it working.${N}
-\033[38;5;93mxz8f/crossjbly: Helped with custom bootsplashes.${N}
-\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}"
+asUser(){
+	silence su $USER -c "$1" # we do this to make sure permisisons aren't janky
 }
-silence() {
-	$@ >/dev/null 2>&1
-}
-cleanup() { # to be used in case of failure, not for successful building
-	silence umount mnt
-	silence losetup -d $loopDev 
-	silence rm -rf mnt
-	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin'); do
-		rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
-	done
-}
-fail() {
-	echo -e "$1"
-	cleanup
-	exit 1
-}
-checkDependencies() {
+
+checkDependencies(){
 	for dep in $DEPENDENCIES; do
 		if ! silence command -v $dep; then
 			echo -e "${R}${dep} not found.${N}"
@@ -53,13 +35,39 @@ checkDependencies() {
 	fi
 }
 
-# args=$@ 
-# I FUCKING HATE BASH ASLDFJNMASKLDFH;GNFGDJKLADF;NHLK;ADFNH;JKDJK;N;GKANDFGJKN WHAT DO YOU MEAN YOU JUST MAKE $@ STOP EXISTING WHEN INSIDE OF A FUNCTION??? ARE YOU STUPID??????
-# after a day of thinking i realize it's because $@ is the arguments passed into the function, of which there are none unless i did something like getFlags($@). i think. lemme test it.
-# yep that was it. just gonna remove this variable because it's redudant now. these comments are staying because it's funny though xD
+cleanup(){ # to be used in case of failure, not for successful building
+	silence umount mnt
+	silence losetup -d $loopDev 
+	silence rm -rf mnt .realuser
+	for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
+		silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+	done
+}
+trap cleanup EXIT
+
+credits(){
+	echo -e "\
+Credits:
+${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
+\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw stuff, mpkeys manager, a bunch of small changes.${N}
+\033[38;5;126mkxtzownsu: Made the buildcharge package, updater, and did code review to make sure we weren't skidding.${N}
+${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
+\033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
+\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
+\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes."
+}
+
+fail(){
+	echo -e "$1"
+	cleanup
+	exit 1
+}
+
+silence(){
+	"$@" >/dev/null 2>&1
+}
 # end of checks
 
-# begin functions
 # begin flag functions
 getFlags(){
 	load_shflags
@@ -72,6 +80,7 @@ $0 -b <board> -v <version> [flags]"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
+	DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (plug in the drive to back them up to before starting building)." "u"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
 	FLAGS $@ || exit $?
@@ -83,6 +92,7 @@ $0 -b <board> -v <version> [flags]"
     exit 1
 	fi
 }
+
 checkFlagValidity(){
 	if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
 		fail "${R}File not found, please provide a path to an actual recovery image.${N}"
@@ -101,11 +111,11 @@ checkFlagValidity(){
 			fi
 		done
 		if [[ $boardInList != 1 ]]; then
-			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.dev/recovery-images${N} for a complete list."
+			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
 		fi
 	fi
 	if [[ -n $FLAGS_kernver ]]; then
-		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ ]]; then
+		if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ && ${#FLAGS_kernver} -lt 3 ]]; then
     	fail "${R}Kernver is not hex or contains leading \"0x\".${N}"
 		fi
 	fi
@@ -127,10 +137,21 @@ checkFlagValidity(){
 
 # begin build functions
 removeVerity(){
+	if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
+		keydir=build-utils/keys/userkeys
+	else
+		keydir=build-utils/keys/devkeys
+	fi
 	if [[ -n $FLAGS_image ]]; then
-		tempDir=$(mktemp -d)
+		if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image} | awk '{print $1}') ]]; then # checks if tmp has enough room for the image
+			tempDir=$(mktemp -d)
+		else
+			echo -e "${B}/tmp is not large enough, using disk...${N}"
+			mkdir -p tmp
+			tempDir="tmp"
+		fi
 		newImage="$tempDir"/modmium-$(basename $FLAGS_image)
-		echo -e ""$G"Copying image to tempdir, "$R"this may take a while..."$N""
+		echo -e "${G}Copying image to tempdir, ${R}this may take a while...${N}"
 		cp "$FLAGS_image" $newImage
 		sync
 	else
@@ -139,9 +160,9 @@ removeVerity(){
 	fi
 	echo -e "${G}Setting up loop device...${N}"
 	loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}") 
-	echo -e ""$G"Disabling verity..."$N""
-	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2
-	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key
+	echo -e "${G}Disabling verity...${N}"
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2 --keys ${keydir}
+	silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key --keys ${keydir}
 
 	rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
 	for part in 2 4; do
@@ -161,10 +182,10 @@ removeVerity(){
 			kernver=$(futility show ${loopDev}p$part | grep "Kernel version" | sed 's/^.*:      //')
 		fi
 
-		echo -e ""$G"Resigning kernel ${part} with modified commandline..."$N""
+		echo -e "${G}Resigning kernel ${part} with modified commandline...${N}"
     vbutil_kernel --repack ${loopDev}p$part \
-        --keyblock build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
-        --signprivate build-utils/keys/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
+        --keyblock ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
+        --signprivate ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
         --config config_${part}.txt \
 				--version $kernver \
         --oldblob ${loopDev}p$part
@@ -173,6 +194,7 @@ removeVerity(){
 	echo -e "${G}Cleaning up kernel backups and configs...${N}"
 	rm -rf cros_sign_backups config*
 }
+
 dropModFiles(){
 	echo -e "${G}Mounting loop device...${N}"
 	mount "$loopDev"p3 mnt --mkdir
@@ -193,7 +215,7 @@ dropModFiles(){
 		fi
 	fi
 	modFiles=$(find mod-files -mindepth 1 -name "*")
-	echo -e ""$G"Dropping modfiles..."$N""
+	echo -e "${G}Dropping modfiles...${N}"
 	for file in $modFiles; do
 		if [[ -d $file ]]; then
 			:
@@ -209,7 +231,9 @@ dropModFiles(){
 			chmod 777 $oldFile
 		fi
 	done
-	rm -rf mnt/root/.force_update_firmware # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
+	arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
+	cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
+	rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
 	sleep 0.5
 	# cleanup time!
 	echo -e "${G}Cleaning up...${N}"
@@ -222,42 +246,109 @@ dropModFiles(){
 	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
-		echo -e "${G}Moving image from RAM to $(basename $newImage) in current directory...${N}"
+		echo -e "${G}Moving image from tempdir to $(basename $newImage) in current directory...${N}"
 		mv $newImage $(basename $newImage)
 		sync
 		rm -rf $tempDir mnt
 	else
 		rm -rf mnt
 	fi
+	rm -rf .realuser
 	echo -e "${G}Finished!${N}"
 }
+# end build functions
+
+# begin optional build functions
 bootsplash(){
 	echo -e "${G}Converting svg to png requires a resolution, input your chromebook's resolution (put a space between the width and height, for example 1920 1200 not 1920x1200)${N}"
-	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
-		unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
-		echo -e "Converting ${G}$(basename $splash)${N} to png..."
-		while [[ $unresolved == "true" ]]; do
-			echo -ne "Resolution: ${N}"
-			read -rep "" width height
-			for dimension in width height; do
-				if [[ -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ]]; then
-					echo -e "${R}Invalid ${dimension}!"
-					export ${dimension}Valid=false
-				else
-					export ${dimension}Valid=true
-				fi
-			done
-			if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
-				unresolved=false
+	local unresolved=true # lmao i love puns, basically this is to keep the while loop running until the resolution is valid
+	while [[ $unresolved == "true" ]]; do
+		echo -ne "Resolution: ${N}"
+		read -rep "" width height
+		for dimension in width height; do
+			if [[ ( -n ${!dimension} && ! ( ${!dimension} =~ ^[0-9]+$ ) && ${!dimension} -lt 10000 ) || -z ${!dimension} ]]; then
+				echo -e "${R}Invalid ${dimension}!${N}"
+				export ${dimension}Valid=false
+			else
+				export ${dimension}Valid=true
 			fi
 		done
-		echo -e "${G}Valid dimensions set! Converting...${N}"
+		if [[ ( $widthValid == "true" ) && ( $heightValid == "true" ) ]]; then
+			unresolved=false
+		fi
+	done
+	for splash in $(find bootsplash/$branch -mindepth 1 -name '*.svg'); do
+		echo -e "Converting ${G}$(basename $splash)${N} to png..."
 		mkdir -p mod-files/bootsplash
 		silence inkscape -w $width -h $height $splash -o mod-files/bootsplash/$(basename ${splash%.*}.png)
 	done
 }
 
-# end build functions
+genUserKeys(){
+	echo -e "${G}Generating user keys...${N}"
+	silence pushd build-utils/keygeneration
+	if [[ -d ApRoV1Signing-PreMP ]]; then
+		rm -rf ApRoV1Signing-PreMP
+	fi
+	asUser "bash make_arv_root.sh"
+	asUser "bash create_new_keys.sh --arv-root-path ./ApRoV1Signing-PreMP"
+	cd accessory
+	asUser "bash create_new_ec_efs_key.sh"
+	asUser "openssl genrsa -f4 -out ec_data_key.pem 2048 && futility create --desc \"EC Data Key\" --hash_alg 2 ec_data_key.pem ec_data_key"
+	cd ..
+	asUser "mkdir -p ../keys/userkeys"
+	for key in $(find . -mindepth 1 -name '*.v*' -o -name '*.keyblock' -o -name '*ec_*' ! -name '*ec_*.sh'); do
+		asUser "mv $key ../keys/userkeys"
+	done
+	silence popd
+}
+
+backupUserKeys(){
+	# lol this one is taken from modmium.sh
+	BACKUPDIR=/tmp/backupdir
+  echo -e "These are the external drives connected to your device:"
+  lsblk -dpno NAME,SIZE,MODEL | grep "/dev/sd"
+  echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX, not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
+  read -ep "Drive: " driveloc
+  driveloc="${driveloc%/}"
+	echo -e "Are you absolutely ${UN}CERTAIN${RUN} you want to ${R}WIPE ${driveloc}${N}?"
+	read -r -n 2 -s -p "(Press yy to continue)"; echo
+	if [[ $REPLY != yy ]]; then
+		fail "${R}Exiting...${N}"
+	fi
+  if [[ $driveloc == *"/dev/"* ]]; then
+		if ! mkfs.vfat -I -F 32 $driveloc; then fail "${R}Unable to wipe device...${N}"; fi
+    mkdir -p $BACKUPDIR
+		if ! mount $driveloc $BACKUPDIR; then fail "${R}Unable to mount device...${N}"; fi
+  else
+    if ! mkfs.vfat -I -F 32 /dev/$driveloc; then fail "${R}Unable to wipe device...${N}"; fi
+    mkdir -p /tmp/backupdir
+    if ! mount /dev/$driveloc $BACKUPDIR; then fail "${R}Unable to mount device...${N}"; fi
+  fi
+  DRIVEBACKUP=1
+  sync
+	if ! ( [ -d ${BACKUPDIR} ] && touch ${BACKUPDIR}/.test ); then
+		fail "${R}Unable to write to backup.${N}" # exits if isn't writable (this is redundant but i am paranoid)
+	fi
+	echo -e "${G}Backing up signing keys, when installing devfw add -u/--userkeys when calling modmium.sh and ${UN}have the drive plugged in${RUN}...${N}"
+	cp -r build-utils/keys/userkeys $BACKUPDIR
+	umount $BACKUPDIR
+}
+
+buildBootloader(){ # unused until we actually need buildcharge, but useful
+	silence pushd build-utils/buildcharge
+	make fullclean
+	cp configs/default.${arch} .config
+	sed -i \
+		'/^.*MODMIUM_BOOTLOADER/s/n/y/' \
+		'/^.*MODMIUM_UPDATER/s/n/y' \
+		'/^.*CONFIG_KERNEL/s/y/n' \
+		.config
+	make $arch -j`nproc` KERNEL_VERSION=$kernver USE_DEFAULT_CONFIG=0
+	mv build/ramfs/buildcharge.${arch}.cpio* ../..
+	silence popd
+}
+# end optional build functions
 
 # begin downloading functions
 downloadImage(){
@@ -282,8 +373,8 @@ Exiting...${N}"
 	echo -e "${G}Downloading image...${N}"
 	wget --show-progress -O recovery.zip $recoveryUrl
 	echo -e "${G}Unzipping image...${N}"
-	7z x recovery.zip
-	downloadedImage=$(basename $(find -name "chromeos*.bin"))
+	pv recovery.zip | funzip > recovery.bin
+	downloadedImage="recovery.bin"
 	echo -e "${G}Removing zip file...${N}"
 	rm -rf recovery.zip
 	echo -e "${G}Done! Continuing to build...${N}"
@@ -294,6 +385,12 @@ main(){
 	getFlags $@
 	checkFlagValidity
 	checkDependencies
+	if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
+		if [[ ! -d build-utils/keys/userkeys ]]; then
+			genUserKeys
+		fi
+		backupUserKeys
+	fi
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		bootsplash
 	fi

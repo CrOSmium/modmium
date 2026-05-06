@@ -15,7 +15,15 @@ import logging
 import sys
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
+def find_deep_value(data):
+    if isinstance(data, dict):
+        if 'value' in data:
+            return data['value']
+        for key in data:
+            result = find_deep_value(data[key])
+            if result is not None:
+                return result
+    return None
 
 def main():
   """Main script execution."""
@@ -52,6 +60,7 @@ README.md in this directory.""",
       "policy_user": args.policy_user,
       "managed_users": ["*"],
       "user": {},
+      "extensions": {},
       "device": {}
   }
 
@@ -59,6 +68,7 @@ README.md in this directory.""",
   # actual list of policies.
   policy_list = policy_dump.get('policyValues', {}).get('chrome',
                                                         {}).get('policies')
+  ext_list = policy_dump.get('policyValues', {}).get('extensions')
 
   if not policy_list:
     logging.critical("Could not find a list of policies in the input JSON. "
@@ -69,15 +79,28 @@ README.md in this directory.""",
   # Convert the dictionary of policies to a list of policies.
   # The original script expected a list of policies, so we convert it here.
   policy_list_converted = []
+  
+  
   for name, details in policy_list.items():
     policy_list_converted.append({
         'name': name,
         'value': details.get('value'),
         'scope': details.get('scope')
     })
-  policy_list = policy_list_converted
-
-  for policy in policy_list:
+    
+  for ext_id, ext_content in ext_list.items():
+      inner_policies = ext_content.get('policies', {})
+      for p_name, p_details in inner_policies.items():
+        val = find_deep_value(p_details)
+        if val is not None:
+          policy_list_converted.append({
+              'name': p_name,
+              'value': val,
+              'scope': "extensions",
+              'ext_id': ext_id
+          })
+  
+  for policy in policy_list_converted:
     name = policy.get('name')
     value = policy.get('value')
     scope = policy.get('scope')
@@ -94,6 +117,11 @@ README.md in this directory.""",
       simple_policies['user'][name] = value
     elif scope == 'device':
       simple_policies['device'][name] = value
+    elif scope == 'extensions':
+      eid = policy.get('ext_id')
+      if eid not in simple_policies['extensions']:
+        simple_policies['extensions'][eid] = {}
+      simple_policies['extensions'][eid][name] = value
     else:
       logging.warning(f"Skipping policy '{name}' with unknown scope: '{scope}'")
 
