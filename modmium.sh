@@ -65,10 +65,6 @@ askConfirmation(){
   fi
 }
 
-doubleecho(){
-	echo
-	echo -e "$@"
-}
 get_largest_cros_blockdev() {
   local largest size dev_name tmp_size remo
   size=0
@@ -93,23 +89,28 @@ selectBackup(){
 	BACKUP=/tmp/backupdir
 	mkdir -p $BACKUP
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
-		echo -e "Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
-  	echo -e "Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory"
+		cat <<EOF | xargs -0 echo -ne
+Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
+Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory
+EOF
 		read -ep "(d/p): " resp
   	if [[ $resp =~ ^[Dd]$ ]]; then
-      echo -e "These are the drives connected to your device:"
-			lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|ram" || fail "${R}No connected drives, exiting...${N}"
-      echo -e "What drive would you like write the backup onto? Type /dev/sdX or sdX not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}"
+      drivelist=$(lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|ram" || fail "${R}No connected drives, exiting...${N}")
+      cat <<EOF | xargs -0 echo -ne
+These are the drives connected to your device:
+$drivelist
+What drive would you like write the backup onto? Type /dev/sdX or sdX not the USB's name ${R}(THIS WILL ERASE THE DRIVE!!!!)${N}
+EOF
       read -ep "Drive: " driveloc
       driveloc="${driveloc%/}"
       if [[ $driveloc == *"/dev/"* ]]; then
-				if ! mkfs.vfat -I -F 32 $driveloc; then fail "${R}Unable to wipe device, exiting...${N}"; fi
+				mkfs.vfat -I -F 32 $driveloc || fail "${R}Unable to wipe device, exiting...${N}"
         mkdir -p $BACKUP
-				if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device, exiting...${N}"; fi
+				mount $driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
 			else
-      	if ! mkfs.vfat -I -F 32 /dev/$driveloc; then fail "${R}Unable to wipe device, exiting...${N}"; fi
+      	mkfs.vfat -I -F 32 /dev/$driveloc || fail "${R}Unable to wipe device, exiting...${N}"
       	mkdir -p /tmp/backupdir
-       	if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device, exiting...${N}"; fi
+       	mount /dev/$driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
     	fi
  			if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
 				fail "${R}Unable to write to backup, exiting...${N}"
@@ -151,14 +152,18 @@ selectBackup(){
 
 flashDevFW(){
 	DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
-	( \
-		device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1; \
-		device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 ) \
+	(
+		device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1 || \
+		cryptohome --action=remove_firmware_management_parameters >/dev/null 2>&1
+		device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 || \
+		cryptohome --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1
+	) \
 	|| \
-	( initctl stop tcsd >/dev/null 2>&1; \
-		initctl stop trunksd >/dev/null 2>&1 \
-		tpmc clear; tpmc def 0x100a 0x28 0x12000; \
-		tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
+	( initctl stop tcsd >/dev/null 2>&1
+		initctl stop trunksd >/dev/null 2>&1
+		tpmc clear; tpmc def 0x100a 0x28 0x12000
+		tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
@@ -183,8 +188,10 @@ flashDevFW(){
 
 main(){
   logo
-	doubleecho "This requires write protection to be disabled, and it will be checked before this script attempts anything"
-  doubleecho "Checking for Firmware Write Protection..."
+  cat <<EOF | xargs -0 echo -ne
+This requires write protection to be disabled, and it will be checked before this script attempts anything
+Checking for Firmware Write Protection...
+EOF
 	checkWP
 
 	echo -e "Are you sure you want to flash DevFW firmware?"
@@ -196,9 +203,11 @@ main(){
   echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
 
-	echo -e "If everything succeeded, you are now running DevFW!"
-  echo -e "It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place."
-  echo -e "Whenever you're ready, enter recovery and plug in your modmium usb!"
+  cat <<EOF | xargs -0 echo -ne
+If everything succeeded, you are now running DevFW!
+It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
+Whenever you're ready, enter recovery and plug in your modmium usb!
+EOF
 }
 
 clear

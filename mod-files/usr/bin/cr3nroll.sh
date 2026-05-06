@@ -31,21 +31,21 @@ UN='\033[4m' #underline
 RUN='\033[24m' #reset underline
 
 
-milestone() { 
-    CROS_DEV=$(get_largest_cros_blockdev)
-    MNT=$(mktemp -d)
-    for i in 3 5; do
-        mount -o ro "$(format_part_number "$CROS_DEV" "$i")" "$MNT" >/dev/null 2>&1 || continue
-        # end of stolen code
-        NEW_MILESTONE=$(cat "$MNT/etc/lsb-release" | grep "CHROMEOS_RELEASE_CHROME_MILESTONE" | sed 's/^.*=//')
-        if [ ! -z "$NEW_MILESTONE" ]; then
-            MILESTONE=$NEW_MILESTONE
-        fi
-        umount "$MNT"
-    done
-if [[ "$FLAG_MILESTONE" != "" ]]; then
+milestone() {
+  CROS_DEV=$(get_largest_cros_blockdev)
+  MNT=$(mktemp -d)
+  for i in 3 5; do
+    mount -o ro "$(format_part_number "$CROS_DEV" "$i")" "$MNT" >/dev/null 2>&1 || continue
+    # end of stolen code
+    NEW_MILESTONE=$(cat "$MNT/etc/lsb-release" | grep "CHROMEOS_RELEASE_CHROME_MILESTONE" | sed 's/^.*=//')
+    if [ ! -z "$NEW_MILESTONE" ]; then
+      MILESTONE=$NEW_MILESTONE
+    fi
+    umount "$MNT"
+  done
+  if [[ "$FLAG_MILESTONE" != "" ]]; then
     MILESTONE=$FLAG_MILESTONE
-fi
+  fi
 }
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
@@ -111,27 +111,27 @@ full_menu() {
 	tput sc
 	while true; do
 		tput rc
-    	display_menu
-    	read -rsn1 key
-    	if [[ "$key" == $'\x1b' ]]; then
-        	read -rsn2 -t 0.1 keyseq
-        	case "$keyseq" in
-            	'[A') selected_index=$(((selected_index - 1 + num_options) % num_options)) ;;
-            	'[B') selected_index=$(((selected_index + 1) % num_options)) ;;
-        	esac
-    	elif [[ "$key" =~ [0-9a-zA-Z] ]]; then
-        	for i in "${!options[@]}"; do
-            	clean_opt=$(echo "${options[$i]}" | sed 's/\x1b\[[0-9;]*m//g')
-            	if [[ "${clean_opt,,}" == "${key,,}"* ]]; then
-                	selected_index=$i
-                	break
-            	fi
-        	done
-    	elif [[ "$key" == "" ]]; then
-        	selector
-        	break
-    	fi
-    	tput rc
+    display_menu
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+     read -rsn2 -t 0.1 keyseq
+      case "$keyseq" in
+       	'[A') selected_index=$(((selected_index - 1 + num_options) % num_options)) ;;
+      	'[B') selected_index=$(((selected_index + 1) % num_options)) ;;
+      esac
+    elif [[ "$key" =~ [0-9a-zA-Z] ]]; then
+      for i in "${!options[@]}"; do
+       clean_opt=$(echo "${options[$i]}" | sed 's/\x1b\[[0-9;]*m//g')
+        if [[ "${clean_opt,,}" == "${key,,}"* ]]; then
+          selected_index=$i
+          break
+        fi
+      done
+    elif [[ "$key" == "" ]]; then
+      selector
+      break
+    fi
+    tput rc
 	done
 	tput cnorm
 	stty echo
@@ -144,16 +144,15 @@ echo ""
 }
 
 menu_logo() {
-    echo -e "
- ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗     
-██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║     
-██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║     
-██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║     
+  cat <<EOF | xargs -0 echo -ne
+ ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗
+██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║
+██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║
+██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║
 ╚██████╗██║  ██║██████╔╝██║ ╚████║██║  ██║╚██████╔╝███████╗███████╗
  ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
-"
-    echo -e "| By OSmium (CrOSmium on Github) | v$VERSION"
-    echo ""
+| By OSmium (CrOSmium on Github) | v$VERSION
+EOF
 }
 
 employ() { # this named employ to scare fanxql away
@@ -179,24 +178,24 @@ display_menu() {
 	tput sc
 	menu_logo
 	case "$writeprotect" in
-	    *"disabled"*)
-	        echo -e "You currently have Firmware Write Protection set to ${R}(DISABLED)${N}, all features *should* work properly. Have fun :D"
-	        ;;
-	    *)
-	        echo -e "You currently have Firmware Write Protection set to ${G}(ENABLED)${N}, you will be ${R}unable${N} to modify your current enrollment info until you disable it [${G}https://crosmium.dev/FWWP${N}]!"
-	        ;;
+	  *"disabled"*)
+	    echo -e "You currently have Firmware Write Protection set to ${R}(DISABLED)${N}, all features *should* work properly. Have fun :D"
+	    ;;
+	  *)
+	    echo -e "You currently have Firmware Write Protection set to ${G}(ENABLED)${N}, you will be ${R}unable${N} to modify your current enrollment info until you disable it [${G}https://crosmium.dev/FWWP${N}]!"
+	    ;;
 	esac
 	case "$MILESTONE" in
-	    "")
-	        echo -e "${R}Could not get ChromeOS milestone, is ChromeOS installed?${N}"
-	        ;;
-	    *)
-	        if [[ "$MILESTONE" -ge 143 ]]; then
-	            echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, therefore your version ${R}does not have an available unenrollment${N}. Try downgrading if possible!"
-	        else
-	            echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} --"
-	        fi
-	        ;;
+	  "")
+	    echo -e "${R}Could not get ChromeOS milestone, is ChromeOS installed?${N}"
+	    ;;
+	  *)
+	    if [[ "$MILESTONE" -ge 143 ]]; then
+	      echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, therefore your version ${R}does not have an available unenrollment${N}. Try downgrading if possible!"
+	    else
+	      echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} --"
+	    fi
+	    ;;
 	esac
 	echo ""
 	for i in "${!options[@]}"; do
@@ -216,7 +215,7 @@ writeprotect=$(flashrom --wp-status | grep disabled)
 factoryserial=$(vpd -i RO_VPD -g "factory_serial_number")
 stateful=$(format_part_number "$cros_dev" 1)
 if [[ "$factoryserial" == "" ]]; then
-    factorysaved="1"
+  factorysaved="1"
 fi
 # ----------------------
 
@@ -276,83 +275,85 @@ savecurrentkeys() {
 genkeys() {
 	clear
 	menu_logo
-    echo -e "Would you like to generate and save new Enrollment Keys? (Does not override currently selected keys)"
-    tput cnorm
-    echo -ne "(Y/N): "
-    read YESNT2
-    if [[ "${YESNT2}" = [Yy] ]]; then
-        echo -e "Generating new Keys..."
-        gensdev=$(openssl rand -hex 32)
-        echo -e "Generated stable_device_secret: '$gensdev'"
-        echo -e "Would you like to have your serial number auto-generated, or make one yourself? (A/M) [A = Auto, M = Manual]"
-        read -r -n 1 -p "(Press A or M to continue)" snauto
-        if [[ "${snauto}" == [Aa] ]]; then
-            echo -e "\nGenerating serial number..."
-            sleep 0.67
-            # super mega cool serial number generator
-            KEYNAME="$(printf 'CR%s%s%s' \
-    		  "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)" \
-   			  "$(openssl rand -base64 64 | tr -dc 'A-NP-Z A-NP-Z A-NP-Z 0-9' | tr -d ' ' | head -c4)" \
-    		  "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)")"
-        else
-            echo -e "What do you want your serial number to be?"
-        	currentsn=$(vpd -i RO_VPD -g "serial_number")
-            echo -e "Your currently set one is: '$currentsn'"
-            echo -e "Warning: Setting your serial number or Keyname blank WILL corrupt your enrollment keys"
-            KEYNAMESN() {
-                echo -ne "Serial Number: "
-                read KEYNAME
-                sleep 0.4
-                if [[ "$KEYNAME" =~ [[:space:]_] ]]; then
-                    echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
-                    KEYNAMESN
-                fi
-                if [[ $KEYNAME = "" ]]; then
-                    echo -e "(Invalid Keyname! Cannot be empty!)"
-                    KEYNAMESN
-                fi
-            }
-            KEYNAMESN
-            sleep 0.67
-        fi
-        echo ""
-        echo -e "You want your new serial number to be '$KEYNAME'?"
-        echo -ne "(Y/N): "
-        read SCONFIRM
-        if [[ "${SCONFIRM}" = [Yy] ]]; then
-            echo -e "What would you like to name these keys? (NO SPACES)"
-            SKNAME() {
-                echo -ne "Name: "
-                read SKNAMES
-                SKNAME=$SKNAMES
-                if [[ "$SKNAME" =~ [[:space:]_] ]]; then
-                    echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
-                    SKNAME
-                fi
-                if [[ $SKNAME = "" ]]; then
-                    echo -e "(Invalid Keyname! Cannot be empty!)"
-                    SKNAME
-                fi
-            }
-            SKNAME
-            sleep 0.4
-            echo -e "Saving new stable_device_secret and serial_number('$KEYNAME') as '$SKNAME'..."
-            vpd -i RW_VPD -s "saved_"$SKNAME"_stable_device_secret"="$gensdev"
-            vpd -i RW_VPD -s "saved_"$SKNAME"_serial_number"="$KEYNAME"
-            sleep 0.1
-            echo -e "Finished!"
-        else
-            echo -e "Cancelled!"
-           fi
-
+  echo -e "Would you like to generate and save new Enrollment Keys? (Does not override currently selected keys)"
+  tput cnorm
+  echo -ne "(Y/N): "
+  read YESNT2
+  if [[ "${YESNT2}" = [Yy] ]]; then
+    echo -e "Generating new Keys..."
+    gensdev=$(openssl rand -hex 32)
+    echo -e "Generated stable_device_secret: '$gensdev'"
+    echo -e "Would you like to have your serial number auto-generated, or make one yourself? (A/M) [A = Auto, M = Manual]"
+    read -r -n 1 -p "(Press A or M to continue)" snauto
+    if [[ "${snauto}" == [Aa] ]]; then
+      echo -e "\nGenerating serial number..."
+      sleep 0.67
+      # super mega cool serial number generator
+      KEYNAME="$(printf 'CR%s%s%s' \
+        "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)" \
+        "$(openssl rand -base64 64 | tr -dc 'A-NP-Z A-NP-Z A-NP-Z 0-9' | tr -d ' ' | head -c4)" \
+        "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)")"
     else
-        echo -e "Declined!"
+      echo -e "What do you want your serial number to be?"
+      currentsn=$(vpd -i RO_VPD -g "serial_number")
+      cat <<EOF | xargs -0 echo -ne
+Your currently set one is: '$currentsn'
+Warning: Setting your serial number or Keyname blank WILL corrupt your enrollment keys
+EOF
+      KEYNAMESN() {
+        echo -ne "Serial Number: "
+        read KEYNAME
+        sleep 0.4
+        if [[ "$KEYNAME" =~ [[:space:]_] ]]; then
+          echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
+          KEYNAMESN
+        fi
+        if [[ $KEYNAME = "" ]]; then
+          echo -e "(Invalid Keyname! Cannot be empty!)"
+          KEYNAMESN
+        fi
+      }
+      KEYNAMESN
+      sleep 0.67
     fi
-    sleep 1
-    echo -e "Returning to menu..."
-    sleep 0.4
-    menu_reset
-    full_menu 
+    cat <<EOF | xargs -0 echo -ne
+You want your new serial number to be '$KEYNAME'?
+(Y/N):
+EOF
+    read SCONFIRM
+    if [[ "${SCONFIRM}" = [Yy] ]]; then
+      echo -e "What would you like to name these keys? (NO SPACES)"
+      SKNAME() {
+        echo -ne "Name: "
+        read SKNAMES
+        SKNAME=$SKNAMES
+        if [[ "$SKNAME" =~ [[:space:]_] ]]; then
+          echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
+          SKNAME
+        fi
+        if [[ $SKNAME = "" ]]; then
+          echo -e "(Invalid Keyname! Cannot be empty!)"
+          SKNAME
+        fi
+      }
+      SKNAME
+      sleep 0.4
+      echo -e "Saving new stable_device_secret and serial_number('$KEYNAME') as '$SKNAME'..."
+      vpd -i RW_VPD -s "saved_"$SKNAME"_stable_device_secret"="$gensdev"
+      vpd -i RW_VPD -s "saved_"$SKNAME"_serial_number"="$KEYNAME"
+      sleep 0.1
+      echo -e "Finished!"
+    else
+      echo -e "Cancelled!"
+    fi
+  else
+    echo -e "Declined!"
+  fi
+  sleep 1
+  echo -e "Returning to menu..."
+  sleep 0.4
+  menu_reset
+  full_menu
 }
 
 loadsavedkeys() {
@@ -363,9 +364,12 @@ loadsavedkeys() {
 	#   mapfile -t KEYNAMES < <(echo -e "saved_test" "saved_test_serial" | grep '^saved_' | awk -F'[ =]' '{print $1}' | awk -F_ '{print $2}' | sort -u)
 	clear
 	menu_logo
-	echo -e "-- Load saved enrollment keys --"
-	echo -e "\nCurrently active serial number: '$(vpd -i RO_VPD -g "serial_number")'"
-	echo ""
+	cat <<EOF | xargs -0 echo -ne
+-- Load saved enrollment keys --"
+
+Currently active serial number: '$(vpd -i RO_VPD -g "serial_number")'
+
+EOF
 	if [[ ${#KEYNAMES[@]} -eq 0 ]]; then
 		echo -e "No Keys found!"
 		sleep 2
@@ -375,7 +379,7 @@ loadsavedkeys() {
 	else
 		options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
 		num_options=${#options[@]}
-	
+
 		PS3=$'\nSelection: '
 		select key in "${options[@]}"; do
 			case "$key" in
@@ -387,8 +391,14 @@ loadsavedkeys() {
 				echo "Invalid selection, try again."
 				;;
 			*)
-				echo -e "(Selected '$key')"
-				echo -e "\n${R}Warning: Setting your enrollment keys is highly destructive, I recommend saving your factory ones before you select any keys.${N}\n\n(This script will attempt to back them up automatically if you haven't, but I still highly recommend doing it manually)\n"
+				cat <<EOF | xargs -0 echo -ne
+(Selected '$key')
+
+${R}Warning: Setting your enrollment keys is highly destructive, I recommend saving your factory ones before you select any keys.${N}
+
+(This script will attempt to back them up automatically if you haven't, but I still highly recommend doing it manually)
+
+EOF
 				read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
 				if [[ "$confirmation" != "yy" ]]; then
 					menu_reset
@@ -396,7 +406,7 @@ loadsavedkeys() {
 				fi
 				clear
 				menu_logo
-	
+
 				if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
 					vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
 					echo -e "if you see this that means that you don't have your factory SDS (stable_device_secret) backed up, It will be backed up in the next step."
@@ -428,7 +438,7 @@ loadsavedkeys() {
 					echo -e "Writing in: 1"
 					sleep 2
 					clear
-	
+
 					echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
 					echo -e "${R}Writing keys...${N}"
 					sleep 0.8
@@ -467,7 +477,7 @@ loadsavedkeys() {
 	fi
 }
 
-importkeys() { 
+importkeys() {
 	clear
 	menu_logo
 	echo -e "Import Enrollment Info (from a file)"
@@ -546,7 +556,7 @@ editkeys() {
 				if [[ "$confirmation" != "yy" ]]; then
 					menu_reset
 					full_menu
-				fi	
+				fi
 				clear
 				menu_logo
 				sleep 0.2
@@ -821,25 +831,41 @@ removeqs() {
 
 helpmenu() {
 	clear
-	echo -e "
- ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗     
-██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║     
-██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║     
-██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║     
+	cat <<EOF | xargs -0 echo -ne
+ ██████╗██████╗ ██████╗ ███╗   ██╗██████╗  ██████╗ ██╗     ██╗
+██╔════╝██╔══██╗╚════██╗████╗  ██║██╔══██╗██╔═══██╗██║     ██║
+██║     ██████╔╝ █████╔╝██╔██╗ ██║██████╔╝██║   ██║██║     ██║
+██║     ██╔══██╗ ╚═══██╗██║╚██╗██║██╔══██╗██║   ██║██║     ██║
 ╚██████╗██║  ██║██████╔╝██║ ╚████║██║  ██║╚██████╔╝███████╗███████╗
- ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ [v$VERSION]   \n\n                 
-██  ██ ██████ ██     █████▄ 
-██████ ██▄▄   ██     ██▄▄█▀ 
-██  ██ ██▄▄▄▄ ██████ ██     \n"
-	echo -e "\n-- Q/A --\n\nQ: What are enrollment keys?\nA:Enrollment keys are a combination of your SDS (stable_device_secret) and SN (serial number) in your Chromebook's VPD.\n\nQ: What does the factory backup option do?\nA:The factory backup option backs up your 'Enrollment Keys' to a unique spot in RO_VPD."
-	echo -e "\n\n-- What is Cr3nroll for? --"
-	echo -e "\nCr3nroll is a general enrollment manager utility, it can handle unenrolling your Chromebook [with the most up-to-date unenrollments], and managing enrollment after you have disabled FWWP (${G}https://crosmium.dev/FWWP${N}),\nit can replace other older utilities such as Sh1mmer in 99% of cases, and it's actively maintained by its creator, DMD (or DMDCR on github)"
-	echo -e "\n\nFun fact: Cr3nroll is based on Modmium's ${B}libmosh${N}, which is based on Cr3nroll. Weird, right?\n${D}(Libmosh is the library used by Modmium for its modified crosh TUI called 'MOSH')${N}"
-	echo -e "\n\n${D}This menu is a work in progress${N}"
-	echo -e "\n\n\n\n\n${B}-- Press enter to return to menu -- ${N}"
+ ╚═════╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝ [v$VERSION]
+
+
+██  ██ ██████ ██     █████▄
+██████ ██▄▄   ██     ██▄▄█▀
+██  ██ ██▄▄▄▄ ██████ ██
+
+
+-- Q/A --
+
+Q: What are enrollment keys?
+A:Enrollment keys are a combination of your SDS (stable_device_secret) and SN (serial number) in your Chromebook's VPD.
+
+Q: What does the factory backup option do?
+A:The factory backup option backs up your 'Enrollment Keys' to a unique spot in RO_VPD.
+
+-- What is Cr3nroll for? --
+Cr3nroll is a general enrollment manager utility, it can handle unenrolling your Chromebook [with the most up-to-date unenrollments], and managing enrollment after you have disabled FWWP (${G}https://crosmium.dev/FWWP${N}), it can replace other older utilities such as Sh1mmer in 99% of cases, and it's actively maintained by its creator, DMD (or DMDCR on github)
+
+Fun fact: Cr3nroll is based on Modmium's ${B}libmosh${N}, which is based on Cr3nroll. Weird, right?
+${D}(Libmosh is the library used by Modmium for its modified crosh TUI called 'MOSH')${N}
+
+${D}This menu is a work in progress${N}
+
+${B}-- Press enter to return to menu -- ${N}
+EOF
 	stty echo
 	read lol
-	[[ $lol == $'\e[A\e[A\e[B\e[B\e[D\e[C\e[D\e[Cba' ]] && clear && echo -e "try stealing this, jackwagon!" && sleep 3 
+	[[ $lol == $'\e[A\e[A\e[B\e[B\e[D\e[C\e[D\e[Cba' ]] && clear && echo -e "try stealing this, jackwagon!" && sleep 3
 	menu_reset
 	full_menu
 }
@@ -875,7 +901,7 @@ unblockdev() {
 	full_menu
 }
 
-wipestate() { 
+wipestate() {
 	clear
 	menu_logo
 	echo -e "Are you sure you want to wipe stateful?"
@@ -898,40 +924,39 @@ wipestate() {
 tput civis # :whale:
 
 menu_reset() {
-    options=(
-        "1) Save Current Enrollment Keys"
-        "2) ${R}Load saved Enrollment Keys${N}"
-        "3) Generate new Enrollment Keys"
-        "4) ${R}Import Enrollment Info${N}"
-        "5) Edit Enrollment list${N}"
-        "6) ${B}Backup Enrollment Info${N}"
-        "7) ${R}Restore Factory Enrollment Info${N}"
-    )
-    [[ "$factorysaved" == "1" ]] && options+=("8) ${G}Backup Factory Enrollment Info (Recommended)${N}")
+  options=(
+    "1) Save Current Enrollment Keys"
+    "2) ${R}Load saved Enrollment Keys${N}"
+    "3) Generate new Enrollment Keys"
+    "4) ${R}Import Enrollment Info${N}"
+    "5) Edit Enrollment list${N}"
+    "6) ${B}Backup Enrollment Info${N}"
+    "7) ${R}Restore Factory Enrollment Info${N}"
+  )
+  [[ "$factorysaved" == "1" ]] && options+=("8) ${G}Backup Factory Enrollment Info (Recommended)${N}")
 	[[ -n "$(vpd -i RW_VPD -g "re_enrollment_key" 2>/dev/null)" ]] && quicksilver=1
-    [[ "$PAYLOAD_MODE" != "true" ]] && [[ $quicksilver != 1 ]] && options+=("D) Deprovision/Unenroll")
+  [[ "$PAYLOAD_MODE" != "true" ]] && [[ $quicksilver != 1 ]] && options+=("D) Deprovision/Unenroll")
 	[[ $quicksilver == 1 ]] && options+=("R) Remove Quicksilver")
-    [[ "$INSIDE_SHIM" == "true" ]]   && options+=("T) Touch .developer_mode" "W) ${Y}WIPE STATEFUL${N}" "U) Unblock devmode" "B) Bash")
-    options+=("H) Help" "0) Exit")
-    num_options=${#options[@]}
+  [[ "$INSIDE_SHIM" == "true" ]]   && options+=("T) Touch .developer_mode" "W) ${Y}WIPE STATEFUL${N}" "U) Unblock devmode" "B) Bash")
+  options+=("H) Help" "0) Exit")
+  num_options=${#options[@]}
 }
-
 
 milestone
 menu_reset
 
 selector() {
-    local input="${1:-${options[$selected_index]}}"
-    local clean_input=$(echo "$input" | sed 's/\x1b\[[0-9;]*m//g')
+  local input="${1:-${options[$selected_index]}}"
+  local clean_input=$(echo "$input" | sed 's/\x1b\[[0-9;]*m//g')
 
-    case "$clean_input" in
-        1*)
+  case "$clean_input" in
+    1*)
 			fixinput
 			savecurrentkeys ;;
-        2*)
+    2*)
 			fixinput
 			loadsavedkeys ;;
-        3*)
+    3*)
 			fixinput
 			genkeys ;;
 		4*)
@@ -952,12 +977,12 @@ selector() {
 		[Hh]*)
 			fixinput
 			helpmenu ;;
-        [Bb]*)
+    [Bb]*)
 			runscript "/bin/bash" ;;
-        [Dd]*)
+    [Dd]*)
 			fixinput
 			deprovision ;;
-        [Rr]*)
+    [Rr]*)
 			fixinput
 			removeqs ;;
 		[Tt]*)
@@ -969,8 +994,8 @@ selector() {
 		[Uu]*)
 			fixinput
 			unblockdev ;;
-        0*)
-            fixinput
+    0*)
+      fixinput
 			if [[ "$REBOOT_ON_EXIT" == "true" ]]; then
 				echo -e "Exiting..."
 				reboot
@@ -978,9 +1003,9 @@ selector() {
 				exit 0
 			fi
 			;;
-        *)
-            return ;;
-    esac
+    *)
+      return ;;
+  esac
 }
 clear
 full_menu

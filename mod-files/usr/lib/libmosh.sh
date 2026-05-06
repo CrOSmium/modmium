@@ -28,12 +28,12 @@ RUN=$'\033[24m' #reset underline
 
 
 milestone() {
-    if [[ -f /root/.milestone ]]; then
-        MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
-    else
-        MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
-        as_system "echo $MILESTONE > /root/.milestone"
-    fi
+  if [[ -f /root/.milestone ]]; then
+    MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
+  else
+    MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
+    as_system "echo $MILESTONE > /root/.milestone"
+  fi
 }
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3

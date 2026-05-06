@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by mariah carey	
+# written by mariah carey
 
 source /root/.bashrc # to get $EDITOR
 cd /usr/local/share/policy-test-tool
@@ -169,7 +169,7 @@ confirmOrCancel(){
 			;;
 	esac
 	echo -e "${D}(Press Enter to edit, Esc to cancel)${N}"
-	read -rsn1 k 
+	read -rsn1 k
 	[[ "$k" == $'\x1b' ]] && return 1
 	return 0
 }
@@ -188,7 +188,7 @@ editJsonValue(){
 			echo -e "${Y}Editing compressed object for ${N}$key"
 			confirmOrCancel || { disallowInput; return; }
 			echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
-			"${EDITOR:-nano}" "/tmp/mosh_tmp.json"      
+			"${EDITOR:-nano}" "/tmp/mosh_tmp.json"
 			if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
 				local minified=$(jq -c . "/tmp/mosh_tmp.json")
 				jq --arg k "$key" --arg v "$minified" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
@@ -219,7 +219,7 @@ editJsonValue(){
 		echo -e "${Y}Warning: $key is a complicated object.${N}"
 		confirmOrCancel || { disallowInput; return; }
 		jq --arg k "$key" '.device[$k]' "$jsonFile" > "/tmp/mosh_tmp.json"
-		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"    
+		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"
 		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
 			jq --arg k "$key" --argjson v "$(< /tmp/mosh_tmp.json)" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
 		else
@@ -237,7 +237,7 @@ submenu(){
 	local keys=("$@")
 	local subSelectedIndex=0
 	local options=()
-	
+
 	loadData(){
 		options=()
 		for k in "${keys[@]}"; do
@@ -251,7 +251,7 @@ submenu(){
 				options+=("[${Y}{..}${N}] $dispName")
 			else
 				if [[ "$vtype" == "string" && "$val" =~ ^[\{\[] ]] && echo "$val" | jq . >/dev/null 2>&1; then
-					options+=("[${Y}{\"${N}] $dispName") 
+					options+=("[${Y}{\"${N}] $dispName")
 				else
 					local dispVal="${val:0:12}"
 					[[ ${#val} -gt 12 ]] && dispVal="${dispVal}.."
@@ -272,14 +272,14 @@ submenu(){
 		local colWidth=42
 		local numCols=$((termWidth / colWidth))
 		[[ $numCols -lt 1 ]] && numCols=1
-		
+
 		local itemsPerPage=$((maxRows * numCols))
 		local currentPage=$((subSelectedIndex / itemsPerPage))
 		local pageStart=$((currentPage * itemsPerPage))
 
 		tput cup 0 0
 		echo -e "${P}=== $title (Page $((currentPage + 1))) ===${N}"
-		
+
 		for r in $(seq 0 $((maxRows - 1))); do
 			tput cup $((r + 2)) 0
 			for c in $(seq 0 $((numCols - 1))); do
@@ -345,7 +345,7 @@ full_menu(){
 			fi
 		done
 		tput ed
-		
+
 		read -rsn1 key
 		if [[ "$key" == $'\x1b' ]]; then
 			read -rsn2 -t 0.05 keyseq
@@ -362,7 +362,7 @@ full_menu(){
 				1) submenu "Reporting" "${REPORTING[@]}" ;;
 				2) submenu "Enterprise Settings" "${ENTERPRISE[@]}" ;;
 				3) submenu "Misc Settings" "${MISC[@]}" ;;
-				4) 
+				4)
 					allowInput
 					echo -e "${G}Applying device policies!${N}"
 					python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
