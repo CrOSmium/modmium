@@ -46,7 +46,7 @@ cleanup(){ # to be used in case of failure, not for successful building
 trap cleanup EXIT
 
 credits(){
-	echo -e "\
+  cat <<EOF | xargs -0 echo -ne
 Credits:
 ${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) conceptually, made image builder, worked on policy-test-tool with lxrd, MANY small changes and fixes.${N}
 \033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw stuff, mpkeys manager, a bunch of small changes.${N}
@@ -54,7 +54,8 @@ ${R}mariahscarycarey: ${P}Lead developer; laid out everything (prior to kxtz) co
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script.${N}
 \033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
-\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes."
+\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes.
+EOF
 }
 
 fail(){
@@ -72,10 +73,13 @@ silence(){
 getFlags(){
 	load_shflags
 	# thanks sh1mmer wax.sh for teaching me how to use shflags lmao
-	FLAGS_HELP="Usage:
+	FLAGS_HELP=$(cat <<EOF
+Usage:
 $0 -i <path/to/recovery.bin> [flags]
 OR
 $0 -b <board> -v <version> [flags]"
+EOF
+  )
 	DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i"
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"

@@ -12,8 +12,10 @@ fi
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
-echo -e "${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}"
-echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}"
+cat <<EOF | xargs -0 echo -ne
+${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}
+echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}
+EOF
 DEFINE_boolean reinstall "$FLAGS_FALSE" "Whether or not to reinstall." "r"
 FLAGS $@
 if [[ "$FLAGS_reinstall" == "$FLAGS_TRUE" ]]; then
@@ -48,7 +50,7 @@ trap cleanup EXIT
 
 
 
-echo -e "\
+cat <<EOF | xargs -0 echo -ne
 ${G}+##############################################+
 | Policy Test Tool                             |
 | -------------------------------------------- |
@@ -59,11 +61,9 @@ THIS WILL NOT WORK IF YOU'VE RUN 'chromeos-setdevpasswd'${G}
 ${B}Run this *before* signing into the target email. ${N}
 If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N} or powerwashing if your enterprise has a custom signin screen with no delete account option.
 also, make sure you're connected to the internet before running this.
-${D}(Hit Ctrl+C to exit)${N}"
-
-sleep 3
-
-echo -ne "${G}Enter target email: ${N}"
+${D}(Hit Ctrl+C to exit)${N}
+${G}Enter target email: ${N}
+EOF
 read -rep "" email
 
 if [[ ! -f /root/policy.json ]]; then
@@ -112,20 +112,21 @@ cat > /root/.policy-test-tool/policies.json << EOF
 }
 EOF
 
-echo -e "${G}
-Policy file successfully written!
+  cat <<EOF | xargs -0 echo -ne
+${G}Policy file successfully written!
 Location: /root/.policy-test-tool/policies.json
-Configured for: ${email}${N}"
+Configured for: ${email}${N}
+EOF
 fi
 
-echo -e "${G}Waiting for python dependencies from dev_install...${D}
-(If this takes more than 5 minutes, something went wrong; open another VT and run dev_install --reinstall)${N}"
+cat <<EOF | xargs -0 echo -ne
+${G}Waiting for python dependencies from dev_install...${D}
+(If this takes more than 5 minutes, something went wrong; open another VT and run dev_install --reinstall)${N}
+EOF
 pythonGoogleInstalled=
-while [[ $pythonGoogleInstalled != "true" ]]; do
-	python -m google >.googleStatus 2>&1
-	output=$(cat .googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable because python is fucking retarded i hate python
-	if [[ $output == *"package"* ]]; then
-		pythonGoogleInstalled=true
+while [[ $pythonGoogleInstalled != $FLAGS_TRUE ]]; do
+	if [[ $(python -m google 2>&1) == *"package"* ]]; then
+		pythonGoogleInstalled="$FLAGS_TRUE"
 	fi
 	sleep 1
 done
@@ -224,17 +225,20 @@ cat > /usr/local/share/policy-test-tool/policies.json << EOF
   "device": {}
 }
 EOF
-	echo -e "${G}
-Policy file successfully written!
+	cat <<EOF | xargs -0 echo -ne
+${G}Policy file successfully written!
 Location: /usr/local/share/policy-test-tool/policies.json
 Configured for: ${email}${N}"
+EOF
 fi
 
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
 emerge chrome-binary-tests
 
-echo -e "${G}Running fake_dmserver in 3 seconds...
-(Sign in with the target email now, then hit Ctrl+C when you're done)${N}"
+cat <<EOF | xargs -0 echo -ne
+${G}Running fake_dmserver in 3 seconds...
+(Sign in with the target email now, then hit Ctrl+C when you're done)${N}
+EOF
 sleep 3
 /root/.unhang.sh &
 python orchestrator.py policies.json

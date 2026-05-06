@@ -17,7 +17,10 @@ menu_reset(){
 	options=("Install Nix" "Go Back")
 	functions=("installNix" "quit")
 	num_options=${#options[@]}
-	menuText="This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}\nYou can use '${B}mix${N} [arg]' in a root shell to use Nix like a regular package manager like apt, or if you're just lazy.\n"
+	menuText=$(cat <<EOF
+This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}
+You can use '${B}mix${N} [arg]' (a command wrapper) in a root shell to use Nix like a regular package manager like apt if you're lazy.
+EOF
 	num_options=${#options[@]}
 }
 
