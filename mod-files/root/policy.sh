@@ -233,7 +233,9 @@ EOF
 fi
 
 echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
-emerge chrome-binary-tests
+while [[ ! -f /usr/local/libexec/chrome-binary-tests/fake_dmserver ]]; do
+  emerge chrome-binary-tests || echo -e "${R}Failed to emerge fake_dmserver, retrying...${N}"
+done
 
 cat <<EOF | xargs -0 echo -ne
 ${G}Running fake_dmserver in 3 seconds...
