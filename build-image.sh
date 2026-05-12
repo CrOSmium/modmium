@@ -244,10 +244,12 @@ dropModFiles(){
 	if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
 		rm -rf mod-files/bootsplash/*.png
 	fi
-
 	echo $branch >mnt/.branch
+	while mountpoint -q mnt; do
+	  silence umount mnt
+		sleep 1
+	done
 
-	umount mnt
 	losetup -d $loopDev
 	if [[ -n $FLAGS_image ]]; then
 		echo -e "${G}Moving image from tempdir to $(basename $newImage) in current directory...${N}"
