@@ -50,7 +50,7 @@ trap cleanup EXIT
 
 
 
-cat <<EOF | xargs -0 echo -ne
+echo -n "$(cat <<EOF
 ${G}+##############################################+
 | Policy Test Tool                             |
 | -------------------------------------------- |
@@ -64,6 +64,7 @@ also, make sure you're connected to the internet before running this.
 ${D}(Hit Ctrl+C to exit)${N}
 ${G}Enter target email: ${N}
 EOF
+)"
 read -rep "" email
 
 if [[ ! -f /root/policy.json ]]; then
