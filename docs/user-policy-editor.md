@@ -18,4 +18,4 @@ You'll want to do this if you want your enterprise's extensions to install, for 
 3. Open VT-2 and navigate to Edit User Policies
 4. Press the button that says `Grab policy.json from downloads`
 5. Your policy file is now saved!
-6. Remove the user account completely (or powerwash)
+6. Remove the user account completely (or powerwash) and continue with the rest of the steps above!
