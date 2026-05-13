@@ -32,7 +32,7 @@ reinstall(){
 }
 
 grabpolicy(){
-    as_system "cp $(ls -t /home/user/*/MyFiles/Downloads/policies-* | head -n 1) /root/policy.json"
+    as_system "cp $(ls -t /home/user/*/MyFiles/Downloads/policies_* | head -n 1) /root/policy.json"
     echo -e "Grabbing policy.json..."
     sleep 1
     echo -e "Done!"
