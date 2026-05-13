@@ -10,7 +10,7 @@ You'll want to do this if you want your enterprise's extensions to install, for 
 5. Navigate to `Edit User Policies`.
 4. Run `Install` and enter your enterprise email when prompted.
 5. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
-6. After you're logged in, go back to VT2 and hit Ctrl+C
+6. After you're logged in, return to VT2 and hit Ctrl+C
 - Only ever run `Reinstall` if you want to edit policies for a different account, or update them for the same one with a new file.
 ## Obtaining your policy file after install
 1. Enroll into your enterprise and login to your enterprise account
