@@ -70,7 +70,7 @@ vt-mosh() {
 }
 
 case $(tty 2>/dev/null) in
-    /dev/pts/[1-9]*)
+    /dev/pts/[0-9]*)
         if ! vt-mosh; then
             exec /usr/bin/vt-mosh.sh
         fi
