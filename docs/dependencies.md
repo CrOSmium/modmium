@@ -1,3 +1,5 @@
+# IF YOUR DISTRO HAS AN OUTDATED VBOOT-UTILS OR DOESN'T HAVE IT, SEE [COMPILATION INSTRUCTIONS](./vboot-utils.md)
+
 ## Arch Linux:
 ```bash
 yay -S --needed curl wget jq pv util-linux coreutils vboot-utils
