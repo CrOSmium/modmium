@@ -45,7 +45,7 @@ grabpolicy(){
 tput civis # :whale:
 
 menu_reset() {
-    menuText="\nMOSH user policy editor\n"
+    menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']\n"
 	if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
         options=("Run Policy Editor (Install)" "Reinstall" "Exit")
         functions=("install" "reinstall" "quit")
