@@ -43,6 +43,10 @@ apps(){
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
+menu_logo() {
+	echo -e "Welcome to VT-MOSH, the Modmium developer console.\n\nIf you got here by mistake, don't panic! Just press exit, then Ctrl+Alt+F1 [usually the back arrow] and carry on.\n\nThis console contains a list of utilities for performing various actions on a chromebook running Modmium.\n"
+}
+
 menu_reset() {
     menuText="\n${D}If you'd like skip this menu by default, run 'touch /usr/local/.defaultvt'${N}\n"
 	options=("Root Shell" "Chronos Shell" "Update Modmium [NOT CHROMEOS]" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
