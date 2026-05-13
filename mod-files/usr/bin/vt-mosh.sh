@@ -37,14 +37,16 @@ userpol(){
 misc(){
 	runscript /usr/bin/mosh-misc.sh
 }
-
+apps(){
+	runscript /usr/bin/mosh-apps.sh
+}
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
     menuText="\n${D}If you'd like skip this menu by default, run 'touch /usr/local/.defaultvt'${N}\n"
-	options=("Root Shell" "Chronos Shell" "Update Modmium [NOT CHROMEOS]" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Misc" "Exit")
-	functions=("rootsh" "chronosh" "update" "devpol" "userpol" "misc" "quit")
+	options=("Root Shell" "Chronos Shell" "Update Modmium [NOT CHROMEOS]" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
+	functions=("rootsh" "chronosh" "update" "devpol" "userpol" "apps" "misc" "quit")
 	num_options=${#options[@]}
 }
 
