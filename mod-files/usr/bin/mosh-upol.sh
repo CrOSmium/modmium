@@ -50,11 +50,11 @@ tput civis # :whale:
 menu_reset() {
     menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']${N}\n"
 	if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
-        options=("Run Policy Editor (Install)" "Reinstall" "Exit")
-        functions=("install" "reinstall" "quit")
+        options=("Run Policy Editor (Install)" "Update policy.json [from downloads]" "Reinstall" "Exit")
+        functions=("install" "grabpolicy" "reinstall" "quit")
     else
-        options=("Run Policy Editor (Install)" "Exit")
-        functions=("install" "quit")
+        options=("Run Policy Editor (Install)" "Update policy.json [from downloads]" "Exit")
+        functions=("install" "grabpolicy" "quit")
     fi
     if [[ ! -f $POLICYFILE ]]; then
         options=("Grab policy.json from downloads" "Exit")
