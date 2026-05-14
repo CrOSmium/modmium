@@ -45,7 +45,7 @@ EOF
     exec /usr/bin/crosh
   fi
 }
-index
+
 
 selector() {
   torun="${paths[$selected_index]}"
@@ -119,6 +119,7 @@ display_menu() {
   done
 }
 clear
+index
 full_menu
 tput cnorm
 selector
