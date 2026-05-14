@@ -42,7 +42,7 @@ EOF
     sleep 1
     echo -e "Returning to MOSH..."
     sleep 3
-    exec /usr/bin/crosh
+    exit 0
   fi
 }
 
@@ -55,8 +55,8 @@ selector() {
   fi
 
   case "$torun" in
-    *crosh)
-      exec /usr/bin/crosh
+    *"exit 0")
+      exit 0
       ;;
     *)
       runscript "$torun"
