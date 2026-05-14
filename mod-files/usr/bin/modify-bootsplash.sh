@@ -142,7 +142,6 @@ EOF
 	num_options=${#options[@]}
 }
 
-milestone
 menu_reset
 clear
 full_menu

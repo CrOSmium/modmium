@@ -7,7 +7,6 @@ source /usr/lib/libmosh.sh
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-milestone
 
 installNix(){
 	runscript /usr/bin/.nix-install.sh
@@ -25,7 +24,6 @@ EOF
 	num_options=${#options[@]}
 }
 
-milestone
 menu_reset
 clear
 full_menu

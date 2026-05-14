@@ -25,7 +25,6 @@ prenix(){
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-milestone
 
 menu_reset() {
 	options=("Modify Bootsplash" "Toggle Enrollment" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Go back")

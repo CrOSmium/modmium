@@ -7,7 +7,6 @@ source /usr/lib/libmosh.sh
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-milestone
 
 if [[ ! -f /usr/local/config/apps.conf ]]; then
 	as_system mkdir -p /usr/local/config
