@@ -27,11 +27,6 @@ UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
 MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
 
-
-milestone(){ 
-	return # :whale:
-}
-
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
   local largest size dev_name tmp_size remo
