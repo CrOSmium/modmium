@@ -25,7 +25,7 @@ N=$'\033[0m'
 D=$'\033[1;90m'
 UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
-MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
+MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
