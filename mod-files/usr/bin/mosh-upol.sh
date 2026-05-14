@@ -32,10 +32,13 @@ reinstall(){
 }
 
 grabpolicy(){
-    as_system 'cp "$(ls -t /home/user/*/MyFiles/Downloads/policies_* | head -n 1)" /root/policy.json'
-    echo -e "Grabbing policy.json..."
+	echo -e "Grabbing policy.json..."
+	sleep 0.4
+    policy=$(find /home/user/*/MyFiles/Downloads/ -name "policies_*" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d" " -f2-)
+	[[ -z "$policy" ]] && echo -e "No policy file found, are you sure it's in downloads?" >&2
+	sudo cp -- "$policy" /root/policy.json > /dev/null 2>&1
     sleep 1
-    echo -e "Done!"
+    echo -e "Returning to menu..."
     sleep 0.5
     menu_reset
     full_menu
