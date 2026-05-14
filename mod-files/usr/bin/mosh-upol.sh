@@ -38,7 +38,7 @@ grabpolicy(){
 	[[ -z "$policy" ]] && echo -e "No policy file found, are you sure it's in downloads?" >&2
 	sudo cp -- "$policy" /root/policy.json > /dev/null 2>&1
     sleep 1
-    echo -e "Returning to menu..."
+    echo -e "Refreshing menu..."
     sleep 0.5
     menu_reset
     full_menu
