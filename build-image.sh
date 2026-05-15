@@ -84,6 +84,7 @@ EOF
 	DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
 	DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
 	DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
+  DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels" "m"
 	DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (plug in the drive to back them up to before starting building)." "u"
 	DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
 	DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
@@ -108,13 +109,13 @@ checkFlagValidity(){
 	fi
 	if [[ -n $FLAGS_board ]]; then
 		FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
-		local boardInList=0
+		local boardInList=$FLAGS_FALSE
 		for board in $boards; do
 			if [[ "$FLAGS_board" == "$board" ]]; then
-				boardInList=1
+				boardInList=$FLAGS_TRUE
 			fi
 		done
-		if [[ $boardInList != 1 ]]; then
+		if [[ $boardInList != $FLAGS_TRUE ]]; then
 			fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
 		fi
 	fi
@@ -194,6 +195,16 @@ removeVerity(){
 				--version $kernver \
         --oldblob ${loopDev}p$part
 	done
+
+  if [[ $FLAGS_minios == $FLAGS_TRUE ]]; then
+    for part in 9 10; do
+      echo -e "${G}Resigning miniOS kernel ${part}...${N}"
+      vbutil_kernel --repack ${loopDev}p$part \
+        --keyblock ${keydir}/minios_kernel.keyblock \
+        --signprivate ${keydir}/minios_kernel_data_key.vbprivk \
+        --oldblob ${loopDev}p$part
+      done
+  fi
 
 	echo -e "${G}Cleaning up kernel backups and configs...${N}"
 	rm -rf cros_sign_backups config*
