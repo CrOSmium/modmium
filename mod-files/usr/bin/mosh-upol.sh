@@ -47,6 +47,10 @@ grabpolicy(){
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
+menu_logo() {
+	echo -e "Welcome to VT-MOSH, the Modmium developer console.\n\nIf you got here by mistake, don't panic! Just press exit, then Ctrl+Alt+F1 [usually the back arrow] and carry on.\n\nThis console contains a list of utilities for performing various actions on a chromebook running Modmium.\n"
+}
+
 menu_reset() {
     menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']${N}\n"
 	if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
