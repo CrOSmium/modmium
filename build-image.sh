@@ -148,8 +148,7 @@ removeVerity(){
     keydir=build-utils/keys/devkeys
   fi
   if [[ -n $FLAGS_image ]]; then
-    if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image}
-      | awk '{print $1}') ]]; then # checks if tmp has enough room for the image
+    if [[ $(($(df /tmp | awk '{print $4}' | tail -n 1) * 1024)) -gt $(du -b ${FLAGS_image} | awk '{print $1}') ]]; then # checks if tmp has enough room for the image
       tempDir=$(mktemp -d)
     else
       echo -e "${B}/tmp is not large enough, using disk...${N}"
