@@ -44,9 +44,9 @@ fail(){
 checkWP(){
 	writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
 	if [[ $writeprotect == *"disabled"* ]]; then
-		echo -e "FWWP is currently ${R}DISABLED${N}, continuing..."
+		echo -e "FWWP is currently ${G}DISABLED${N}, continuing..."
 	else
-		echo -e "FWWP is currently ${G}ENABLED${N}, checking for wp range..."
+		echo -e "FWWP is currently ${N}ENABLED${N}, checking for wp range..."
 		wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
 		if [[ $wprange != "" ]]; then
 			fail "WP range is set to 0,0 but you must fully disable FWWP before continuing."
@@ -54,6 +54,19 @@ checkWP(){
 			fail "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
 		fi
 	fi
+}
+
+checkAPROV(){
+  if isti50=$(gsctool -a -I | grep AllowUnverifiedRo); then
+    setting=$(echo $isti50 | awk '{print $3}')
+    case $setting in
+      Always) echo -e "APROV is currently ${G}DISABLED${N}, continuing..." ;;
+      Never) fail "APROV is currently ${R}ENABLED${N}. If you're seeing this, WP is off but APROV is on and rebooting will ${R}${UN}BRICK YOUR DEVICE${RUN}${N}.\n Disable APROV immediately by running \`gsctool -a -I AllowUnverifiedRo:always\`" ;;
+      *) fail "How did we get here..?" ;;
+    esac
+  else
+    echo -e "Device is not Ti50, so APROV does not exist, continuing..."
+  fi
 }
 
 askConfirmation(){
@@ -167,7 +180,9 @@ flashDevFW(){
 
 	if [[ $DEVFW != 1 ]]; then
 		# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
-		/usr/share/vboot/bin/set_gbb_flags.sh 0xa0b1 || futility gbb -s --flash --flags=0xa0b1
+		( /usr/share/vboot/bin/set_gbb_flags.sh 0xa0b1 || /usr/share/vboot/bin/set_gbb_flags.sh 0x80b1 ) \
+		  || ( futility gbb -s --flash --flags=0xa0b1 || futility gbb -s --flash --flags=0x80b1 )
+			# we try a0b1 first, but if it doesn't recognize the fastboot flag, we do 80b1 instead
   	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 			/usr/share/vboot/bin/make_dev_ssd.sh --force
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
@@ -193,6 +208,7 @@ This requires write protection to be disabled, and it will be checked before thi
 Checking for Firmware Write Protection...
 EOF
 	checkWP
+	checkAPROV
 
 	echo -e "Are you sure you want to flash DevFW firmware?"
 	askConfirmation
