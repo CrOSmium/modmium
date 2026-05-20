@@ -26,7 +26,7 @@ chronosh(){
 	runscript "sudo -i -u chronos"
 }
 update(){
-	runscript /usr/bin/update-modmium.sh
+	runscript /usr/bin/updater.sh
 }
 devpol(){
 	runscript /usr/bin/devpolicy-editor.sh
@@ -49,7 +49,7 @@ menu_logo() {
 
 menu_reset() {
     menuText="\n${D}If you'd like skip this menu by default, run 'touch /usr/local/.defaultvt'${N}\n"
-	options=("Root Shell" "Chronos Shell" "Update Modmium [NOT CHROMEOS]" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
+	options=("Root Shell" "Chronos Shell" "Update Modmium" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
 	functions=("rootsh" "chronosh" "update" "devpol" "userpol" "apps" "misc" "quit")
 	num_options=${#options[@]}
 }

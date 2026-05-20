@@ -90,6 +90,10 @@ confupd(){
   fi
 }
 
+legacyupd(){
+    runscript /usr/bin/update-modmium.sh
+    }
+
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
@@ -97,11 +101,11 @@ tput civis # :whale:
 menu_reset() {
     menuText="\nModmium Update Utility\n${R}For now, If you are using Userkeys, this will make ChromeOS ${UN}unbootable${RUN}.${N}\n"
     if [[ -f /usr/local/.updatemile ]]; then
-      options=("Select version to update to" "Confirm Update (v$(cat /usr/local/.updatemile))" "Exit")
+      options=("Select version to update to" "Confirm Update (v$(cat /usr/local/.updatemile))" "Legacy Git Update" "Exit")
     else
-      options=("Select version to update to" "Confirm Update" "Exit")
+      options=("Select version to update to" "Confirm Update" "Legacy Git Update" "Exit")
     fi
-    functions=("selectv" "confupd" "quit")
+    functions=("selectv" "confupd" "legacyupd" "quit")
 	num_options=${#options[@]}
 }
 
