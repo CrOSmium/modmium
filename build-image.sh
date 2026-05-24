@@ -3,6 +3,7 @@
 DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
+source ./build-utils/common_minimal.sh
 source ./build-utils/common_modmium.sh
 branch=$(git rev-parse --abbrev-ref HEAD)
 
@@ -407,6 +408,8 @@ main(){
   [[ $FLAGS_bootsplash == $FLAGS_TRUE ]] && bootsplash
   [[ -n $FLAGS_board && -n $FLAGS_version ]] && downloadImage
   removeVerity
+  echo -e "${G}Enabling RW mount for p3"
+  enable_rw_mount "${loopDev}p3"
   dropModFiles
 }
 
