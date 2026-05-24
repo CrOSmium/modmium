@@ -6,19 +6,6 @@ DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
 source ./build-utils/common_modmium.sh
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-if [[ "$(basename $PWD)" != "modmium" ]]; then
-  fail "Please run this script in the cloned directory (modmium/)"
-fi
-if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root, elevating with sudo..."
-  echo $USER >.realuser
-  sudo "$0" "$@"
-  exit $?
-fi
-if [[ -f .realuser ]]; then
-  USER=$(cat .realuser)
-fi
-
 asUser(){
   silence su $USER -c "$1" # we do this to make sure permisisons aren't janky
 }
@@ -67,6 +54,19 @@ fail(){
 silence(){
   "$@" >/dev/null 2>&1
 }
+
+if [[ "$(basename $PWD)" != "modmium" ]]; then
+  fail "Please run this script in the cloned directory (modmium/)"
+fi
+if [[ $EUID -ne 0 ]]; then
+  echo "This script must be run as root, elevating with sudo..."
+  echo $USER >.realuser
+  sudo "$0" "$@"
+  exit $?
+fi
+if [[ -f .realuser ]]; then
+  USER=$(cat .realuser)
+fi
 # end of checks
 
 # begin flag functions
