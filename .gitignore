@@ -13,3 +13,4 @@ userkeys
 .realuser
 tests/
 *.pyc
+mnt/*
