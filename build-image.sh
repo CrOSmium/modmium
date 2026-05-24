@@ -55,7 +55,7 @@ silence(){
   "$@" >/dev/null 2>&1
 }
 
-if [[ "$(basename $PWD)" != "modmium" ]]; then
+if [[ "$(basename $PWD)" != "modmium" && "$SKIP_DIRCHECK" != "1" ]]; then
   fail "Please run this script in the cloned directory (modmium/)"
 fi
 if [[ $EUID -ne 0 ]]; then
