@@ -186,7 +186,7 @@ removeVerity(){
     fi
 
     echo -e "${G}Resigning kernel ${part} with modified commandline...${N}"
-    vbutil_kernel --repack ${loopDev}p$part \
+    futility vbutil_kernel --repack ${loopDev}p$part \
       --keyblock ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel.keyblock" || echo "kernel.keyblock" ) \
       --signprivate ${keydir}/$( [ $part -eq 2 ] && echo "recovery_kernel_data_key.vbprivk" || echo "kernel_data_key.vbprivk" ) \
       --config config_${part}.txt \
@@ -197,7 +197,7 @@ removeVerity(){
   if [[ $FLAGS_minios == $FLAGS_TRUE ]]; then
     for part in 9 10; do
       echo -e "${G}Resigning miniOS kernel ${part}...${N}"
-      vbutil_kernel --repack ${loopDev}p$part \
+      futility vbutil_kernel --repack ${loopDev}p$part \
         --keyblock ${keydir}/minios_kernel.keyblock \
         --signprivate ${keydir}/minios_kernel_data_key.vbprivk \
         --oldblob ${loopDev}p$part
