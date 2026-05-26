@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# written by lxrd
 
 import sys
 import struct
@@ -9,6 +8,7 @@ import os
 import re
 import zlib
 import time
+import argparse
 import requests
 
 LINUX_VER_RE = re.compile(
@@ -111,7 +111,6 @@ def stream_stored(url, data_offset, partitions):
         print(file=sys.stderr)
 
 def stream_deflate(url, data_offset, partitions):
-    # sort by offset so we write each partition as we stream past it
     partitions = sorted(partitions, key=lambda x: x[0])
     r = requests.get(url, headers={
         "Range": f"bytes={data_offset}-",
@@ -209,7 +208,17 @@ def tpm_version(kernel_path):
         pass
     return None
 
-def main(url):
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--recovery-url", required=True)
+    parser.add_argument("--kern-output", default="kern.bin")
+    parser.add_argument("--root-output", default="root.bin")
+    args = parser.parse_args()
+
+    url = args.recovery_url
+    kern_out = args.kern_output
+    root_out = args.root_output
+
     t0 = time.time()
     file_size = get_file_size(url)
     print(f"size: {file_size//(1024*1024)}MB", file=sys.stderr)
@@ -262,17 +271,15 @@ def main(url):
           file=sys.stderr)
 
     fetch_partitions(url, data_offset, ctype, [
-        (root_start, root_sectors, "root.bin", "ROOT-A"),
-        (kern_start, kern_sectors, "kern.bin", "KERN-B"),
+        (root_start, root_sectors, root_out, "ROOT-A"),
+        (kern_start, kern_sectors, kern_out, "KERN-B"),
     ])
 
-    tpm = tpm_version("kern.bin")
-    lv  = linux_version("kern.bin")
+    tpm = tpm_version(kern_out)
+    lv  = linux_version(kern_out)
     if tpm: print(f"tpm version: {tpm}")
     if lv:  print(f"linux version: {lv}")
     print(f"done in {time.time() - t0:.1f}s", file=sys.stderr)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(f"usage: {sys.argv[0]} <url>")
-    main(sys.argv[1])
+    main()
