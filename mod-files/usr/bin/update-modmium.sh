@@ -1,6 +1,8 @@
 #!/bin/bash
 # written by mariah carey
 
+# TODO: either in this script or a new one, add a cros updater and/or version selector
+
 source /usr/lib/libmosh.sh
 
 branch=$(cat /.branch)

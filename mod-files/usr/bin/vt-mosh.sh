@@ -13,7 +13,7 @@ if [[ -d /usr/local/nix/store ]]; then
 		sudo mkdir -p /nix
     sudo mount --bind /usr/local/nix /nix
 	fi
-	sudo . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+	sudo source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
 	unset LD_LIBRARY_PATH
 fi
 

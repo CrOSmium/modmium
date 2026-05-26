@@ -2,6 +2,8 @@
 # written by mariah carey & DMD
 # using qs for 142- suggested by xz8f
 
+# TODO: rewrite to fit the rest of MOSH's UI
+
 source /usr/lib/libmosh.sh
 
 fail() {
