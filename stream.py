@@ -1,5 +1,5 @@
-# written by lxrd
 #!/usr/bin/env python3
+# written by lxrd
 
 import sys
 import struct
