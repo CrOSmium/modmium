@@ -96,7 +96,7 @@ updateModmium() {
 	rm -rf /mnt/stateful_partition/git/modmium
 	sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
 	sleep 3
-	return
+	exit 0
 }
 
 get_booted_kernnum() {
