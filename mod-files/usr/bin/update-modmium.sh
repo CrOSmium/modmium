@@ -208,7 +208,7 @@ installCros() {
   # now to copy relevant files to new root
   for file in /bootsplash /.branch; do
     cp -r $file mnt
-  }
+  done
   [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
   if ! diff /root/.bashrc mnt/root/.bashrc; then
     echo -e "${B}Changes to .bashrc detected, copy root's dotfiles to new root? [Y/n]${N}"
