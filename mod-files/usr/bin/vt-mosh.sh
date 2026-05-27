@@ -4,7 +4,6 @@
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
-source /etc/profile
 if [[ -d /usr/local/nix/store ]]; then
 	# issues can get caused if a user has a custom shell.
 	# before, this code only ran if .bashrc was sourced,
