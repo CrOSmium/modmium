@@ -27,7 +27,7 @@ POLICYFILE="/root/policy.json"
 
 reinstall(){
   rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
-  echo -e "${G}Reinstall flag detected, removed .devinstall_complete and .policytesttool_setup markers. Rerun the script to do a full setup.${N}"
+  echo -e "${G}Removed .devinstall_complete and .policytesttool_setup markers.${N}"
   sleep 2
   exit
 }
@@ -228,7 +228,7 @@ menu_logo() {
 menu_reset() {
   menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']${N}\n"
   if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
-    options=("Run Policy Editor (Install)" "Update policy.json [from downloads]" "Reinstall" "Exit")
+    options=("Run Policy Editor" "Update policy.json [from downloads]" "Reinstall" "Exit")
     functions=("install" "grabpolicy" "reinstall" "quit")
   else
     options=("Run Policy Editor (Install)" "Update policy.json [from downloads]" "Exit")

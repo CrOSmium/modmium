@@ -5,7 +5,8 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 ## Features
 * Reports as verified in the Google Admin Console (GAC)
 * Allows modification of all policies 
-* Convenient git updater (for now lol)
+* Convenient git updater
+* ChromeOS version changer
 * Different branches
   * Nightly: where new features are pushed and available for public testing
   * Stable: where changes are pushed after a public beta

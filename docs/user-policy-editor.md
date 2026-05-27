@@ -10,14 +10,15 @@ You'll want to do this if you want your enterprise's extensions to install, for 
   - This is not required if you did the pre-install step, or don't want any enterprise settings on your user account.
 3. Open VT2 once __fully enrolled__, DO NOT SIGN IN YET.
 5. Navigate to `Edit User Policies`.
-4. Run `Install` and enter your enterprise email when prompted.
+4. Select `Run Policy Editor` and enter your enterprise email when prompted.
 5. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
 6. After you're logged in, return to VT2 and hit Ctrl+C
 - Only ever run `Reinstall` if you want to edit policies for a different account, or update them for the same one with a new file.
+
 ## Obtaining your policy file after install
 1. Enroll into your enterprise and login to your enterprise account
 2. Open `chrome://policy` and export your policy file to your Downloads folder, do not change the name.
 3. Open VT-2 and navigate to Edit User Policies
-4. Press the button that says `Grab policy.json from downloads`
+4. Select `Grab policy.json from Downloads`
 5. Your policy file is now saved, it should show the menu that says `Install`, if it doesn't, check that you actually placed your policy file into downloads, and that the name is the same as it was originally. 
 6. Remove the user account completely (or powerwash if needed) and continue with the [rest of the steps](#user-policy-editor-instructions) above!
