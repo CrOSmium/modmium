@@ -208,7 +208,7 @@ installCros() {
       chmod 777 $oldFile
     fi
   done
-  arch=$(uname -m | tr _ -)
+  arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   cd .. && rm -rf modmium
