@@ -29,7 +29,7 @@ crosh(){
 	runscriptnoroot "exec /usr/bin/crosh.old"
 }
 update(){
-	runscript /usr/bin/updater.sh
+	runscript /usr/bin/update-modmium.sh
 }
 devpol(){
 	runscript /usr/bin/devpolicy-editor.sh

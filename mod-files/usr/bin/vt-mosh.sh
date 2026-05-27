@@ -27,7 +27,7 @@ chronosh(){
 	runscript "sudo -i -u chronos"
 }
 update(){
-	runscript /usr/bin/updater.sh
+	runscript /usr/bin/update-modmium.sh
 }
 devpol(){
 	runscript /usr/bin/devpolicy-editor.sh
