@@ -6,15 +6,11 @@ import struct
 import subprocess
 import tempfile
 import os
-import re
 import zlib
 import time
 import argparse
 import requests
 
-LINUX_VER_RE = re.compile(
-    r'(\d+\.\d+\.\d+-\d+-[0-9a-g]+)|Linux version (\d+\.\d+\.\d+-?\d*-?[0-9a-g]*)'
-)
 
 def range_get(url, start, length):
     r = requests.get(url, headers={
@@ -175,8 +171,6 @@ def get_partition_table(url, data_offset, compress_type):
             break
     r.close()
     return buf[:10*1024*1024]
-
-
 def tpm_version(kernel_path):
     try:
         out = subprocess.check_output(["futility", "show", kernel_path],
@@ -253,8 +247,6 @@ def main():
         sys.exit("error: KERN-B not found")
     if not root_start:
         sys.exit("error: ROOT-A not found")
-
-
     print(f"ROOT-A: {root_sectors*512//(1024*1024)}MB  KERN-B: {kern_sectors*512//(1024*1024)}MB",
           file=sys.stderr)
 
