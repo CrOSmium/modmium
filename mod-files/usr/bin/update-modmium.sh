@@ -148,8 +148,17 @@ installCros() {
   stty echo
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
-  [[ $VERSION -gt 130 ]] || fail "${R}Versions below 131 are not supported, exiting...${N}"
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
+  if [[ $VERSION -lt 131 ]]; then
+    echo -e "${R}WARNING. VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
+    echo -e "${B}Continue anyways? [y/N]${N}"
+    read -rep ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${B}Continuing...${N}"
+    else
+      fail "${R}Exiting...${N}"
+    fi
+  fi
   askBranch
   getImageLink
   intdis=$(rootdev -d)

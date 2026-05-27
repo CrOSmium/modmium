@@ -108,6 +108,15 @@ checkFlagValidity(){
   if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
     fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   fi
+  if [[ -n $FLAGS_version && $FLAGS_VERSION -lt 131 ]]; then
+    echo -e "${R}Versions below 131 are NOT supported, and issue reports involving them will be discarded.${B} Continue anyway? [y/N]${N}"
+    read -rep ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${B}Continuing...${N}"
+    else
+      fail "${R}Exiting...${N}"
+    fi
+  fi
   if [[ -n $FLAGS_board ]]; then
     FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
     local boardInList=$FLAGS_FALSE
