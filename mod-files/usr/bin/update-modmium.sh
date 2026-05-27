@@ -123,7 +123,7 @@ opposite_num() {
 
 installCros() {
   stty echo
-  echo -ne "Version of ChromeOS you want to install:"
+  echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
   [[ $VERSION -gt 130 ]] || fail "${R}Versions below 131 are not supported, exiting...${N}"
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
