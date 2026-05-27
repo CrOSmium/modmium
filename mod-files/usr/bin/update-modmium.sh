@@ -81,6 +81,7 @@ dropModFiles() {
 
 updateModmium() {
 	clear
+	stty echo
 	export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	branch=$(cat /.branch)
 	mkdir -p /mnt/stateful_partition/git
@@ -96,7 +97,8 @@ updateModmium() {
 	rm -rf /mnt/stateful_partition/git/modmium
 	sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
 	sleep 3
-	exit 0
+	stty -echo
+	exit
 }
 
 get_booted_kernnum() {
@@ -120,6 +122,7 @@ opposite_num() {
 }
 
 installCros() {
+  stty echo
   echo -ne "Version of ChromeOS you want to install:"
   read -rep "" VERSION
   [[ $VERSION -gt 130 ]] || fail "${R}Versions below 131 are not supported, exiting...${N}"
@@ -228,6 +231,7 @@ installCros() {
 	cgpt add ${intdis} -i $(get_booted_kernnum) -P 0
 	cgpt add ${intdis} -i $(opposite_num $(get_booted_kernnum)) -P 15
 	sleep 2
+	stty -echo
 }
 
 # -- MAIN SCRIPT --
