@@ -254,16 +254,14 @@ installCros() {
     [[ -d $file || -f $file ]] && cp -r $file mnt
   done
   [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
-  if ! diff /root/.bashrc mnt/root/.bashrc; then
-    echo -e "${B}Changes to .bashrc detected, copy root's dotfiles to new root? [Y/n]${N}"
-    read -rep ""
-    if [[ $REPLY =~ ^[Nn]$ ]]; then
-      echo "Continuing..."
-    else
-      for file in $(find /root -name ".*"); do
-        cp -r $file mnt/root
-      done
-    fi
+  echo -e "${B}Copy root's files to new root? [Y/n]${N}"
+  read -rep ""
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
+    echo "Continuing..."
+  else
+    for file in $(find /root -name "*"); do
+      cp -r $file mnt/root
+    done
   fi
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   sync
