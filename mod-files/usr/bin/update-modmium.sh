@@ -53,8 +53,7 @@ getImageLink(){
     | .url // empty
     ')
   if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
-    echo -e "${G}Recovery URL found${N}"
-    echo -e "${N}Returning to main menu..."
+    echo -e "${G}Recovery URL found!${N}"
     sleep 1
   else
     fail "${R}Recovery URL not found or invalid :(${N}"
@@ -102,14 +101,14 @@ updateModmium() {
 }
 
 get_booted_kernnum() {
-  if $(( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
+  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
     echo -n 2
   else
     echo -n 4
   fi
 }
 get_booted_rootnum() {
-	expr $(get_booted_kernnum) + 1
+	echo $(( $(get_booted_kernnum) + 1 ))
 }
 opposite_num() {
   case $1 in
@@ -135,11 +134,16 @@ installCros() {
 	else
 	  intdis_prefix="$intdis"
 	fi
-	installKern=${intdis}${intdis_prefix}$(opposite_num $(get_booted_kernnum))
-	installRoot=${intdis}${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+
+	installKern=${intdis_prefix}$(opposite_num $(get_booted_kernnum))
+	installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
 	echo -e "${G}Installing ChromeOS to disk...${N}"
+	python -m venv .venv
+	source .venv/bin/activate
+	pip install requests
 	/usr/bin/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
-	#thanks lxrd for that python script btw
+	rm -rf .venv
+	# thanks lxrd for that python script btw
 
 	echo -e "${G}Removing verity from ChromeOS...${N}"
 	if [[ -d /usr/share/vboot/userkeys ]]; then
@@ -177,7 +181,7 @@ installCros() {
 	rm -rf config.txt
 
   echo -e "${G}Installing Modmium to ChromeOS...${N}"
-  export PATH="/sbin:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/libexec/git-core" # just in case, so we know git https will work
+  export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	if [[ -d /root/.ssh ]]; then
@@ -189,7 +193,7 @@ installCros() {
 
 	cd modmium
 	mount ${installRoot} mnt --mkdir
-	for file in $modFiles; do
+	for file in $(find mod-files -mindepth 1 -name "*"); do
     if [[ -d $file ]]; then
       :
     elif [[ -f $file ]]; then
@@ -207,14 +211,16 @@ installCros() {
   arch=$(uname -m | tr _ -)
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
+  cd .. && rm -rf modmium
 
   # now to copy relevant files to new root
   for file in /bootsplash /.branch; do
-    cp -r $file mnt
+    [[ -d $file || -f $file ]] && cp -r $file mnt
   done
   [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
   if ! diff /root/.bashrc mnt/root/.bashrc; then
     echo -e "${B}Changes to .bashrc detected, copy root's dotfiles to new root? [Y/n]${N}"
+    read -rep ""
     if [[ $REPLY =~ ^[Nn]$ ]]; then
       echo "Continuing..."
     else
@@ -232,6 +238,7 @@ installCros() {
 	cgpt add ${intdis} -i $(opposite_num $(get_booted_kernnum)) -P 15
 	sleep 2
 	stty -echo
+	exit 0
 }
 
 # -- MAIN SCRIPT --
