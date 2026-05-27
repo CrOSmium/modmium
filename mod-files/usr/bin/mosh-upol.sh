@@ -4,6 +4,7 @@
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
+source /etc/profile
 if [[ -d /usr/local/nix/store ]]; then
   # issues can get caused if a user has a custom shell.
   # before, this code only ran if .bashrc was sourced,
@@ -25,7 +26,7 @@ POLICYFILE="/root/policy.json"
 # -- FUNCTIONS --
 
 install(){
-  runscript "bash /root/policy.sh" 
+  runscript "bash /root/policy.sh"
 }
 reinstall(){
   runscript "bash /root/policy.sh --reinstall"
@@ -61,9 +62,9 @@ menu_reset() {
     functions=("install" "grabpolicy" "quit")
   fi
   if [[ ! -f $POLICYFILE ]]; then
-    options=("Grab policy.json from downloads" "Exit")
+    options=("Grab policy.json from Downloads" "Exit")
     functions=("grabpolicy" "quit")
-    menuText="\nMOSH user policy editor\n\n${R}PLEASE LOGIN TO YOUR ACCOUNT, GO TO ${N}chrome://policy${R} AND SAVE IT TO THE ROOT OF YOUR DOWNLOADS FOLDER.\n${N}After that, run 'Grab policy.json from downloads', then remove the account (or powerwash)."
+    menuText="\nMOSH user policy editor\n\n${R}PLEASE LOGIN TO YOUR ACCOUNT, GO TO ${N}chrome://policy${R} AND SAVE IT TO THE ROOT OF YOUR DOWNLOADS FOLDER.\n${N}After that, run 'Grab policy.json from Downloads', then remove the account (or powerwash)."
   fi
   num_options=${#options[@]}
 }

@@ -14,7 +14,7 @@ POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 
 cat <<EOF | xargs -0 echo -ne
 ${G}To reinstall from scratch, run: bash policy.sh --reinstall${N}
-echo -e "${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}
+${G}Edit policies in /usr/local/share/policy-test-tool/policies.json${N}
 EOF
 DEFINE_boolean reinstall "$FLAGS_FALSE" "Whether or not to reinstall." "r"
 FLAGS $@

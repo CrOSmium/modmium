@@ -167,8 +167,8 @@ removeVerity(){
   echo -e "${G}Setting up loop device...${N}"
   loopDev=$(losetup -Pf --show $newImage || fail "${R}Failed to set up loop device, exiting...${N}")
   echo -e "${G}Disabling verity...${N}"
-  silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2 --keys ${keydir}
-  silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --recovery_key --keys ${keydir}
+  silence build-utils/ssd_util.sh -i $loopDev -r --partitions 2 --recovery_key --keys ${keydir}
+  silence build-utils/ssd_util.sh -i $loopDev -r --partitions 4 --keys ${keydir}
 
   rootUUID=$(blkid -s PARTUUID -o value ${loopDev}p3)
   for part in 2 4; do
