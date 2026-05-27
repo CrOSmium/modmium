@@ -25,10 +25,10 @@ POLICYFILE="/root/policy.json"
 # -- FUNCTIONS --
 
 install(){
-  employ sudo bash /root/policy.sh 
+  runscript "bash /root/policy.sh" 
 }
 reinstall(){
-  employ sudo bash /root/policy.sh --reinstall
+  runscript "bash /root/policy.sh --reinstall"
 }
 
 grabpolicy(){
