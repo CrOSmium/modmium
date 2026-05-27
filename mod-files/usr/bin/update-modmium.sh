@@ -212,7 +212,6 @@ installCros() {
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
-  cd .. && rm -rf modmium
 
   # now to copy relevant files to new root
   for file in /bootsplash /.branch; do
@@ -233,6 +232,7 @@ installCros() {
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   sync
   umount mnt
+  cd .. && rm -rf modmium
 
   echo -e "${G}Done, have fun!${N}"
 	cgpt add ${intdis} -i $(get_booted_kernnum) -P 0
