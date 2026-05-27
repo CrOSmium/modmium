@@ -22,9 +22,18 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 * To learn other usage instructions (policy editors, MOSH, etc..), see [docs/usage.md](docs/usage.md)
 
 # Support
-If you need any kind of support, please join [the crosbreaker discord server](https://discord.crosbreaker.com) for help
+If you need any kind of support, please join the [crosbreaker discord server](https://discord.crosbreaker.com) for help.
 
-## repo layout
+<br>
+
+------------
+
+"*For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
+Your minds are incredible things, don't let them go to waste please.*" - Mariah Scary
+
+<p align="center">-- Created by <a href="https://crosmium.dev" target="_blank">CrOSmium</a> and <a href="https://crosbreaker.com" target="_blank">crosbreaker</a> --</p>
+
+## repo layout [to be moved to docs (contributing.md or something)]
 (thank you mariah!)
 * `bootsplash/`
    * contains default bootsplash SVG files which can be converted into PNG files to be used by modify-bootsplash.sh in MOSH.
@@ -39,6 +48,3 @@ If you need any kind of support, please join [the crosbreaker discord server](ht
    * documentation for the various components of modmium, and how to use them.
 * `modmium.sh`
    * the devfw installation helper (will be hosted on crosbreaker cdn).
-
-"For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
-Your minds are incredible things, don't let them go to waste please." - Mariah Scary
