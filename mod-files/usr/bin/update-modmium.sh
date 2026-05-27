@@ -189,9 +189,9 @@ installCros() {
 	futility dump_kernel_config ${installKern} > config.txt
 	sed -i "s|cros_secure|cros_secure cros_debug|g" config.txt
 	sed -i 's/  */ /g; s/^ //; s/ $//' config.txt # fix double spacing
-	stop trunksd &>/dev/null
+	stop trunksd &>/dev/null || stop tcsd &>/dev/null
 	rawkv=$(tpmc read 0x1008 9)
-	start trunksd &>/dev/null
+	start trunksd &>/dev/null || start tcsd &>/dev/null
 	# this part inspired by aurora (though obviously not copy pasted), thanks soap :3
 	bytes=()
 	for byte in $rawkv; do
@@ -242,7 +242,9 @@ installCros() {
       chmod 777 $oldFile
     fi
   done
+  ldconfig # file breaks without it idk why
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
+  [[ $arch == "ARM" ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
