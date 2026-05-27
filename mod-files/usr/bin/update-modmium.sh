@@ -248,7 +248,7 @@ installCros() {
     if [[ $REPLY =~ ^[Nn]$ ]]; then
       echo "Continuing..."
     else
-      for file in $(find /root -name ".*" ! -name ".policy-test-tool" ! -name ".stable_versions.txt" ! -name ".unhang.sh"); do
+      for file in $(find /root -name ".*"); do
         cp -r $file mnt/root
       done
     fi

@@ -2,7 +2,7 @@
 
 # written by DMD
 
-STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
+STABLEVERSIONS=$(cat /usr/share/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
 source /usr/share/misc/shflags
 
 # -- Root escalation --
