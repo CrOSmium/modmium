@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=$(echo "funzip" "futility" "jq" "pv" "wget")
+DEPENDENCIES=$(echo "file" "funzip" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_minimal.sh
