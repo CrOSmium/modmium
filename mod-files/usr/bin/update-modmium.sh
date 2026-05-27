@@ -60,6 +60,29 @@ getImageLink(){
   fi
 }
 
+askBranch(){
+  branchfile="$(cat /.branch)"
+  [[ $branchfile ]] || branchfile="stable"
+  echo -e "[If you don't know what this means, just press enter]"
+  if [[ $branchfile == "stable" ]]; then
+  	echo -ne "Branch of Modmium to install (${UN}stable${RUN}, nightly): "
+  else
+    echo -ne "Branch of Modmium to install (stable, ${UN}nightly${RUN}): "
+  fi
+  read -rep "" branchreq
+  case $branchreq in
+    nightly)
+	  branch="nightly"
+	  ;;
+	stable)
+	  branch="stable"
+      ;;
+	*)
+	  branch="${branchfile}"
+	  ;;
+  esac
+}
+
 dropModFiles() {
 	modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
 	for file in $modFiles; do
@@ -82,7 +105,7 @@ updateModmium() {
 	clear
 	stty echo
 	export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
-	branch=$(cat /.branch)
+	askBranch
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	if [[ -d /root/.ssh ]]; then
@@ -126,7 +149,7 @@ installCros() {
   read -rep "" VERSION
   [[ $VERSION -gt 130 ]] || fail "${R}Versions below 131 are not supported, exiting...${N}"
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
-
+  askBranch
   getImageLink
   intdis=$(rootdev -d)
   if echo "$intdis" | grep -q '[0-9]$'; then
@@ -181,7 +204,7 @@ installCros() {
 		--oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
 	rm -rf config.txt
 
-  echo -e "${G}Installing Modmium to ChromeOS...${N}"
+  echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
