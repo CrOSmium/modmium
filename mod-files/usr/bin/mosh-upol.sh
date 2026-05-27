@@ -33,6 +33,8 @@ reinstall(){
 }
 
 install(){
+  clear
+  stty echo
   if [[ -f $POLTEST_FILE ]]; then
     echo -e "${G}Setup already completel. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
