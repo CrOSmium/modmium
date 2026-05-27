@@ -42,6 +42,7 @@ install(){
     python orchestrator.py policies.json
     echo -e "${G}Done!${N}"
     kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}')
+    sleep 3
     exit 0
   fi
 
