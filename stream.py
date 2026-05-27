@@ -176,27 +176,6 @@ def get_partition_table(url, data_offset, compress_type):
     r.close()
     return buf[:10*1024*1024]
 
-def linux_version(kernel_path):
-    with open(kernel_path, 'rb') as f:
-        data = f.read()
-    for s in re.findall(rb'[ -~]{4,}', data):
-        m = LINUX_VER_RE.search(s.decode('ascii', errors='ignore'))
-        if m:
-            return m.group(0)
-    try:
-        d = tempfile.mkdtemp()
-        subprocess.check_output(["binwalk", "--extract", "--directory", d, kernel_path],
-                                 stderr=subprocess.DEVNULL)
-        for root, _, files in os.walk(d):
-            for fn in files:
-                with open(os.path.join(root, fn), 'rb') as f:
-                    for s in re.findall(rb'[ -~]{4,}', f.read()):
-                        m = LINUX_VER_RE.search(s.decode('ascii', errors='ignore'))
-                        if m:
-                            return m.group(0)
-    except Exception:
-        pass
-    return None
 
 def tpm_version(kernel_path):
     try:
@@ -247,26 +226,34 @@ def main():
     with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as f:
         f.write(pt)
         pt_tmp = f.name
+    subprocess.run(["truncate", "-s", "10G", pt_tmp], check=True)
     try:
-        gdisk = subprocess.check_output(["gdisk", "-l", pt_tmp],
-                                         stderr=subprocess.DEVNULL).decode()
+        def find_part(label):
+            out = subprocess.check_output(["cgpt", "show", pt_tmp],
+                                           stderr=subprocess.DEVNULL).decode()
+            for line in out.splitlines():
+                if label in line:
+                    p = line.split()
+                    num = int(p[2])
+                    start = int(subprocess.check_output(
+                        ["cgpt", "show", "-b", "-i", str(num), pt_tmp],
+                        stderr=subprocess.DEVNULL).decode().strip())
+                    size = int(subprocess.check_output(
+                        ["cgpt", "show", "-s", "-i", str(num), pt_tmp],
+                        stderr=subprocess.DEVNULL).decode().strip())
+                    return start, size
+            return None, None
+
+        kern_start, kern_sectors = find_part("KERN-B")
+        root_start, root_sectors = find_part("ROOT-A")
     finally:
         os.unlink(pt_tmp)
 
-    def parse_part(name):
-        for line in gdisk.splitlines():
-            if name in line:
-                p = line.split()
-                return int(p[1]), int(p[2]) - int(p[1]) + 1
-        return None, None
-
-    kern_start, kern_sectors = parse_part("KERN-B")
-    root_start, root_sectors = parse_part("ROOT-A")
-
     if not kern_start:
-        sys.exit("error: KERN-B not found\n" + gdisk)
+        sys.exit("error: KERN-B not found")
     if not root_start:
-        sys.exit("error: ROOT-A not found\n" + gdisk)
+        sys.exit("error: ROOT-A not found")
+
 
     print(f"ROOT-A: {root_sectors*512//(1024*1024)}MB  KERN-B: {kern_sectors*512//(1024*1024)}MB",
           file=sys.stderr)
@@ -277,9 +264,7 @@ def main():
     ])
 
     tpm = tpm_version(kern_out)
-    lv  = linux_version(kern_out)
     if tpm: print(f"tpm version: {tpm}")
-    if lv:  print(f"linux version: {lv}")
     print(f"done in {time.time() - t0:.1f}s", file=sys.stderr)
 
 if __name__ == "__main__":
