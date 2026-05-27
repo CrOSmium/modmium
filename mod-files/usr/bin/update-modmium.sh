@@ -81,6 +81,7 @@ askBranch(){
 	  branch="${branchfile}"
 	  ;;
   esac
+  echo # weird UI glitch if this isn't here, idk man
 }
 
 dropModFiles() {
