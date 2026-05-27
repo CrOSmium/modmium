@@ -108,7 +108,7 @@ checkFlagValidity(){
   if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
     fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   fi
-  if [[ -n $FLAGS_version && $FLAGS_VERSION -lt 131 ]]; then
+  if [[ ( -n $FLAGS_version ) && ( $FLAGS_version -lt 131 ) ]]; then
     echo -e "${R}Versions below 131 are NOT supported, and issue reports involving them will be discarded.${B} Continue anyway? [y/N]${N}"
     read -rep ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -255,6 +255,7 @@ dropModFiles(){
     fi
   done
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
+  [[ $arch == "ARM" ]] && arch="aarch64"
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
   [[ -d build-utils/keys/userkeys ]] && cp -r build-utils/keys/userkeys mnt/usr/share/vboot
@@ -380,8 +381,8 @@ downloadImage(){
   if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
     echo -e "${G}Recovery URL found!${N}"
   else
-    fail "${R}Recovery URL not found or invalid :(
-    Exiting...${N}"
+    echo $recoveryUrl
+    fail "${R}Recovery URL not found or invalid :(\nExiting...${N}"
   fi
   echo -e "${G}Downloading image...${N}"
   wget --show-progress -O recovery.zip $recoveryUrl
