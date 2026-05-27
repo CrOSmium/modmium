@@ -235,8 +235,8 @@ installCros() {
   cd .. && rm -rf modmium
 
   echo -e "${G}Done, have fun!${N}"
-	cgpt add ${intdis} -i $(get_booted_kernnum) -P 0
-	cgpt add ${intdis} -i $(opposite_num $(get_booted_kernnum)) -P 15
+	cgpt add -P 0 -i $(get_booted_kernnum) ${intdis}
+	cgpt add -P 15 -i $(opposite_num $(get_booted_kernnum)) ${intdis}
 	sleep 2
 	stty -echo
 	exit 0
