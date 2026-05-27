@@ -138,7 +138,7 @@ installCros() {
 	installKern=${intdis_prefix}$(opposite_num $(get_booted_kernnum))
 	installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
 	echo -e "${G}Installing ChromeOS to disk...${N}"
-	cd /tmp
+	cd /usr/local
 	python -m venv .venv
 	source .venv/bin/activate
 	pip install requests
