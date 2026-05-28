@@ -145,6 +145,7 @@ opposite_num() {
 }
 
 installCros() {
+  ldconfig
   stty echo
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
@@ -242,7 +243,6 @@ installCros() {
       chmod 777 $oldFile
     fi
   done
-  ldconfig # file breaks without it idk why
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == "ARM" ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
