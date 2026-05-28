@@ -473,7 +473,7 @@ It is highly recommended to go backup the firmware that is now in your selected 
 EOF
   echo -e "${B}Would you like to install modmium now? (Select n if you want to use a recovery image) [Y/n]"
   read -rep ""
-  if [[ $REPLY ^[Nn]$ ]]; then
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
     modmiumInstall
   fi
   echo -e "${G}Done! Use your modmium recovery image when you're ready.${N}"
