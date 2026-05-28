@@ -173,17 +173,17 @@ installCros() {
 
 factoryReset(){
     factoryreset=1
-	employ restoreMPkeys
+	runscriptnoroot restoreMPkeys
 }
 
 restoreMPkeys(){
     factoryreset=0
-	employ restoreMPkeys
+	runscriptnoroot restoreMPkeys
 }
 
 restoreOS(){
 	factoryreset=0
-	employ installCros
+	runscriptnoroot installCros
 }
 
 menu_reset() {
