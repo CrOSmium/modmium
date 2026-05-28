@@ -89,13 +89,13 @@ revertMPkeys(){
         unkeyroll
       fi
     fi
-	echo -e "Your device is now on MPkeys! Modmium will not boot after your device reboots, please make sure you restore factory ChromeOS or use a recovery image!"
+    echo -e "Your device is now on MPkeys! Modmium will not boot after your device reboots, please make sure you restore factory ChromeOS or use a recovery image!"
     sleep 3
-	clear
+    clear
     [[ $factoryreset == 1 ]] && employ installCros
-	fail "Exiting..."
+    fail "Exiting..."
   fi
-	fail "Exiting..."
+  fail "Exiting..."
 }
 
 BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
