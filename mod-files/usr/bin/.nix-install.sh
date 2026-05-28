@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+MARKER="/usr/local/.nix_install_done"
+
+if [ -f "$MARKER" ]; then
+  exit 0
+fi
+
 mkdir -p /usr/local/tmp
 mkdir -p /usr/local/nix
 mkdir -p /nix
@@ -16,3 +22,5 @@ done
 curl -L https://nixos.org/nix/install -o /usr/local/tmp/install.sh && cp /usr/bin/.mix /usr/bin/mix
 TMPDIR=/usr/local/tmp sh /usr/local/tmp/install.sh
 sync
+
+touch "$MARKER"
