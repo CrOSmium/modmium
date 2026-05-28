@@ -6,6 +6,7 @@ MARKER="/usr/local/.nix_install_done"
 if [ -f "$MARKER" ]; then
   echo "Nix has already been installed. To reinstall, run:"
   echo "rm -rf $MARKER"
+  sleep 3
   exit 0
 fi
 
