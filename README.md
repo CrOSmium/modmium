@@ -1,7 +1,9 @@
-murkmod walked, so we could fly
+<img src="https://www.modmium.dev/modmiumcropped.png" alt="Modmium" width="700">
 
-# Modmium
-Modmium is a chromeOS modification built to allow the freedom of an unrestricted device on a managed device. 
+*Created by [CrOSmium](https://crosmium.dev) and [crosbreaker](https://crosbreaker.com)*
+
+Modmium is a chromeOS modification built to allow the freedom of an unrestricted device on a managed device.
+
 ## Features
 * Reports as verified in the Google Admin Console (GAC)
 * Allows modification of all policies 
@@ -24,14 +26,11 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 # Support
 If you need any kind of support, please join the [crosbreaker discord server](https://discord.crosbreaker.com) for help.
 
-<br>
-
 ------------
 
 "*For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
 Your minds are incredible things, don't let them go to waste please.*" - Mariah Scary
 
-<p align="center">-- Created by <a href="https://crosmium.dev" target="_blank">CrOSmium</a> and <a href="https://crosbreaker.com" target="_blank">crosbreaker</a> --</p>
 
 ## repo layout [to be moved to docs (contributing.md or something)]
 (thank you mariah!)
