@@ -2,6 +2,7 @@
 # written by mariah carey and DMD
 
 fail(){
+  start powerd &>/dev/null
   local ec=$?
   echo -e "$1"
   sleep 2
@@ -144,6 +145,7 @@ opposite_num() {
 }
 
 installCros() {
+  stop powerd &>/dev/null
   ldconfig
   stty echo
   echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
@@ -273,6 +275,7 @@ installCros() {
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
+  start powerd &>/dev/null
   sleep 2
   stty -echo
   exit 0
