@@ -1,8 +1,8 @@
 #!/bin/bash
 # written by DMD and mariah carey
-
 source /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
+DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to backup firmware from flashing devkeys." "b"
 FLAGS $@
 
 fail(){
@@ -334,6 +334,7 @@ modmiumInstall(){
 selectBackup(){
 	BACKUP=/tmp/backupdir
 	mkdir -p $BACKUP
+	[[ $FLAGS_backup == $FLAGS_FALSE ]] && return
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		cat <<EOF | xargs -0 echo -ne
 Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
