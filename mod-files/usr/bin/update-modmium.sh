@@ -259,7 +259,7 @@ installCros() {
   if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo "Continuing..."
   else
-    for file in $(find /root -name "*"); do
+    for file in $(find /root -mindepth 1 -maxdepth 1 -name "*"); do
       cp -r $file mnt/root
     done
   fi
