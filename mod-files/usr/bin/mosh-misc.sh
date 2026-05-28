@@ -15,9 +15,9 @@ creditsMenu(){
 ██║╚██╔╝██║██║   ██║██║  ██║██║╚██╔╝██║██║██║   ██║██║╚██╔╝██║
 ██║ ╚═╝ ██║╚██████╔╝██████╔╝██║ ╚═╝ ██║██║╚██████╔╝██║ ╚═╝ ██║
 ╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
-                                                              
+
 Created by CrOSmium${D}.dev${N} and crosbreaker${D}.com${N}
-	
+
 Individual Credits:
 ${R}mariahscarycarey: ${P}Lead developer; made image builder, device policy editor frontend, ChromeOS version switcher, did most bugfixing, and MANY small changes to other code.${N}
 \033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, base ChromeOS updater, and a bunch of small changes.${N}
@@ -36,6 +36,24 @@ exit 0
 
 modsplash(){
 	runscript /usr/bin/modify-bootsplash.sh
+}
+toggleBootPriority(){
+  intdis=$(rootdev -d)
+  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
+    currentKern=2
+    newKern=4
+  else
+    currentKern=4
+    newKern=2
+  fi
+  if echo "$intdis" | grep -q '[0-9]$'; then
+      intdis_prefix="$intdis"p
+	else
+	  intdis_prefix="$intdis"
+	fi
+  cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
+  cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
+  echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}"
 }
 toggleEnrollment(){
 	runscript /usr/bin/toggle-enrollment.sh
