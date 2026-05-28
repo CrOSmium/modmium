@@ -1,4 +1,5 @@
 #!/bin/bash
+# written by lxrd
 set -e
 
 MARKER="/usr/local/.nix_install_done"
