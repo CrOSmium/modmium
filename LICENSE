@@ -672,3 +672,20 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+==============================================================================
+ADDITIONAL TERMS (Pursuant to GPLv3 Section 7)
+==============================================================================
+
+As an exception to the terms of the GNU General Public License version 3, 
+the original authors of this work grant permission to convey modified 
+versions of this work, provided that:
+
+1. Pursuant to Section 7(b) of the GNU General Public License, version 3, 
+   you must preserve the original author attributions, contributor credits, 
+   and copyright notices in the "About", "Credits", or equivalent legal 
+   notices menu of the user interface.
+
+2. If the work displays a graphical or textual user interface, these 
+   credits must remain visible, legible, and reasonably accessible to 
+   the end user.
