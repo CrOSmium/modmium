@@ -147,6 +147,7 @@ opposite_num() {
 installCros() {
   ldconfig
   stty echo
+  echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
