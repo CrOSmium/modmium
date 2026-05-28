@@ -98,7 +98,7 @@ dropModFiles() {
 		fi
 	done
 	if [[ -d /usr/local/share/policy-test-tool ]]; then
-		cp /root/.policy-test-tool/* /usr/local/share/policy-test-tool
+		cp /usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
 	fi
 }
 
