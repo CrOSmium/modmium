@@ -1,4 +1,4 @@
-<img src="https://www.modmium.dev/modmiumrepo.png" alt="Modmium" width="700">
+<img src="https://www.modmium.dev/modmiumoutline.png" alt="Modmium" width="700">
 
 *Created by [CrOSmium](https://crosmium.dev) and [crosbreaker](https://crosbreaker.com)*
 
