@@ -506,7 +506,8 @@ EOF
 
   echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
-  
+
+  touch /tmp/.rebootpls
   cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
@@ -520,6 +521,10 @@ fi
 
 clear
 DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+if [[ -f /tmp/.rebootpls ]]; then
+  echo -e "Please reboot your device before running this script again!"
+  exit 1
+fi
 if [[ "$DEVFW" ]]; then
   modmiumInstall
 else
