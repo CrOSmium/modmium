@@ -8,16 +8,16 @@ source /usr/lib/libmosh.sh
 # -- FUNCTIONS --
 
 modsplash(){
-	runscript "bash /usr/bin/modify-bootsplash.sh"
+	runscript /usr/bin/modify-bootsplash.sh
 }
 toggleEnrollment(){
-	runscript "bash /usr/bin/toggle-enrollment.sh"
+	runscript /usr/bin/toggle-enrollment.sh
 }
 cr3nroll(){
-	runscript "bash /usr/bin/cr3nroll.sh"
+	runscript /usr/bin/cr3nroll.sh
 }
 erevert(){
-	runscript "bash /usr/bin/emergencyrevert.sh"
+	runscript /usr/bin/emergency-revert.sh
 }
 prenix(){
 	runscript /usr/bin/nix-preinstall.sh
