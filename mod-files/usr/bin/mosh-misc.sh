@@ -6,6 +6,33 @@ stty -echo
 source /usr/lib/libmosh.sh
 
 # -- FUNCTIONS --
+creditsMenu(){
+	echo -e ""
+    cat <<EOF | xargs -0 echo -ne
+███╗   ███╗ ██████╗ ██████╗ ███╗   ███╗██╗██╗   ██╗███╗   ███╗
+████╗ ████║██╔═══██╗██╔══██╗████╗ ████║██║██║   ██║████╗ ████║
+██╔████╔██║██║   ██║██║  ██║██╔████╔██║██║██║   ██║██╔████╔██║
+██║╚██╔╝██║██║   ██║██║  ██║██║╚██╔╝██║██║██║   ██║██║╚██╔╝██║
+██║ ╚═╝ ██║╚██████╔╝██████╔╝██║ ╚═╝ ██║██║╚██████╔╝██║ ╚═╝ ██║
+╚═╝     ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
+                                                              
+Created by CrOSmium${D}.dev${N} and crosbreaker${D}.com${N}
+	
+Individual Credits:
+${R}mariahscarycarey: ${P}Lead developer; made image builder, device policy editor frontend, ChromeOS version switcher, did most bugfixing, and MANY small changes to other code.${N}
+\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, base ChromeOS updater, and a bunch of small changes.${N}
+${Y}lxrd: Discovered policy-test-tool and created device policy editing script, made a script to let us stream ChromeOS updates, integrated nix into Modmium.${N}
+\033[38;5;126mkxtzownsu: Did code review to make sure we weren't skidding until he stepped down [05-26-2026].${N}
+\033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
+\033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
+\033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes.
+
+${D}[ Removing this menu from Modmium is not permitted ]${N}
+-- Press any key to return --
+EOF
+read -n 1
+exit 0
+}
 
 modsplash(){
 	runscript /usr/bin/modify-bootsplash.sh
@@ -22,13 +49,15 @@ erevert(){
 prenix(){
 	runscript /usr/bin/nix-preinstall.sh
 }
-
+credits(){
+	employ creditsMenu
+}
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
-	options=("Modify Bootsplash" "Toggle Enrollment" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Go back")
-	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "quit")
+	options=("Modify Bootsplash" "Toggle Enrollment" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
+	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "credits" "quit")
 	num_options=${#options[@]}
 }
 
