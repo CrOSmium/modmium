@@ -433,10 +433,10 @@ flashDevFW(){
 		  || ( futility gbb -s --flash --flags=0xa0b1 || futility gbb -s --flash --flags=0x80b1 )
 			# we try a0b1 first, but if it doesn't recognize the fastboot flag, we do 80b1 instead
   	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
-			/usr/share/vboot/bin/make_dev_ssd.sh --force
+			/usr/share/vboot/bin/make_dev_ssd.sh --force -r
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
 		else
-			/usr/share/vboot/bin/make_dev_ssd.sh --force --keys ${BACKUP}/userkeys
+			/usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
 		sync # sync because I dont trust ChromeOS
   	vpd -i RO_VPD -s "dev_firmware"=1
