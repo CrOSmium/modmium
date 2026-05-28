@@ -43,7 +43,7 @@ unkeyroll(){
   fi
 }
 
-restoreMPkeys(){
+revertMPkeys(){
   clear
   checkWP
   echo -e "${R}This will update your firmware and revert your chromebook to stock keys (undoing developer firmware changes), are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
@@ -178,7 +178,7 @@ factoryReset(){
 
 restoreMPkeys(){
     factoryreset=0
-	runscriptnoroot restoreMPkeys
+	runscriptnoroot revertMPkeys
 }
 
 restoreOS(){
