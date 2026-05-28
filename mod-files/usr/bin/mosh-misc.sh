@@ -37,32 +37,6 @@ exit 0
 modsplash(){
 	runscript /usr/bin/modify-bootsplash.sh
 }
-toggleBootPriority(){
-  menu_reset
-  clear
-  full_menu
-  intdis=$(rootdev -d)
-  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
-    currentKern=2
-    newKern=4
-  else
-    currentKern=4
-    newKern=2
-  fi
-  if echo "$intdis" | grep -q '[0-9]$'; then
-      intdis_prefix="$intdis"p
-	else
-	  intdis_prefix="$intdis"
-	fi
-  cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
-  cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
-  echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}"
-  sleep 3
-  exit
-}
-toggleEnrollment(){
-	runscript /usr/bin/toggle-enrollment.sh
-}
 cr3nroll(){
 	runscript /usr/bin/cr3nroll.sh
 }
@@ -79,8 +53,8 @@ credits(){
 tput civis # :whale:
 
 menu_reset() {
-	options=("Modify Bootsplash" "Toggle Enrollment" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
-	functions=("modsplash" "toggleEnrollment" "cr3nroll" "erevert" "prenix" "credits" "quit")
+	options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
+	functions=("modsplash"  "cr3nroll" "erevert" "prenix" "credits" "quit")
 	num_options=${#options[@]}
 }
 

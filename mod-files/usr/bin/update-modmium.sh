@@ -281,14 +281,46 @@ installCros() {
   exit 0
 }
 
+
+
+
+# -- NON UPDATER FUNCTIONS --
+
+toggleBootPriority(){
+  menu_reset
+  clear
+  full_menu
+  intdis=$(rootdev -d)
+  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
+    currentKern=2
+    newKern=4
+  else
+    currentKern=4
+    newKern=2
+  fi
+  if echo "$intdis" | grep -q '[0-9]$'; then
+      intdis_prefix="$intdis"p
+	else
+	  intdis_prefix="$intdis"
+	fi
+  cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
+  cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
+  echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}"
+  sleep 3
+  exit
+}
+
+toggleEnrollment(){
+	runscript /usr/bin/toggle-enrollment.sh
+}
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
 
 menu_reset() {
-  menuText="\nModmium Update Utility\n"
-  options=("Update Modmium" "Change ChromeOS Version" "Exit")
-  functions=("updateModmium" "installCros" "quit")
+  menuText="\nManage Modmium\n"
+  options=("Update Modmium" "Change ChromeOS Version" "Toggle Enrollment" "Toggle Boot Priority" "Exit")
+  functions=("updateModmium" "installCros" "toggleEnrollment" "toggleBootPriority" "quit")
 	num_options=${#options[@]}
 }
 

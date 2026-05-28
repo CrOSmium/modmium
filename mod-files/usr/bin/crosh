@@ -45,7 +45,7 @@ misc(){
 tput civis # :whale:
 
 menu_reset() {
-	options=("Root Shell" "Chronos Shell" "Crosh" "Update Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
+	options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
 	functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
 	num_options=${#options[@]}
 }
