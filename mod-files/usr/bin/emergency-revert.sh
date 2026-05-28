@@ -162,7 +162,7 @@ installCros() {
 	elif [[ ${bytes[0]} -eq 2 ]]; then
 	  kernver=$(( ${bytes[5]}<<0 | ${bytes[6]}<<8 ))
 	fi
-  echo -e "${R}[THE VERSION YOU ARE INSTALLING MUST BE ${B}KERNVER $kernver${R} OR HIGHER]${N}\n(if not, you can just boot SH1mmer and ${UN}chromeos-tpm-recovery${RUN})\n"
+  echo -e "${R}[THE VERSION YOU ARE INSTALLING MUST BE ${B}KERNVER $kernver${R} OR HIGHER]${N}\n(if not, you can just boot SH1mmer and run ${UN}chromeos-tpm-recovery${RUN})\n"
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
