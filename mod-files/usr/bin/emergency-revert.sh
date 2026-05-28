@@ -36,6 +36,7 @@ fi
 
 fail(){
 	echo -e "$1"
+	start powerd &>/dev/null
 	sleep 2
 	factoryreset=0
 	exit 0
@@ -141,6 +142,7 @@ opposite_num() {
 }
 
 installCros() {
+  stop powerd &>/dev/null # to prevent it from falling asleep while streaming to disk
   ldconfig
   stty echo
   echo -e "Getting kernver..."
@@ -181,7 +183,7 @@ installCros() {
 	/usr/bin/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
 	rm -rf .venv
  	echo -e "${G}Syncing filesystem (may take a while)...${N}"
-    sync
+  sync
 	echo -e "${G}Done, reboot to return to factory ChromeOS!${N}"
 	activekern=$(get_booted_kernnum)
 	inactivekern=$(opposite_num "${activekern}")
@@ -190,6 +192,7 @@ installCros() {
 	sleep 1
 	stty -echo
 	[[ $factoryreset == 1 ]] || fail "Exiting..."
+	start powerd &>/dev/null
 	exit 0
 }
 
