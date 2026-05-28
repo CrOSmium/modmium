@@ -13,6 +13,7 @@ clear
 source /usr/lib/libmosh.sh
 
 if [[ ! -f $jsonFile ]]; then
+ 	source /etc/profile # emerge breaks without this
 	echo -e "${B}Installing required dependencies...${N}"
 	if [[ ! -f $DEVINSTALL_FILE ]]; then
 	  nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
@@ -29,7 +30,6 @@ if [[ ! -f $jsonFile ]]; then
 		rm -rf /root/.devinstall_log
 		touch $DEVINSTALL_FILE
 	fi
-	source /etc/profile # emerge breaks without this
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml &> /dev/null
 	echo -e "${B}Dumping device policy to json...${N}"
