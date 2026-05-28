@@ -4,6 +4,7 @@
 source /root/.bashrc # to get $EDITOR
 cd /usr/share/.policy-test-tool
 jsonFile="dump.json"
+DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 
 stty -echo
 tput civis
@@ -13,6 +14,21 @@ source /usr/lib/libmosh.sh
 
 if [[ ! -f $jsonFile ]]; then
 	echo -e "${B}Installing required dependencies...${N}"
+	if [[ ! -f $DEVINSTALL_FILE ]]; then
+	  nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
+		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
+		pythonGoogleInstalled=$FLAGS_FALSE
+		while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
+		  output=$(python -m google 2>&1)
+			if [[ $output == *"package"* ]]; then
+		    pythonGoogleInstalled=$FLAGS_TRUE
+		  fi
+			sleep 1
+		done
+		# cleaning up
+		rm -rf /root/.devinstall_log
+		touch $DEVINSTALL_FILE
+	fi
 	source /etc/profile # emerge breaks without this
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml &> /dev/null

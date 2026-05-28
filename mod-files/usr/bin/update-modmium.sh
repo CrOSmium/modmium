@@ -19,17 +19,16 @@ if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/nu
 	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
 		nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
 		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-		pythonGoogleInstalled=
-		while [[ $pythonGoogleInstalled != "true" ]]; do
-  		python -m google >/root/.googleStatus 2>&1
-  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable i hate python
-  		if [[ $output == *"package"* ]]; then
-    		pythonGoogleInstalled=true
+		pythonGoogleInstalled=$FLAGS_FALSE
+		while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
+      output=$(python -m google 2>&1)
+      if [[ $output == *"package"* ]]; then
+    		pythonGoogleInstalled=$FLAGS_TRUE
   		fi
   		sleep 1
 		done
 		# cleaning up
-		rm -rf /root/.googleStatus /root/.devinstall_log
+		rm -rf /root/.devinstall_log
 		touch /mnt/stateful_partition/.devinstall_complete
 	fi
 	ldconfig # reload shared libraries to include python libs
