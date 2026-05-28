@@ -5,6 +5,16 @@ source /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
 FLAGS $@
 
+fail(){
+	echo -e "$1"
+	if [[ $2 != "keepflag" ]]; then
+		vpd -d dev_firmware
+	fi
+	umount $BACKUP >/dev/null 2>&1
+	sleep 3
+	exit 1
+}
+
 # -- FLAGS --
 menu_text="Modmium Install Script!"
 # -----------------------
@@ -84,6 +94,7 @@ opposite_num() {
 }
 
 installCros() {
+  stop powerd &>/dev/null
   ldconfig
   stty echo
   echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
@@ -214,6 +225,7 @@ installCros() {
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
+  start powerd &>/dev/null
   sleep 2
   stty -echo
   exit 0
@@ -233,16 +245,6 @@ logo() {
 ▒▒▒▒▒     ▒▒▒▒▒  ▒▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒▒▒▒ ▒▒▒▒▒ ▒▒▒ ▒▒▒▒▒
 "
     echo -e $menu_text
-}
-
-fail(){
-	echo -e "$1"
-	if [[ $2 != "keepflag" ]]; then
-		vpd -d dev_firmware
-	fi
-	umount $BACKUP >/dev/null 2>&1
-	sleep 1
-	exit 1
 }
 
 checkWP(){
@@ -440,7 +442,7 @@ flashDevFW(){
   	vpd -i RO_VPD -s "dev_firmware"=1
 		fi
   else
-    fail "You are already using DevFW!"
+    fail "You are already using DevFW!" keepflag
   fi
   sleep 0.5
 
