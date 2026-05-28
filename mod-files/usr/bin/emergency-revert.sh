@@ -80,9 +80,7 @@ revertMPkeys(){
     echo -e "Restoring firmware, ${R}DO NOT turn off your device${N}!"
     echo -e "This may take a while..."
     # before you think about removing the weird backup, i put it there because the longer it takes the more time someone will have to realize they missed something (like their battery being low, or not plugged in)
-    chromeos-firmwareupdate -m output &> /dev/null && rm -rf image.bin ec.bin
-    futility gbb -gr reco.key bios.bin && futility gbb -gk root.key bios.bin
-    futility gbb -sr reco.key --flash && futility gbb -sk root.key --flash
+    chromeos-firmwareupdate --mode=factory --force
     echo -e "${G}Done!"
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
       echo -e "${B}Do you want to unkeyroll?"
