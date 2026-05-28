@@ -100,7 +100,7 @@ installCros() {
   echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
-  [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
+  [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}" keepflag
   if [[ $VERSION -lt 131 ]]; then
     echo -e "${R}WARNING. VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
     echo -e "${B}Continue anyways? [y/N]${N}"
@@ -108,7 +108,7 @@ installCros() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       echo -e "${B}Continuing...${N}"
     else
-      fail "${R}Exiting...${N}"
+      fail "${R}Exiting...${N}" keepflag
     fi
   fi
   askBranch
@@ -128,7 +128,7 @@ installCros() {
 	source .venv/bin/activate
 	pip install requests &>/dev/null
 	curl -Lo "https://modmium.dev/tools/stream.py" /root/stream.py
-	python /root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
+	python /root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
 	rm -rf .venv
 	# thanks lxrd for that python script btw
 
@@ -164,7 +164,7 @@ installCros() {
 		--signprivate ${keydir}/kernel_data_key.vbprivk \
 		--config config.txt \
 		--version $kernver \
-		--oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
+		--oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}" keepflag
 	rm -rf config.txt
 
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
@@ -172,9 +172,9 @@ installCros() {
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
 	if [[ -d /root/.ssh ]]; then
-		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
 	else
-		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
 	fi
 	echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -201,20 +201,6 @@ installCros() {
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
 
-  # now to copy relevant files to new root
-  for file in /bootsplash /.branch; do
-    [[ -d $file || -f $file ]] && cp -r $file mnt
-  done
-  [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
-  echo -e "${B}Copy root's files to new root? [Y/n]${N}"
-  read -rep ""
-  if [[ $REPLY =~ ^[Nn]$ ]]; then
-    echo "Continuing..."
-  else
-    for file in $(find /root -mindepth 1 -maxdepth 1 -name "*"); do
-      cp -r $file mnt/root
-    done
-  fi
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   sync
   umount mnt
