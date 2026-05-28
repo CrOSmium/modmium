@@ -127,7 +127,7 @@ installCros() {
 	python -m venv .venv
 	source .venv/bin/activate
 	pip install requests &>/dev/null
-	curl -Lo https://modmium.dev/stream.py /root/stream.py
+	curl -Lo "https://modmium.dev/stream.py" /root/stream.py
 	/root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
 	rm -rf .venv
 	# thanks lxrd for that python script btw
@@ -467,20 +467,26 @@ EOF
   echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
 
+  touch /tmp/.rebootpls
   cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
+${B}Please reboot your chromebook${N}. after you reboot, either recover with a Modmium image OR run this script again to INSTALL Modmium. (If you used userkeys, make sure you also use that flag when trying to Install Modmium with this script)
 EOF
-  echo -e "${B}Would you like to install modmium now? (Select n if you want to use a recovery image) [Y/n]"
-  read -rep ""
-  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    modmiumInstall
-  fi
-  echo -e "${G}Done! Use your modmium recovery image when you're ready.${N}"
-  if [[ $DRIVEBACKUP == 1 ]]; then
-    umount $BACKUP
-  fi
+  echo -e "Exiting..."
+  sleep 0.5
   exit 0
 }
-
 main
+
+clear
+DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+if [[ -f /tmp/.rebootpls ]]; then
+  echo -e "Please reboot your device before running this script again!"
+  exit 1
+fi
+if [[ "$DEVFW" ]]; then
+  modmiumInstall
+else
+  main
+fi
