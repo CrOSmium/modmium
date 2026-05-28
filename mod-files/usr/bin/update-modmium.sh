@@ -287,9 +287,7 @@ installCros() {
 # -- NON UPDATER FUNCTIONS --
 
 toggleBootPriority(){
-  menu_reset
   clear
-  full_menu
   intdis=$(rootdev -d)
   if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
     currentKern=2
@@ -305,7 +303,7 @@ toggleBootPriority(){
 	fi
   cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
-  echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}"
+  echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
   sleep 3
   exit
 }
