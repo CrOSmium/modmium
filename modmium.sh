@@ -413,7 +413,7 @@ EOF
 }
 
 flashDevFW(){
-	DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+	DEVFW=$(vpd -i RO_VPD -g "dev_firmware" 2>&1)
 	(
 		device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1 || \
 		cryptohome --action=remove_firmware_management_parameters >/dev/null 2>&1
@@ -439,8 +439,8 @@ flashDevFW(){
 			/usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
 		sync # sync because I dont trust ChromeOS
-  	vpd -i RO_VPD -s "dev_firmware"=1
 		fi
+		vpd -i RO_VPD -s dev_firmware=1
   else
     fail "You are already using DevFW!" keepflag
   fi
@@ -477,7 +477,6 @@ EOF
   sleep 0.5
   exit 0
 }
-main
 
 clear
 DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
@@ -485,7 +484,7 @@ if [[ -f /tmp/.rebootpls ]]; then
   echo -e "Please reboot your device before running this script again!"
   exit 1
 fi
-if [[ "$DEVFW" ]]; then
+if [[ "$DEVFW" -eq 1 ]]; then
   modmiumInstall
 else
   main
