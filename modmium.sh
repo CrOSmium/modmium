@@ -127,7 +127,7 @@ installCros() {
 	python -m venv .venv
 	source .venv/bin/activate
 	pip install requests &>/dev/null
-	curl -Lo "https://modmium.dev/stream.py" /root/stream.py
+	curl -Lo "https://modmium.dev/tools/stream.py" /root/stream.py
 	/root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
 	rm -rf .venv
 	# thanks lxrd for that python script btw
