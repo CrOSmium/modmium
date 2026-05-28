@@ -136,9 +136,7 @@ display_menu() {
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
-  if [[ "$branch" == "dev" ]]; then
-    echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}), 'dev' should never appear unless something went wrong during installation, Please update Modmium."
-  fi
+
 	echo -e "$menuText" # this is so you can add extra text to menus like nix-preinstall.sh without rewriting the display_menu function in it
 
   for i in "${!options[@]}"; do
