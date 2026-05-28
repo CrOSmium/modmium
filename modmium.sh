@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by DMD and Mariah
+# written by DMD and mariah carey
 
 source /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
@@ -61,46 +61,6 @@ askBranch(){
 	  ;;
   esac
   echo # weird UI glitch if this isn't here, idk man
-}
-
-dropModFiles() {
-	modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
-	for file in $modFiles; do
-		if [[ -d $file ]]; then
-			:
-		elif [[ -f $file ]]; then
-			realFile=$(echo "$file" | sed 's/^.*mod-files//')
-			mkdir -p $(dirname $realFile)
-			cp $file $realFile
-			chown 0:0 $realFile
-			chmod 777 $realFile
-		fi
-	done
-	if [[ -d /usr/local/share/policy-test-tool ]]; then
-		cp /usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
-	fi
-}
-
-updateModmium() {
-	clear
-	stty echo
-	export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
-	askBranch
-	mkdir -p /mnt/stateful_partition/git
-	cd /mnt/stateful_partition/git
-	if [[ -d /root/.ssh ]]; then
-		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
-	else
-		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
-	fi
-	echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
-	dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
-	echo -e "${G}Done! Cleaning up...${N}"
-	rm -rf /mnt/stateful_partition/git/modmium
-	sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
-	sleep 3
-	stty -echo
-	exit
 }
 
 get_booted_kernnum() {
@@ -359,18 +319,18 @@ selUserBackup(){
 }
 
 modmiumInstall(){
-	if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/null; then
+	if ! which git &>/dev/null || ! which file &>/dev/null; then
 		echo -e "${R}Dependencies not installed, installing...${N}"
 		source /etc/profile # required to get emerge working
 		if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
 			nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
 			echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-			pythonGoogleInstalled=
-			while [[ $pythonGoogleInstalled != "true" ]]; do
-	  		python -m google >/root/.googleStatus 2>&1
-	  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable i hate python
+			pythonGoogleInstalled=$FLAGS_FALSE
+			while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
+
+	  		output=$(python -m google 2>&1)
 	  		if [[ $output == *"package"* ]]; then
-	    		pythonGoogleInstalled=true
+	    		pythonGoogleInstalled=$FLAGS_TRUE
 	  		fi
 	  		sleep 1
 			done
@@ -379,11 +339,10 @@ modmiumInstall(){
 			touch /mnt/stateful_partition/.devinstall_complete
 		fi
 		ldconfig # reload shared libraries to include python libs
-		emerge git diffutils file
+		emerge git file
 		cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 	fi
-	
-	[[ $FLAGS_userkeys == $FLAGS_FALSE ]] || selUserBackup
+	[[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
 	installCros # :whale:
 }
 selectBackup(){
@@ -479,13 +438,12 @@ flashDevFW(){
 			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
 		sync # sync because I dont trust ChromeOS
   	vpd -i RO_VPD -s "dev_firmware"=1
+		fi
   else
-    fail "You are already using DevFW (Devkeys)!" keepflag
+    fail "You are already using DevFW!"
   fi
   sleep 0.5
-  if [[ $DRIVEBACKUP == 1 ]]; then
-    umount $BACKUP
-  fi
+
 }
 
 main(){
@@ -507,26 +465,20 @@ EOF
   echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
 
-  touch /tmp/.rebootpls
   cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
-${B}Please reboot your chromebook${N}. after you reboot, either recover Modmium OR run this script again and INSTALL Modmium. (If you used userkeys, make sure you also use that flag when trying to Install Modmium with this script)
 EOF
-echo -e "Exiting..."
-sleep 0.5
-exit 0
-fi
+  echo -e "${B}Would you like to install modmium now? (Select n if you want to use a recovery image) [Y/n]"
+  read -rep ""
+  if [[ $REPLY ^[Nn]$ ]]; then
+    modmiumInstall
+  fi
+  echo -e "${G}Done! Use your modmium recovery image when you're ready.${N}"
+  if [[ $DRIVEBACKUP == 1 ]]; then
+    umount $BACKUP
+  fi
+  exit 0
 }
 
-clear
-DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
-if [[ -f /tmp/.rebootpls ]]; then
-  echo -e "Please reboot your device before running this script again!"
-  exit 1
-fi
-if [[ "$DEVFW" ]]; then
-  modmiumInstall
-else
-  main
-fi
+main
