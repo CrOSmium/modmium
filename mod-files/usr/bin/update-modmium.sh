@@ -319,7 +319,7 @@ tput civis # :whale:
 
 menu_reset() {
   menuText="\nManage Modmium\n"
-  options=("Update Modmium" "Change ChromeOS Version" "Toggle Enrollment" "Toggle Boot Priority" "Exit")
+  options=("Update Modmium" "Change ChromeOS Version" "Toggle Enrollment" "Swap Boot Priority" "Exit")
   functions=("updateModmium" "installCros" "toggleEnrollment" "toggleBootPriority" "quit")
 	num_options=${#options[@]}
 }
