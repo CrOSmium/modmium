@@ -255,7 +255,7 @@ dropModFiles(){
     fi
   done
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
-  [[ $arch == "ARM" ]] && arch="aarch64"
+  [[ $arch == *"ARM"* ]] && arch="aarch64"
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
   [[ -d build-utils/keys/userkeys ]] && cp -r build-utils/keys/userkeys mnt/usr/share/vboot

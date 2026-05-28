@@ -246,7 +246,7 @@ installCros() {
     fi
   done
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
-  [[ $arch == "ARM" ]] && arch=aarch64
+  [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
