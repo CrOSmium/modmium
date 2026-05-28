@@ -7,8 +7,8 @@ source /usr/lib/libmosh.sh
 
 # -- FUNCTIONS --
 creditsMenu(){
-	echo -e ""
     cat <<EOF | xargs -0 echo -ne
+
 ███╗   ███╗ ██████╗ ██████╗ ███╗   ███╗██╗██╗   ██╗███╗   ███╗
 ████╗ ████║██╔═══██╗██╔══██╗████╗ ████║██║██║   ██║████╗ ████║
 ██╔████╔██║██║   ██║██║  ██║██╔████╔██║██║██║   ██║██╔████╔██║
@@ -50,7 +50,7 @@ prenix(){
 	runscript /usr/bin/nix-preinstall.sh
 }
 credits(){
-	employ creditsMenu
+	runscriptnoroot creditsMenu
 }
 # -- MAIN SCRIPT --
 tput civis # :whale:
