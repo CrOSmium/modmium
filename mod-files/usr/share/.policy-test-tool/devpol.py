@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 
-POLICY_TEST_TOOL_PATH = "/usr/local/share/policy-test-tool"
+POLICY_TEST_TOOL_PATH = "/usr/share/.policy-test-tool"
 sys.path.insert(0, POLICY_TEST_TOOL_PATH)
 
 import chrome_device_policy_pb2
