@@ -111,8 +111,8 @@ revertMPkeys(){
 	  echo "Setting GBB flags to 0xa0b1"
 	  futility gbb bios.bin -s --flags=0xa0b1 || fail "Failed to set GBB flags"
 
-	  echo "Flashing new bios, do not power off your device"
-		flashrom -w bios.bin || fail "Uh oh, flash failed. very bad. Join https://discord.crosbreaker.com for support" restore
+	  echo "Flashing new bios, ${R}do not power off your device!${N}"
+		flashrom -w bios.bin || fail "Uh oh, flash failed. Join https://discord.crosbreaker.com for support" restore
 		echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
