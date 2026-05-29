@@ -37,6 +37,14 @@ fi
 fail(){
 	echo -e "$1"
 	start powerd &>/dev/null
+	if [[ -f oldbios.bin && $2 == restore ]]; then
+	  echo -e "${B}Attempting restore from firmware backup in 3 seconds...${N}"
+		sleep 3
+		flashrom -w oldbios.bin
+		echo -e "Done. Hopefully all is well now. Sleeping forever so you can look at logs."
+		echo -e "${D}If everything looks good, hit Ctrl+C to exit.${N}"
+		sleep infinity
+	fi
 	sleep 2
 	factoryreset=0
 	exit 0
@@ -104,7 +112,7 @@ revertMPkeys(){
 	  futility gbb bios.bin -s --flags=0xa0b1 || fail "Failed to set GBB flags"
 
 	  echo "Flashing new bios, do not power off your device"
-		flashrom -w bios.bin || fail "Uh oh, flash failed. very bad. Join discord for support"
+		flashrom -w bios.bin || fail "Uh oh, flash failed. very bad. Join https://discord.crosbreaker.com for support" restore
 		echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
