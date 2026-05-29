@@ -265,6 +265,7 @@ installCros() {
       cp -r $file mnt/root
     done
   fi
+  touch /usr/share/.install_complete
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   sync
   umount mnt
@@ -325,5 +326,4 @@ menu_reset() {
 menu_reset
 clear
 full_menu
-tput cnorm
-selector
+tput cnormselector
