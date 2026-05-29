@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 # written by mariah carey and DMD
 
