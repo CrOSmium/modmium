@@ -3,6 +3,19 @@
 > The "Emergency Revert" option in MOSH means keeping a firmware backup isn't *strictly necessary*, however, it is still best practice to keep one in case your VPD gets messed up somehow.
 > WP (and APROV if on Ti50) **must** be disabled before installation, the script will refuse to run if it is on.
 
+## Pros and Cons
+* VT2 Installation:
+  * +: Doesn't require a linux machine to build
+  * +: More convenient to install
+  * -: Requires internet connection every time you install
+  * -: Doesn't come with bootsplashes or policy.json pre-installed
+* Recovery Image:
+  * +: Once the image is created, no internet connection is required to install
+  * +: Can prepare bootsplashes and policy.json
+  * +: Allows custom modifications to Modmium
+  * -: Requires a linux machine to build
+  * -: More complicated to install
+
 ## VT2 Installation
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
 2. Connect to the internet by pressing the wifi icon the bottom right (don't press "Get Started").
