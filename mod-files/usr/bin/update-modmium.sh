@@ -37,6 +37,13 @@ if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/nu
 	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 
+intdis=$(rootdev -d)
+if echo "$intdis" | grep -q '[0-9]$'; then
+  intdis_prefix="$intdis"p
+else
+  intdis_prefix="$intdis"
+fi
+
 # -- FUNCTIONS --
 BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
 getImageLink(){
@@ -164,12 +171,6 @@ installCros() {
   fi
   askBranch
   getImageLink
-  intdis=$(rootdev -d)
-  if echo "$intdis" | grep -q '[0-9]$'; then
-    intdis_prefix="$intdis"p
-	else
-	  intdis_prefix="$intdis"
-	fi
 
 	installKern=${intdis_prefix}$(opposite_num $(get_booted_kernnum))
 	installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
@@ -265,7 +266,7 @@ installCros() {
       cp -r $file mnt/root
     done
   fi
-    mkdir -p /tmp/install_marker
+  mkdir -p /tmp/install_marker
   mount ${intdis_prefix}12 /tmp/install_marker
   touch /tmp/install_marker/.install_complete
   umount /tmp/install_marker
@@ -293,12 +294,6 @@ installCros() {
 
 toggleBootPriority(){
   clear
-  intdis=$(rootdev -d)
-  if echo "$intdis" | grep -q '[0-9]$'; then
-      intdis_prefix="$intdis"p
-	else
-	  intdis_prefix="$intdis"
-	fi
   mkdir -p /tmp/install_marker
   mount ${intdis_prefix}12 /tmp/install_marker
   if [[ ! -f /tmp/install_marker/.install_complete ]]; then

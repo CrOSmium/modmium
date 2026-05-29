@@ -2,7 +2,7 @@
 # written by mariah carey
 
 source /root/.bashrc # to get $EDITOR
-cd /usr/share/.policy-test-tool
+cd /usr/local/share/.policy-test-tool
 jsonFile="dump.json"
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 
