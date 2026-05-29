@@ -29,21 +29,4 @@ If you need any kind of support, please join the [crosbreaker discord server](ht
 ------------
 
 "*For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
-Your minds are incredible things, don't let them go to waste please.*" - Mariah Scary
-
-
-## repo layout [to be moved to docs (contributing.md or something)]
-(thank you mariah!)
-* `bootsplash/`
-   * contains default bootsplash SVG files which can be converted into PNG files to be used by modify-bootsplash.sh in MOSH.
-* `build-utils/`
-   * contains scripts, libraries, and signing keys used for building the image
-* `mod-files/`
-   * is a rootfs overlay (for example, `mod-files/usr/bin/crosh` is mosh (modmium shell)
-   * `build_image.sh` already handles moving replaced files to `$oldFile.old`, so you don't have to worry about overwriting things in case they need to be called by the modfile (for example `mod-files/sbin/chromeos_startup` needs to call the normal chromeos\_startup, which is at `/sbin/chromeos_startup.old`)
-* `build-image.sh`
-   * builder for installing modmium to recovery images.
-* `docs/`
-   * documentation for the various components of modmium, and how to use them.
-* `modmium.sh`
-   * the devfw installation helper (will be hosted on crosbreaker cdn).
+Your minds are incredible things, don't let them go to waste please.*" - maria
