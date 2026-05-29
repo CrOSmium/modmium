@@ -32,6 +32,7 @@ if [[ ! -f $jsonFile ]]; then
 	fi
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml &> /dev/null
+	cd /usr/local/share/policy-test-tool
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output /usr/local/share/policy-test-tool/dump.json
 	echo -e "${G}Done! Starting editor...${N}"
