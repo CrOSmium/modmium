@@ -38,3 +38,8 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 
 > [!NOTE]
 > You still have access to VT's even in verified, and rootFS verification is disabled in verified. This is thanks to devfw allowing us to use resigned kernels and unverified root filesystems.
+
+## Flags (ADVANCED USERS ONLY)
+* `modmium.sh` flags:
+  * `-u`/`--userkeys`: if you have a usb drive with your own signing keys on them, you can use it. be sure to plug it into the chromebook before running `modmium.sh`; yes, even the second time (`-b` will be ignored if you pass `-u`)
+  * `-b`/`--backup`: default true, whether or not to create a firmware backup. pass `--nobackup` if you are absolutely certain you don't need one (strongly advise you don't do this, but if you know what you're doing, we can't stop you).

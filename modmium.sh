@@ -132,11 +132,7 @@ installCros() {
 	# thanks lxrd for that python script btw
 
 	echo -e "${G}Removing verity from ChromeOS...${N}"
-	if [[ -d /usr/share/vboot/userkeys ]]; then
-	  keydir=/usr/share/vboot/userkeys
-	else
-	  keydir=/usr/share/vboot/devkeys
-	fi
+	# keydir gets defined in installModmium()
 	/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(opposite_num $(get_booted_kernnum)) --keys ${keydir} &>/dev/null
 	futility dump_kernel_config ${installKern} > config.txt
 	sed -i "s|cros_secure|cros_secure cros_debug|g" config.txt
@@ -198,7 +194,7 @@ installCros() {
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
-  [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
+  [[ -d ${BACKUP}/userkeys ]] && cp -r ${BACKUP}/userkeys mnt/usr/share/vboot
   echo $branch > mnt/.branch
 
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
@@ -306,6 +302,25 @@ selUserBackup(){
 }
 
 modmiumInstall(){
+  if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
+    BACKUP=/tmp/backupdir
+    mkdir -p $BACKUP
+    echo -e "These are the vfat drives/partitions connected to your device:"
+    for drive in $(lsblk -lo NAME,FSTYPE | grep vfat | awk '{print $1}'); do
+      echo /dev/$drive
+    done
+    echo -e "Type the drive that the signing keys were backed up to (/dev/sdX or sdX are acceptable)...${N}"
+   	read -ep "Drive: " driveloc
+   	driveloc="${driveloc%/}"
+   	if [[ $driveloc == *"/dev/"* ]]; then
+			if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+   	else
+     	if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+   	fi
+    keydir=${BACKUP}/userkeys
+  else
+    keydir=/usr/share/vboot/devkeys
+  fi
 	if ! which git &>/dev/null || ! which file &>/dev/null; then
 		echo -e "${R}Dependencies not installed, installing...${N}"
 		source /etc/profile # required to get emerge working
@@ -335,7 +350,7 @@ modmiumInstall(){
 selectBackup(){
 	BACKUP=/tmp/backupdir
 	mkdir -p $BACKUP
-	[[ $FLAGS_backup == $FLAGS_FALSE ]] && return
+	[[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		cat <<EOF | xargs -0 echo -ne
 Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
