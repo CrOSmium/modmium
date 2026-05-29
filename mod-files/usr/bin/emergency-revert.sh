@@ -76,40 +76,39 @@ revertMPkeys(){
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
     sleep 2
+	  echo "Modmium stock firmware restore script by codenerd87"
+		workdir=$(mktemp -d) || fail "Failed to make tmp dir"
+		cd ${workdir}
+		model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
+		chromeos-firmwareupdate -m output --output_dir ${workdir} --model ${model} || fail "Failed to extract firmware shellball"
+		rm ec.bin image.bin #we must save 16mb ram :whale:
+		echo "Reading old bios"
+		flashrom -r oldbios.bin || fail "Failed to read current bios."
 
-	echo "Modmium stock firmware restore script by codenerd87"
-	workdir=$(mktemp -d) || fail "Failed to make tmp dir"
-	cd ${workdir}
-	model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
-	chromeos-firmwareupdate -m output --output_dir ${workdir} --model ${model} || fail "Failed to extract firmware shellball"
-	rm ec.bin image.bin #we must save 16mb ram :whale:
-	echo "Reading old bios"
-	flashrom -r oldbios.bin || fail "Failed to read current bios."
+	  echo "Extracting VPD from current bios"
+		cbfstool oldbios.bin read -r RO_VPD -f rovpd.bin || fail "Failed to extract RO_VPD"
+		cbfstool oldbios.bin read -r RW_VPD -f rwvpd.bin || fail "Failed to extract RW_VPD"
+		echo "Injecting VPD into new bios"
+		cbfstool bios.bin write -r RO_VPD -f rovpd.bin || fail "Failed to inject RO_VPD"
+		cbfstool bios.bin write -r RW_VPD -f rwvpd.bin || fail "Failed to inject RW_VPD"
 
-	echo "Extracting VPD from current bios"
-	cbfstool oldbios.bin read -r RO_VPD -f rovpd.bin || fail "Failed to extract RO_VPD"
-	cbfstool oldbios.bin read -r RW_VPD -f rwvpd.bin || fail "Failed to extract RW_VPD"
-	echo "Injecting VPD into new bios"
-	cbfstool bios.bin write -r RO_VPD -f rovpd.bin || fail "Failed to inject RO_VPD"
-	cbfstool bios.bin write -r RW_VPD -f rwvpd.bin || fail "Failed to inject RW_VPD"
+	  echo "VPD successfully transplated"
 
-	echo "VPD successfully transplated"
+	  echo "Transplanting HWID"
+		futility gbb oldbios.bin -g --hwid | sed "s/hardware_id: //" > hwid.txt || fail "Failed to extract HWID"
+		futility gbb bios.bin -s --hwid="$(cat hwid.txt)" || fail "Failed to inject HWID"
 
-	echo "Transplanting HWID"
-	futility gbb oldbios.bin -g --hwid | sed "s/hardware_id: //" > hwid.txt || fail "Failed to extract HWID"
-	futility gbb bios.bin -s --hwid="$(cat hwid.txt)" || fail "Failed to inject HWID"
+	  echo "HWID successfully transplated"
 
-	echo "HWID successfully transplated"
+	  echo "Setting GBB flags to 0xa0b1"
+	  futility gbb bios.bin -s --flags=0xa0b1 || fail "Failed to set GBB flags"
 
-	echo "Setting GBB flags to 0xa0b1"
-	futility gbb bios.bin -s --flags=0xa0b1 || fail "Failed to set GBB flags"
-
-	echo "Flashing new bios, do not power off your device"
-	flashrom -w bios.bin || fail "Uh oh, flash failed. very bad. Join discord for support"
-	echo "Firmware flashed successfully!"
+	  echo "Flashing new bios, do not power off your device"
+		flashrom -w bios.bin || fail "Uh oh, flash failed. very bad. Join discord for support"
+		echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
-      echo -e "${B}Do you want to unkeyroll?"
+      echo -e "${B}Do you want to unkeyroll? [y/N]"
       read -re
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         unkeyroll
@@ -222,18 +221,18 @@ installCros() {
 }
 
 factoryReset(){
-    factoryreset=1
-	runscriptnoroot revertMPkeys
+  factoryreset=1
+	runscript revertMPkeys
 }
 
 restoreMPkeys(){
-    factoryreset=0
-	runscriptnoroot revertMPkeys
+  factoryreset=0
+	runscript revertMPkeys
 }
 
 restoreOS(){
 	factoryreset=0
-	runscriptnoroot installCros
+	runscript installCros
 }
 
 menu_reset() {
