@@ -2,8 +2,7 @@
 # written by mariah carey
 
 source /root/.bashrc # to get $EDITOR
-cd /usr/local/share/.policy-test-tool
-jsonFile="dump.json"
+jsonFile="/usr/local/share/policy-test-tool/dump.json"
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 
 stty -echo
@@ -13,6 +12,7 @@ clear
 source /usr/lib/libmosh.sh
 
 if [[ ! -f $jsonFile ]]; then
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
  	source /etc/profile # emerge breaks without this
 	echo -e "${B}Installing required dependencies...${N}"
 	if [[ ! -f $DEVINSTALL_FILE ]]; then
@@ -33,13 +33,14 @@ if [[ ! -f $jsonFile ]]; then
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml &> /dev/null
 	echo -e "${B}Dumping device policy to json...${N}"
-	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
+	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output /usr/local/share/policy-test-tool/dump.json
 	echo -e "${G}Done! Starting editor...${N}"
 	sleep 2
 	stty -echo
 	tput civis
 	clear
 fi
+cd /usr/local/share/policy-test-tool
 
 # there's gotta be a better way to do this but whatever :sob:
 RESTRICTIONS=(
