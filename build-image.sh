@@ -39,6 +39,7 @@ Credits:
 ${R}mariahscarycarey: ${P}Lead developer; made image builder, device policy editor frontend, ChromeOS version switcher, did most bugfixing, and MANY small changes to other code.${N}
 \033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, base ChromeOS updater, and a bunch of small changes.${N}
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script, made a script to let us stream ChromeOS updates, integrated nix into Modmium.${N}
+\033[38;5;216mcodenerd87: Wrote code for restoring stock firmware.${N}
 \033[38;5;126mkxtzownsu: Did code review to make sure we weren't skidding until he stepped down [05-26-2026].${N}
 \033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
