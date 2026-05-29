@@ -92,40 +92,40 @@ device_management_client --action=remove_firmware_management_parameters
 device_management_client --action=set_firmware_management_parameters --flags=0
 
 if [ ! -f /.policyedit_staged ]; then
-	echo "Staging policyedit..."
-	sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
-	echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
-	echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
-	touch /.policyedit_staged
-	echo "Done"
+  echo "Staging policyedit..."
+  sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
+  echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
+  echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
+  touch /.policyedit_staged
+  echo "Done"
 fi
 
 if [ ! -f /.sudo_enabled ]; then
-	echo "Enabling sudo..."
-	sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
-	touch /.sudo_enabled
-	echo "Done"
+  echo "Enabling sudo..."
+  sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
+  touch /.sudo_enabled
+  echo "Done"
 fi
 
 if [ ! -f /.updates_blocked ]; then
-	echo "Disabling auto-updates..."
-	sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
-	touch /.updates_blocked
-	echo "Done"
+  echo "Disabling auto-updates..."
+  sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
+  touch /.updates_blocked
+  echo "Done"
 fi
 
 if [ -f /.deprovision ]; then
-	version=$(cat /.deprovision)
-	if [[ $version -lt 143 ]]; then
-		vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
-	else
-		sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
-		echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
-	fi
+  version=$(cat /.deprovision)
+  if [[ $version -lt 143 ]]; then
+  	vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
+  else
+  	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+  	echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
+  fi
 # TODO (xz8f): add powerwash flag check
 elif [ ! -f /.deprovision ]; then
-	vpd -i RW_VPD -d re_enrollment_key
-	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+  vpd -i RW_VPD -d re_enrollment_key
+  sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
 fi
 
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
