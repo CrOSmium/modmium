@@ -326,4 +326,5 @@ menu_reset() {
 menu_reset
 clear
 full_menu
-tput cnormselector
+tput cnorm
+selector
