@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
 # written by mariah carey and DMD
 
@@ -265,7 +267,11 @@ installCros() {
       cp -r $file mnt/root
     done
   fi
-  touch /usr/share/.install_complete
+    mkdir -p /tmp/install_marker
+  mount ${intdis_prefix}12 /tmp/install_marker
+  touch /tmp/install_marker/.install_complete
+  umount /tmp/install_marker
+  rmdir /tmp/install_marker
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   sync
   umount mnt
@@ -290,6 +296,22 @@ installCros() {
 toggleBootPriority(){
   clear
   intdis=$(rootdev -d)
+  if echo "$intdis" | grep -q '[0-9]$'; then
+      intdis_prefix="$intdis"p
+	else
+	  intdis_prefix="$intdis"
+	fi
+  mkdir -p /tmp/install_marker
+  mount ${intdis_prefix}12 /tmp/install_marker
+  if [[ ! -f /tmp/install_marker/.install_complete ]]; then
+    umount /tmp/install_marker
+    rmdir /tmp/install_marker
+    echo -e "${R}ChromeOS update has not completed yet.${N}"
+    sleep 3
+    exit 1
+  fi
+  umount /tmp/install_marker
+  rmdir /tmp/install_marker
   if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
     currentKern=2
     newKern=4
@@ -297,11 +319,6 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
-  if echo "$intdis" | grep -q '[0-9]$'; then
-      intdis_prefix="$intdis"p
-	else
-	  intdis_prefix="$intdis"
-	fi
   cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
