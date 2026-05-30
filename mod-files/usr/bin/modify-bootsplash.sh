@@ -6,7 +6,7 @@ source /usr/lib/libmosh.sh
 
 fail() {
 	echo -e "$1"
-	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
+	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0 2>/dev/null); do
 		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes" &>/dev/null
 	done
 	sleep 3
@@ -55,8 +55,8 @@ move_images() {
 			done
 		done
 	else
-		for assets in $cros_assets $cros_assets_2; do
-			cp $1 ${assets}/boot_splash_frame00.png
+		for assets in cros_assets cros_assets_2; do
+			cp $1 ${!assets}/boot_splash_frame00.png
 		done
 	fi
 }
@@ -72,15 +72,14 @@ replace() {
 	fail
 }
 
-replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
-# try using this now, obviously this won't fix it but it could help figure out what the problem is
+replace_custom() {
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
-	if [[] -f $custom_img_path ]]; then
+	if [[ -f $custom_img_path ]]; then
 		move_images $custom_img_path
 		echo -e "${B}Replaced bootsplash!${N}"
 	else
-    	fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
+    fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
 	fi
 	fail
 }
@@ -97,19 +96,22 @@ restore() {
 }
 
 download_backup() {
+  tempdir=$(mktemp -d)
+  cd $tempdir
 	echo -e "${G}Downloading stock bootsplash...${N}"
 	curl -LO https://dl.xz8f.gay/chromeos_bootsplash.zip
 	echo -e "${Y}Unzipping...${N}"
 	bsdtar -xf chromeos_bootsplash.zip
-	echo -e "${Y}Creating backup...${N}" # should this say something different? idk
+	echo -e "${Y}Creating backup...${N}"
 	for assets in $cros_assets $cros_assets_2; do
 		for splashframe in boot_splash_frame*.png; do
 			cp $splashframe ${assets}/${splashframe}.old
 		done
 	done
 	echo -e "${Y}Cleaning up!${N}"
-	rm chromeos_bootsplash.zip boot_splash_frame*.png
-	echo -e "${B}Done! Use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
+	cd ..
+	rm -rf $tempdir chromeos_bootsplash.zip boot_splash_frame*.png
+	echo -e "${B}Done! Use the "Restore stock bootsplash" option to restore.${N}"
 	fail
 }
 
