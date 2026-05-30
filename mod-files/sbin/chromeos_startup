@@ -128,14 +128,5 @@ elif [ ! -f /.deprovision ]; then
   sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
 fi
 
-MARKER=/root/.elog_initialized
-if [ ! -f "$MARKER" ]; then
-    flashrom -p internal --fmap -i RW_ELOG -r /root/elog.bin
-    dd if=/root/elog.bin of=/root/elog_extracted.bin bs=1 skip=$((0x85d000))
-    touch "$MARKER"
-fi
-elogtool clear -f /root/elog_extracted.bin
-elogtool add 0xb7 0005 -f /root/elog_extracted.bin
-
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
