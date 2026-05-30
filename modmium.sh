@@ -1,5 +1,6 @@
 #!/bin/bash
 # written by DMD and mariah carey
+# compatibility fixes by codenerd87
 source /usr/share/misc/shflags
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
 DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to backup firmware from flashing devkeys." "b"
