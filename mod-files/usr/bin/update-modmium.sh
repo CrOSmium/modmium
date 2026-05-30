@@ -105,6 +105,7 @@ updateModmium() {
 	askBranch
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
+	[[ -d modmium ]] && rm -rf modmium
 	if [[ -d /root/.ssh ]]; then
 		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	else
@@ -211,6 +212,7 @@ installCros() {
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
 	mkdir -p /mnt/stateful_partition/git
 	cd /mnt/stateful_partition/git
+	[[ -d modmium ]] && rm -rf modmium
 	if [[ -d /root/.ssh ]]; then
 		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	else
