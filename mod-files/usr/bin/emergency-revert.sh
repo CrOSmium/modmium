@@ -102,6 +102,7 @@ revertMPkeys(){
 
 	  echo "Flashing new bios, ${R}do not power off your device!${N}"
 		flashrom -w bios.bin || fail "Uh oh, flash failed. Join https://discord.crosbreaker.com for support" restore
+		vpd -d dev_firmware
 		echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
