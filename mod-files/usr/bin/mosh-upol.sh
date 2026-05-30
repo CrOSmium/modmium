@@ -5,18 +5,6 @@
 stty -echo
 source /usr/lib/libmosh.sh
 source /etc/profile
-if [[ -d /usr/local/nix/store ]]; then
-  # issues can get caused if a user has a custom shell.
-  # before, this code only ran if .bashrc was sourced,
-  # but the shell wouldn't open if .bashrc wasn't sourced
-  # chicken and egg. we fix it here.
-  if ! mountpoint -q /nix; then
-    sudo mkdir -p /nix
-    sudo mount --bind /usr/local/nix /nix
-  fi
-  sudo source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
-  unset LD_LIBRARY_PATH
-fi
 
 # -- policy flags --
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
@@ -47,8 +35,10 @@ install(){
   fi
 
   if [[ ! -f $DEVINSTALL_FILE ]]; then
-    nohup dev_install --reinstall --yes >.devinstall-log 2>&1 &
-    echo -e "${G}(Running dev_install in the background, you may notice your chromebook getting warm...)${N}"
+    echo -e "${G}Installing required dependencies...${N}"
+    printf 'y\n\nn' | dev_install --reinstall
+    ldconfig
+    emerge python-protobuf
   fi
 
   cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
@@ -75,20 +65,6 @@ ${G}Enter target email: ${N}
 EOF
 )"
   read -rep "" email
-
-  cat <<EOF | xargs -0 echo -ne
-${G}Waiting for python dependencies from dev_install...${D}
-(If this takes more than 5 minutes, something went wrong; open another VT and run dev_install --reinstall)${N}
-EOF
-  pythonGoogleInstalled=
-  while [[ $pythonGoogleInstalled != $FLAGS_TRUE ]]; do
-    if [[ $(python -m google 2>&1) == *"package"* ]]; then
-      pythonGoogleInstalled=$FLAGS_TRUE
-    fi
-    sleep 1
-  done
-
-  rm -rf .devinstall-log
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 

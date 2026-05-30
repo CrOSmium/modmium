@@ -14,23 +14,11 @@ if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/nu
 	echo -e "${R}Dependencies not installed, installing...${N}"
 	source /etc/profile # required to get emerge working in mosh
 	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-		nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
-		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-		pythonGoogleInstalled=
-		while [[ $pythonGoogleInstalled != "true" ]]; do
-  		python -m google >/root/.googleStatus 2>&1
-  		output=$(cat /root/.googleStatus) # reason we have to do this is because python forces itself into stdout even if the output is supposed to be a variable i hate python
-  		if [[ $output == *"package"* ]]; then
-    		pythonGoogleInstalled=true
-  		fi
-  		sleep 1
-		done
-		# cleaning up
-		rm -rf /root/.googleStatus /root/.devinstall_log
+	  printf 'y\n\nn' | dev_install --reinstall
 		touch /mnt/stateful_partition/.devinstall_complete
 	fi
 	ldconfig # reload shared libraries to include python libs
-	emerge git diffutils file
+	emerge git file python-protobuf
 	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 

@@ -325,19 +325,7 @@ modmiumInstall(){
 		echo -e "${R}Dependencies not installed, installing...${N}"
 		source /etc/profile # required to get emerge working
 		if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-			nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
-			echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-			pythonGoogleInstalled=$FLAGS_FALSE
-			while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
-
-	  		output=$(python -m google 2>&1)
-	  		if [[ $output == *"package"* ]]; then
-	    		pythonGoogleInstalled=$FLAGS_TRUE
-	  		fi
-	  		sleep 1
-			done
-			# cleaning up
-			rm -rf /root/.googleStatus /root/.devinstall_log
+		  printf 'y\n\nn' | dev_install --reinstall
 			touch /mnt/stateful_partition/.devinstall_complete
 		fi
 		ldconfig # reload shared libraries to include python libs

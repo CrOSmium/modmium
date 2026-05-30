@@ -14,26 +14,15 @@ fail(){
 stty -echo
 source /usr/lib/libmosh.sh
 
-if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/null; then
+if ! which git &>/dev/null || ! which file &>/dev/null; then
 	echo -e "${R}Dependencies not installed, installing...${N}"
 	source /etc/profile # required to get emerge working in mosh
 	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-		nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
-		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-		pythonGoogleInstalled=$FLAGS_FALSE
-		while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
-      output=$(python -m google 2>&1)
-      if [[ $output == *"package"* ]]; then
-    		pythonGoogleInstalled=$FLAGS_TRUE
-  		fi
-  		sleep 1
-		done
-		# cleaning up
-		rm -rf /root/.devinstall_log
+	  printf 'y\n\nn' | dev_install --reinstall
 		touch /mnt/stateful_partition/.devinstall_complete
 	fi
 	ldconfig # reload shared libraries to include python libs
-	emerge git diffutils file
+	emerge git file
 	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 

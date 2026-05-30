@@ -16,22 +16,11 @@ if [[ ! -f $jsonFile ]]; then
  	source /etc/profile # emerge breaks without this
 	echo -e "${B}Installing required dependencies...${N}"
 	if [[ ! -f $DEVINSTALL_FILE ]]; then
-	  nohup dev_install --reinstall --yes >/root/.devinstall-log 2>&1 &
-		echo -e "${G}Waiting for python dependencies from dev_install...${N}"
-		pythonGoogleInstalled=$FLAGS_FALSE
-		while [[ $pythonGoogleInstalled == $FLAGS_FALSE ]]; do
-		  output=$(python -m google 2>&1)
-			if [[ $output == *"package"* ]]; then
-		    pythonGoogleInstalled=$FLAGS_TRUE
-		  fi
-			sleep 1
-		done
-		# cleaning up
-		rm -rf /root/.devinstall_log
+	  printf 'y\n\nn' | dev_install --reinstall
 		touch $DEVINSTALL_FILE
 	fi
 	ldconfig # emerge breaks without this too
-	emerge cryptography nano pyyaml &> /dev/null
+	emerge cryptography nano pyyaml python-protobuf
 	cd /usr/local/share/policy-test-tool
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
