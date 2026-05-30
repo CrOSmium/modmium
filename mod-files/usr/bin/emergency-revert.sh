@@ -66,6 +66,7 @@ unkeyroll(){
 
 revertMPkeys(){
   clear
+  stty echo
   checkWP
   echo -e "${R}This will update your firmware and revert your chromebook to stock keys (undoing developer firmware changes), are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
   read -re
