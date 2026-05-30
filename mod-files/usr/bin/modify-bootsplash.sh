@@ -7,10 +7,10 @@ source /usr/lib/libmosh.sh
 fail() {
 	echo -e "$1"
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
-		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes"
+		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes" &>/dev/null
 	done
 	sleep 3
-	return
+	exit
 }
 cros_assets="/usr/share/chromeos-assets/images_100_percent"
 cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
