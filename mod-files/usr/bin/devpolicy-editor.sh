@@ -4,6 +4,7 @@
 source /root/.bashrc # to get $EDITOR
 jsonFile="/usr/local/share/policy-test-tool/dump.json"
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
+DEVPOL_FILE="/mnt/stateful_partition/.devpol_setup"
 
 stty -echo
 tput civis
@@ -11,7 +12,7 @@ clear
 
 source /usr/lib/libmosh.sh
 
-if [[ ! -f $jsonFile ]]; then
+if [[ ! -f $DEVPOL_FILE ]]; then
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
  	source /etc/profile # emerge breaks without this
 	echo -e "${B}Installing required dependencies...${N}"
@@ -21,6 +22,8 @@ if [[ ! -f $jsonFile ]]; then
 	fi
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml protobuf-python
+fi
+if [[ ! -f jsonFile ]]; then
 	cd /usr/local/share/policy-test-tool
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json

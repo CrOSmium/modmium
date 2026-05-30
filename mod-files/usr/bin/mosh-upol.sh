@@ -176,7 +176,7 @@ EOF
   /usr/bin/.unhang.sh &
   python orchestrator.py policies.json
   kill $(ps aux | grep -F '.unhang.sh' | head -n 1 | awk '{print $2}')
-  touch ${DEVINSTALL_FILE} ${POLTEST_FILE}
+  touch ${POLTEST_FILE}
   echo -e "${G}Done!${N}"
   sleep 3
   exit 0
