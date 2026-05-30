@@ -10,7 +10,7 @@ source /usr/lib/libmosh.sh
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
-if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/null; then
+if ! which git &>/dev/null || ! which file &>/dev/null; then
 	echo -e "${R}Dependencies not installed, installing...${N}"
 	source /etc/profile # required to get emerge working in mosh
 	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
@@ -218,17 +218,17 @@ installCros() {
 
 factoryReset(){
   factoryreset=1
-	runscript revertMPkeys
+	revertMPkeys
 }
 
 restoreMPkeys(){
   factoryreset=0
-	runscript revertMPkeys
+	revertMPkeys
 }
 
 restoreOS(){
 	factoryreset=0
-	runscript installCros
+	installCros
 }
 
 menu_reset() {
