@@ -119,8 +119,11 @@ remove() {
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo -e "${Y}Removing bootsplash...${N}"
-		rm $cros_assets/boot_splash_frame*.png
-		rm $cros_assets_2/boot_splash_frame*.png
+		for assets in cros_assets cros_assets_2; do
+		  for file in $(find ${!assets} -name 'boot_splash_frame*.png'); do
+				rm $file
+			done
+		done
 		echo -e "${G}Removed bootsplash!${N}"
 	fi
 	fail
