@@ -392,7 +392,7 @@ full_menu(){
 					[[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
 					popd &> /dev/null
 					rm -rf $jsonFile
-					echo -e "${G}Done!${N}"; sleep 2; exit 0 ;;
+					echo -e "${G}Done!${N}"; sleep 2; retart ui; exit 0 ;;
 			esac
 			clear
 		fi
