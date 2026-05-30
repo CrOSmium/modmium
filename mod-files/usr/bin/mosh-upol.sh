@@ -38,7 +38,7 @@ install(){
     echo -e "${G}Installing required dependencies...${N}"
     printf 'y\n\nn' | dev_install --reinstall
     ldconfig
-    emerge python-protobuf
+    emerge protobuf-python
   fi
 
   cp /etc/chrome_dev.conf /etc/.chrome_dev.conf

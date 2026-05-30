@@ -18,7 +18,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null || ! which diff &>/dev/nu
 		touch /mnt/stateful_partition/.devinstall_complete
 	fi
 	ldconfig # reload shared libraries to include python libs
-	emerge git file python-protobuf
+	emerge git file protobuf-python
 	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 

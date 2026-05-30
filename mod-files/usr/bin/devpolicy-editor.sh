@@ -20,7 +20,7 @@ if [[ ! -f $jsonFile ]]; then
 		touch $DEVINSTALL_FILE
 	fi
 	ldconfig # emerge breaks without this too
-	emerge cryptography nano pyyaml python-protobuf
+	emerge cryptography nano pyyaml protobuf-python
 	cd /usr/local/share/policy-test-tool
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
