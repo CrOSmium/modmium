@@ -39,6 +39,7 @@ install(){
     printf 'y\n\nn' | dev_install --reinstall
     ldconfig
     emerge protobuf-python
+    touch $DEVINSTALL_FILE
   fi
 
   cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
