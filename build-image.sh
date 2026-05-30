@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=$(echo "file" "funzip" "futility" "jq" "pv" "wget")
+DEPENDENCIES=$(echo "bsdtar" "file" "futility" "jq" "pv" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_minimal.sh
@@ -27,6 +27,7 @@ cleanup(){ # to be used in case of failure, not for successful building
   silence umount mnt
   silence losetup -d $loopDev
   silence rm -rf mnt .realuser
+  [[ ! -z $FLAGS_image ]] && rm modmium.bin
   for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
     silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
   done
@@ -388,7 +389,7 @@ downloadImage(){
   echo -e "${G}Downloading image...${N}"
   wget --show-progress -O recovery.zip $recoveryUrl
   echo -e "${G}Unzipping image...${N}"
-  pv recovery.zip | funzip > recovery.bin
+  pv recovery.zip  | bsdtar -Oxf - > recovery.bin
   downloadedImage="recovery.bin"
   echo -e "${G}Removing zip file...${N}"
   rm -rf recovery.zip

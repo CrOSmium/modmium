@@ -22,6 +22,7 @@ if [[ ! -f $DEVPOL_FILE ]]; then
 	fi
 	ldconfig # emerge breaks without this too
 	emerge cryptography nano pyyaml protobuf-python
+	touch $DEVPOL_FILE
 fi
 if [[ ! -f jsonFile ]]; then
 	cd /usr/local/share/policy-test-tool
