@@ -12,20 +12,26 @@ clear
 
 source /usr/lib/libmosh.sh
 
-if [[ ! -f $DEVPOL_FILE ]]; then
+if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
+  mkdir -p /usr/local/share
+  rm -rf /usr/local/share/policy-test-tool
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
- 	source /etc/profile # emerge breaks without this
-	echo -e "${B}Installing required dependencies...${N}"
-	if [[ ! -f $DEVINSTALL_FILE ]]; then
-	  printf 'y\n\nn' | dev_install --reinstall
-		touch $DEVINSTALL_FILE
-	fi
-	ldconfig # emerge breaks without this too
-	emerge cryptography nano pyyaml protobuf-python
-	touch $DEVPOL_FILE
+
+  source /etc/profile # emerge breaks without this
+  echo -e "${B}Installing required dependencies...${N}"
+
+  if [[ ! -f $DEVINSTALL_FILE ]]; then
+    printf 'y\n\nn' | dev_install --reinstall
+    touch $DEVINSTALL_FILE
+  fi
+
+  ldconfig # emerge breaks without this too
+  emerge cryptography nano pyyaml protobuf-python
+
+  touch $DEVPOL_FILE
 fi
-if [[ ! -f jsonFile ]]; then
-	cd /usr/local/share/policy-test-tool
+if [[ ! -f "$jsonFile" ]]; then
+  cd /usr/local/share/policy-test-tool || exit 1
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
 	echo -e "${G}Done! Starting editor...${N}"
