@@ -27,7 +27,7 @@ cleanup(){ # to be used in case of failure, not for successful building
   silence umount mnt
   silence losetup -d $loopDev
   silence rm -rf mnt .realuser
-  [[ ! -z $FLAGS_image ]] && rm modmium.bin
+  [[ -z $FLAGS_image ]] && rm modmium.bin
   for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
     silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
   done
