@@ -236,9 +236,14 @@ checkWP(){
 		echo -e "FWWP is currently ${N}ENABLED${N}, checking for wp range..."
 		wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
 		if [[ $wprange != "" ]]; then
-			fail "WP range is set to 0,0 but you must fully disable FWWP before continuing."
+			echo -e "WP range allows for flashing, continuing."
 		else
-			fail "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
+			echo -e "WP range non-zero, checking for HWWP."
+		    if [[ $(crossystem wpsw_cur) == "0" ]]; then
+				echo -e "HWWP off, continuing."
+		    else
+				fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
+		    fi
 		fi
 	fi
 }
@@ -423,10 +428,12 @@ flashDevFW(){
 			# we try a0b1 first, but if it doesn't recognize the fastboot flag, we do 80b1 instead
   	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 			/usr/share/vboot/bin/make_dev_ssd.sh --force -r
-			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP
+			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --to /tmp/devfw.bin
+			flashrom -w /tmp/devfw.bin
 		else
 			/usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
-			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys
+			/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
+			flashrom -w /tmp/devfw.bin
 		sync # sync because I dont trust ChromeOS
 		fi
 		vpd -i RO_VPD -s dev_firmware=1
