@@ -69,18 +69,20 @@ replace() {
 		move_images $bootsplash
 		echo -e "${B}Replaced bootsplash!${N}"
 	fi
+	fail
 }
 
 replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
 # try using this now, obviously this won't fix it but it could help figure out what the problem is
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
-	if [ -f "$custom_img_path" ]; then
+	if [[] -f $custom_img_path ]]; then
 		move_images $custom_img_path
 		echo -e "${B}Replaced bootsplash!${N}"
 	else
     	fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
 	fi
+	fail
 }
 
 restore() {
@@ -91,6 +93,7 @@ restore() {
 	done
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
+	fail
 }
 
 download_backup() {
@@ -107,6 +110,7 @@ download_backup() {
 	echo -e "${Y}Cleaning up!${N}"
 	rm chromeos_bootsplash.zip boot_splash_frame*.png
 	echo -e "${B}Done! Use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
+	fail
 }
 
 remove() {
@@ -115,10 +119,11 @@ remove() {
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo -e "${Y}Removing bootsplash...${N}"
-		rm "$cros_assets/boot_splash_frame*.png"
-		rm "$cros_assets_2/boot_splash_frame*.png"
+		rm $cros_assets/boot_splash_frame*.png
+		rm $cros_assets_2/boot_splash_frame*.png
 		echo -e "${G}Removed bootsplash!${N}"
 	fi
+	fail
 }
 
 menu_reset(){
