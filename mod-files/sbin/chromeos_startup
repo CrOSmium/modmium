@@ -128,5 +128,7 @@ elif [ ! -f /.deprovision ]; then
   sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
 fi
 
+mount -B /usr/share/fake_vdat.txt /sys/devices/platform/GOOG0016:00/VDAT
+
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
