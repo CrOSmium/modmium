@@ -349,7 +349,7 @@ selectBackup(){
 	[[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
 	if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
 		cat <<EOF | xargs -0 echo -ne
-Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)"
+Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)
 Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory
 EOF
 		read -ep "(d/p): " resp
