@@ -170,7 +170,7 @@ EOF
 
   cat <<EOF | xargs -0 echo -ne
 ${G}Running fake_dmserver in 3 seconds...
-(Sign in with the targeet email, then hit Ctrl+C when you're done)${N}
+(Sign in with the target email, then hit Ctrl+C when you're done)${N}
 EOF
   sleep 3
   /usr/bin/.unhang.sh &
