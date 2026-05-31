@@ -17,6 +17,7 @@ cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
 
 # gets chosen bootsplash
 get_installed_bootsplashes() {
+  stty echo
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
 		mkdir -p ${downloadsDir}/bootsplashes
 		cp /bootsplash/* ${downloadsDir}/bootsplashes >/dev/null 2>&1
@@ -37,6 +38,7 @@ Open the Files app to see them."
 			shouldExit=false
 		fi
 	done
+	stty -echo
 }
 
 # checks if image was built with bootsplashes
@@ -73,6 +75,7 @@ replace() {
 }
 
 replace_custom() {
+  stty echo
 	echo -e "${G}Enter the FULL path to the custom image!${N}"
 	read -rep " > " custom_img_path
 	if [[ -f $custom_img_path ]]; then
@@ -82,6 +85,7 @@ replace_custom() {
     fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
 	fi
 	fail
+	stty -echo
 }
 
 restore() {
