@@ -48,8 +48,8 @@ fi
 
 move_images() {
 	if [[ -z $(find $cros_assets -name '*.old') ]]; then
-		for assets in $cros_assets $cros_assets_2; do
-			for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.png'); do
+		for assets in cros_assets cros_assets_2; do
+			for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.png'); do
 				mv $splashframe ${splashframe}.old
 				if [[ $splashframe == *"00.png" ]]; then
 					cp $1 $splashframe
@@ -76,8 +76,9 @@ replace() {
 
 replace_custom() {
   stty echo
-	echo -e "${G}Enter the FULL path to the custom image!${N}"
+	echo -e "${G}Enter the relative path to the custom image (from the root of the Files app).${N}"
 	read -rep " > " custom_img_path
+	custom_img_path=$(find /home/user/*/MyFiles -maxdepth 0 | head -n 1)/${custom_img_path}
 	if [[ -f $custom_img_path ]]; then
 		move_images $custom_img_path
 		echo -e "${B}Replaced bootsplash!${N}"
@@ -89,8 +90,8 @@ replace_custom() {
 }
 
 restore() {
-	for assets in $cros_assets $cros_assets_2; do
-		for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.old'); do
+	for assets in cros_assets cros_assets_2; do
+		for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.old'); do
 			mv ${splashframe} ${splashframe%.*}
 		done
 	done
