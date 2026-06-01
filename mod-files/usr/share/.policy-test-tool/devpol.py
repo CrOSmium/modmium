@@ -309,6 +309,8 @@ def main():
 
     pk, pub = generate_keypair()
     write_devicesettings(public_key_to_der(pub), build_policy_fetch_response(pk, ds, policy_data))
+    with open("/root/dmtoken.txt", "w") as f:
+        f.write(policy_data.request_token)
     subprocess.run(["initctl", "restart", "ui"], check=True)
 
 
