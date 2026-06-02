@@ -19,7 +19,7 @@
 ## VT2 Installation
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
 2. Connect to the internet by pressing the wifi icon the bottom right (don't press "Get Started").
-3. Open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `cd /usr/local; curl -LOsk cdn.crosbreaker.com/modmium.sh && bash modmium.sh <flags>`
+3. Open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>`
 4. After devfw is installed, reboot, then run the command again to install Modmium to disk (this is necessary to make the rootfs read-writable).
 5. Return to secure mode.
 6. After it reboots, go through OOBE as normal and you'll be enrolled.
