@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# Yes, SOME of this script was taken from murkmod, credit for that goes to rainestorme
-
 # stripped & rewritten by DMD
 
 B='\033[38;5;45m'
@@ -17,23 +14,23 @@ RUN='\033[24m' #reset underline
 echo -e "${G}-------------------------- chromeos_startup --------------------------${N}" # lol this is so its easier to understand what happens when for me ig
 
 get_largest_cros_blockdev() {
-    local largest size dev_name tmp_size remo
-    size=0
-    for blockdev in /sys/block/*; do
-        dev_name="${blockdev##*/}"
-        echo "$dev_name" | grep -q '^\(loop\|ram\)' && continue
-        tmp_size=$(cat "$blockdev"/size)
-        remo=$(cat "$blockdev"/removable)
-        if [ "$tmp_size" -gt "$size" ] && [ "${remo:-0}" -eq 0 ]; then
-            case "$(sfdisk -l -o name "/dev/$dev_name" 2>/dev/null)" in
-                *STATE*KERN-A*ROOT-A*KERN-B*ROOT-B*)
-                    largest="/dev/$dev_name"
-                    size="$tmp_size"
-                    ;;
-            esac
-        fi
-    done
-    echo "$largest"
+  local largest size dev_name tmp_size remo
+  size=0
+  for blockdev in /sys/block/*; do
+    dev_name="${blockdev##*/}"
+    echo "$dev_name" | grep -q '^\(loop\|ram\)' && continue
+    tmp_size=$(cat "$blockdev"/size)
+    remo=$(cat "$blockdev"/removable)
+    if [ "$tmp_size" -gt "$size" ] && [ "${remo:-0}" -eq 0 ]; then
+      case "$(sfdisk -l -o name "/dev/$dev_name" 2>/dev/null)" in
+        *STATE*KERN-A*ROOT-A*KERN-B*ROOT-B*)
+        largest="/dev/$dev_name"
+        size="$tmp_size"
+        ;;
+      esac
+    fi
+  done
+  echo "$largest"
 }
 DST=$(get_largest_cros_blockdev)
 if [ -z $DST ]; then
@@ -88,47 +85,49 @@ echo "your system has been FANXED! (powerwashing system)" >/usr/share/chromeos-a
 # chromeOS disenfuckinators
 crossystem block_devmode=0
 vpd -i RW_VPD -s block_devmode=0
-device_management_client --action=remove_firmware_management_parameters
-device_management_client --action=set_firmware_management_parameters --flags=0
+device_management_client --action=remove_firmware_management_parameters || true
+device_management_client --action=set_firmware_management_parameters --flags=0 || true
 
-if [ ! -f /.policyedit_staged ]; then
-  echo "Staging policyedit..."
-  sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
-  echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
-  echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
-  touch /.policyedit_staged
-  echo "Done"
-fi
-
-if [ ! -f /.sudo_enabled ]; then
-  echo "Enabling sudo..."
-  sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
-  touch /.sudo_enabled
-  echo "Done"
-fi
-
-if [ ! -f /.updates_blocked ]; then
-  echo "Disabling auto-updates..."
-  sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
-  touch /.updates_blocked
-  echo "Done"
-fi
-
-if [ -f /.deprovision ]; then
-  version=$(cat /.deprovision)
-  if [[ $version -lt 143 ]]; then
-  	vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
-  else
-  	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
-  	echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
+if [[ $(crossystem devsw_boot) -eq 0 ]]; then
+  if [ ! -f /.policyedit_staged ]; then
+    echo "Staging policyedit..."
+    sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
+    echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
+    echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
+    touch /.policyedit_staged
+    echo "Done"
   fi
-# TODO (xz8f): add powerwash flag check
-elif [ ! -f /.deprovision ]; then
-  vpd -i RW_VPD -d re_enrollment_key
-  sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
-fi
 
-mount -B /usr/share/fake_vdat.txt /sys/devices/platform/GOOG0016:00/VDAT
+  if [ ! -f /.sudo_enabled ]; then
+    echo "Enabling sudo..."
+    sed -i '1s/^/env LD_PRELOAD=\/lib\/minioverride.so\n/' /etc/init/ui.conf
+    touch /.sudo_enabled
+    echo "Done"
+  fi
+
+  if [ ! -f /.updates_blocked ]; then
+    echo "Disabling auto-updates..."
+    sed -i 's|tools.google.com|updates.google.com|g' /etc/lsb-release
+    touch /.updates_blocked
+    echo "Done"
+  fi
+
+  if [ -f /.deprovision ]; then
+    version=$(cat /.deprovision)
+    if [[ $version -lt 143 ]]; then
+     	vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
+    else
+     	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+     	echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
+    fi
+  else
+    vpd -i RW_VPD -d re_enrollment_key
+    sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+  fi
+else
+  crossystem disable_dev_request=1
+  reboot
+fi
 
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
