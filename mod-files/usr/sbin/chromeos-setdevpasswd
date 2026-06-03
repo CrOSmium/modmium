@@ -6,14 +6,14 @@
 set -e
 
 echo "Modmium heavily relies on sudo for its features in MOSH, so you cannot set a password for root."
-echo "Would you like to set a password for opening VT-MOSH instead?"
+echo "Would you like to set a password for opening MOSH (and VT-MOSH) instead?"
 printf "[y/N]: "
 read response
 
 response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
 
 if [ "$response" = "y" ]; then
-  echo "The password you enter below will be set for VT-MOSH, not sudo."
+  echo "The password you enter below will be set for MOSH, not sudo."
   PASSWD_FILE='/mnt/stateful_partition/etc/mosh.passwd'
 else
   echo "Denied, exiting.."
