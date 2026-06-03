@@ -7,7 +7,7 @@ if [[ "$passwd" ]]; then
   hash=$(echo "$passwd" | cut -d: -f2)
   trap "" SIGINT
   stty -echo
-  echo -e "VT-MOSH has been locked with a password, please enter it below."
+  echo -e "\nVT-MOSH has been locked with a password, please enter it below."
   echo -ne "Enter VT-MOSH password: "
   read -r auth
   stty echo
