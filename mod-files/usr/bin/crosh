@@ -4,7 +4,6 @@
 # -- LOGIN PROMPT --
 login() {
   passwd="$(sudo cat /mnt/stateful_partition/etc/mosh.passwd 2>/dev/null)"
-  [[ -f /root/.noauth ]] && return 
   if [[ "$passwd" ]]; then
     hash=$(echo "$passwd" | cut -d: -f2)
     trap "" SIGINT
