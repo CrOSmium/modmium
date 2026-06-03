@@ -8,7 +8,7 @@ login() {
     hash=$(echo "$passwd" | cut -d: -f2)
     trap "" SIGINT
     stty -echo
-    echo -e "\nMOSH has been locked with a password, please enter it below. ${D}[this can be disabled for regular MOSH by touching '/root/.noauth']${N}"
+    echo -e "MOSH has been locked with a password, please enter it below. ${D}[this can be disabled for regular MOSH by touching '/root/.noauth']${N}"
     echo -ne "Enter MOSH password: "
     read -r auth
     stty echo
