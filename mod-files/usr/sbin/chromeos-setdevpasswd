@@ -1,0 +1,32 @@
+#!/bin/sh
+# Copyright 2011 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+set -e
+
+echo "Modmium heavily relies on sudo for its features in MOSH, so you cannot set a password for root."
+echo "Would you like to set a password for opening VT-MOSH instead?"
+printf "[y/N]: "
+read response
+
+response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+
+if [ "$response" = "y" ]; then
+  echo "The password you enter below will be set for VT-MOSH, not sudo."
+  PASSWD_FILE='/mnt/stateful_partition/etc/mosh.passwd'
+else
+  echo "Denied, exiting.."
+  exit 1
+fi
+
+# First get a password from the user before we go clobbering the content.
+# This way they can run the script and CTRL+C out of it without breaking
+# their existing password.
+pass=$(openssl passwd -1)
+
+mkdir -p "${PASSWD_FILE%/*}"
+# Make sure it's created with permissions only root can access.
+: > "${PASSWD_FILE}"
+chmod 600 "${PASSWD_FILE}"
+echo "chronos:${pass}" > "${PASSWD_FILE}"
