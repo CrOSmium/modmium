@@ -56,7 +56,6 @@ ${G}+##############################################+
 | -------------------------------------------- |
 | Allows policy changes above 131              |
 +##############################################+
-${R}THIS WILL NOT WORK IF YOU'VE RUN 'chromeos-setdevpasswd'${G}
 ${B}Run this *before* signing into the target email. ${N}
 If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N} or powerwashing if your enterprise has a custom signin screen with no delete account option.
 also, make sure you're connected to the internet before running this.
