@@ -1,6 +1,31 @@
 #!/bin/bash
 # written by DMD
 
+# -- LOGIN PROMPT --
+passwd="$(sudo cat /mnt/stateful_partition/etc/mosh.passwd 2>/dev/null)"
+if [[ "$passwd" ]]; then
+  hash=$(echo "$passwd" | cut -d: -f2)
+  trap "" SIGINT
+  stty -echo
+  echo -e "VT-MOSH has been locked with a password, please enter it below."
+  echo -ne "Enter VT-MOSH password: "
+  read -r auth
+  stty echo
+  echo ""
+  salt=$(echo "$hash" | cut -d'$' -f3)
+  hashin=$(openssl passwd -1 -salt "$salt" "$auth")
+  if [[ "$hashin" != "$hash" ]]; then
+    echo -e "Incorrect password. Access denied."
+    sleep "$(awk 'BEGIN {srand(); printf "%.2f", 0.6 + (rand() * 0.4)}')" # tuff random sleep to make brute forcing harder
+    echo -e "Exiting.."
+    exit 1
+  else
+    echo -e "Login successful!"
+    trap - SIGINT
+    sleep 0.67
+  fi
+fi
+
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
