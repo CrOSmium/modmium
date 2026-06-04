@@ -37,7 +37,7 @@ credits(){
   cat <<EOF | xargs -0 echo -ne
 Credits:
 ${R}mariahscarycarey: ${P}Lead developer; made image builder, device policy editor frontend, ChromeOS version switcher, did most bugfixing, and MANY small changes to other code.${N}
-\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, base ChromeOS updater, and a bunch of small changes.${N}
+\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, chromeos-setdevpasswd, base ChromeOS updater, post \033[38;5;126mkxtzownsu\033[38;5;78m code review, and lots of small changes.${N}
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script, made a script to let us stream ChromeOS updates, integrated nix into Modmium.${N}
 \033[38;5;216mcodenerd87: Wrote code for restoring MPkeys, fixed devfw flashing on geralt.${N}
 \033[38;5;126mkxtzownsu: Did code review to make sure we weren't skidding until he stepped down [05-26-2026].${N}
