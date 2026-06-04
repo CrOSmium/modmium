@@ -22,6 +22,9 @@ VT-MOSH is a terminal UI (TUI) nearly identical to regular MOSH.
 -- VT-MOSH does not have tabs --<br>
 \**F2 is often the forward arrow, but it may vary by device)*<br>
 
+------------------------------------------------------------------------
+
+*Tip: You can put a password on MOSH, VT-MOSH, and all VT(s) by running the command `chromeos-setdevpasswd` as `root`.*
 ## Troubleshooting
 * Unable to use a modmium recovery image due to FWMP
     * See [./unbricking.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/unbricking.md)
