@@ -15,7 +15,7 @@ if [[ "$passwd" ]]; then
   salt=$(echo "$hash" | cut -d'$' -f3)
   hashin=$(openssl passwd -1 -salt "$salt" "$auth")
   if [[ "$hashin" != "$hash" ]]; then
-    echo -e "Incorrect password. Access denied."
+    echo -e "Incorrect password, please try again."
     sleep "$(awk 'BEGIN {srand(); printf "%.2f", 0.6 + (rand() * 0.4)}')" # tuff random sleep to make brute forcing harder
     echo -e "Exiting.."
     exit 1
