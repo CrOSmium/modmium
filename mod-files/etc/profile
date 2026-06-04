@@ -57,22 +57,52 @@ for sh in /etc/profile.d/*.sh ; do
 done
 unset sh
 
-# The section below is unique to Modmium, and is only used to replace the VT(s) with a slightly altered version of MOSH.
+# The section below is unique to Modmium, and is only used to replace the VT(s) with a slightly altered version of MOSH and add a login prompt.
+login() {
+  passwd="$(sudo cat /mnt/stateful_partition/etc/mosh.passwd 2>/dev/null)"
+  if [[ "$passwd" ]]; then
+    hash=$(echo "$passwd" | cut -d: -f2)
+    trap "" SIGINT
+    stty -echo
+    echo -e "\nVT access has been locked with a password, please enter it below."
+    echo -ne "Enter VT password: "
+    read -r auth
+    stty echo
+    echo ""
+    salt=$(echo "$hash" | cut -d'$' -f3)
+    hashin=$(openssl passwd -1 -salt "$salt" "$auth")
+    if [[ "$hashin" != "$hash" ]]; then
+      echo -e "Incorrect password, please try again."
+      sleep "$(awk 'BEGIN {srand(); printf "%.2f", 0.6 + (rand() * 0.4)}')" # tuff random sleep to make brute forcing harder
+      echo -e "Exiting.."
+      exit 1
+    else
+      echo -e "Login successful!"
+      trap - SIGINT
+      sleep 0.67
+      clear
+    fi
+  fi
+}
+
 vt-mosh() {
-    local pid=$PPID # :whale:
-    [ -f /usr/local/.defaultvt ] && return 0 # touching this file disables this feature!!
-    [[ "$TERM" != "xterm" ]] && return 0
-    while [ "$pid" -gt 1 ]; do
-        [ "$(cat /proc/$pid/comm 2>/dev/null)" = "vt-mosh.sh" ] && return 0
-        pid=$(awk '/^PPid:/{print $2}' /proc/$pid/status 2>/dev/null)
-    done
-    return 1
+  local pid=$PPID # :whale:
+  [[ "$TERM" != "xterm" ]] && return 0
+  while [ "$pid" -gt 1 ]; do
+    [ "$(cat /proc/$pid/comm 2>/dev/null)" = "vt-mosh.sh" ] && return 0
+    pid=$(awk '/^PPid:/{print $2}' /proc/$pid/status 2>/dev/null)
+  done
+  return 1
 }
 
 case $(tty 2>/dev/null) in
-    /dev/pts/[0-9]*)
-        if ! vt-mosh; then
-            exec /usr/bin/vt-mosh.sh
-        fi
-    ;;
+  /dev/pts/[0-9]*)
+      if ! vt-mosh; then
+          if [ -f /usr/local/.defaultvt ]; then
+            login
+            return 0
+          fi
+          exec /usr/bin/vt-mosh.sh
+      fi
+  ;;
 esac
