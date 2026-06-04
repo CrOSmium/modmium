@@ -215,6 +215,7 @@ installCros() {
 	cd /mnt/stateful_partition/git
 	[[ -d modmium ]] && rm -rf modmium
 	if [[ -d /root/.ssh ]]; then
+	  [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
 		git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
 	else
 		git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
