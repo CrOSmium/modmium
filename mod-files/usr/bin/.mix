@@ -3,63 +3,77 @@
 # this is a tiny wrapper for skids (and myself) to use nix easier
 
 source /usr/lib/libmosh.sh
+if [[ ! $NIX_PROFILES ]]; then
+  if [[ -d /usr/local/nix/store ]]; then
+    # issues can get caused if a user has a custom shell.
+    # before, this code only ran if .bashrc was sourced,
+    # but the shell wouldn't open if .bashrc wasn't sourced
+    # chicken and egg. we fix it here.
+    if ! mountpoint -q /nix; then
+      sudo mkdir -p /nix
+      sudo mount --bind /usr/local/nix /nix
+    fi
+    source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+    unset LD_LIBRARY_PATH
+  fi
+fi
 
 case "$1" in
-    install)
-        if [ -z "$2" ]; then
-            echo "Usage: mix install <pkg1> [pkg2...]"
-        else
-            pkgs=()
-            for p in "${@:2}"; do
-                pkgs+=("nixpkgs.$p")
-            done
-            nix-env -iA "${pkgs[@]}"
-        fi
-        ;;
-    search)
-        if [ -n "$2" ]; then
-            echo "Searching packages for '$2', this may take a moment.."
-            nix search nixpkgs "$2" --extra-experimental-features "nix-command flakes"
-        else
-            echo "Usage: mix search <query>"
-        fi
-        ;;
-    list)
-        nix-env -q
-        ;;
-    revert)
-        nix-env --rollback
-        ;;
-    upgrade)
-        if [ -z "$2" ]; then
-					nix-channel --update
-					nix-env --upgrade
-				else
-					pkgs=()
-					for p in "${@:2}"; do
-						pkgs+=("$p")
-					done
-					nix-env --upgrade "${pkgs[@]}"
-				fi
-        ;;
-    help)
-        cat <<EOF | xargs -0 echo -ne
+  install)
+      if [ -z "$2" ]; then
+          echo "Usage: mix install <pkg1> [pkg2...]"
+      else
+          pkgs=()
+          for p in "${@:2}"; do
+              pkgs+=("nixpkgs.$p")
+          done
+          nix-env -iA "${pkgs[@]}"
+      fi
+      ;;
+  search)
+      if [ -n "$2" ]; then
+          echo "Searching packages for '$2', this may take a moment.."
+          nix search nixpkgs "$2" --extra-experimental-features "nix-command flakes"
+      else
+          echo "Usage: mix search <query>"
+      fi
+      ;;
+  list)
+      nix-env -q
+      ;;
+  revert)
+      nix-env --rollback
+      ;;
+  upgrade)
+      if [ -z "$2" ]; then
+        nix-channel --update
+        nix-env --upgrade
+      else
+        pkgs=()
+        for p in "${@:2}"; do
+          pkgs+=("$p")
+        done
+        nix-env --upgrade "${pkgs[@]}"
+      fi
+      ;;
+  help)
+      cat <<EOF | xargs -0 echo -ne
 ${G}MIX${N} (${G}M${N}odmium s${G}I${N}mplified ni${G}X${N})
 Usage: mix {install|search|list|revert|upgrade|remove|help} [args]
 -- Mix is a ${UN}command wrapper${RUN} for Nix --
 -- You can search for packages on https://search.nixos.org/packages --
 EOF
-        ;;
-    remove)
-        if [ -n "$2" ]; then
-            nix-env -e "$2"
-            nix-collect-garbage -d
-        else
-            echo "Usage: mix remove <package>"
-        fi
-        ;;
-    *)
-        echo "Usage: mix {install|search|list|revert|upgrade|remove|help} [args]"
-        exit 1
-        ;;
+      ;;
+  remove)
+      if [ -n "$2" ]; then
+          nix-env -e "$2"
+          nix-collect-garbage -d
+      else
+          echo "Usage: mix remove <package>"
+      fi
+      ;;
+  *)
+      echo "Usage: mix {install|search|list|revert|upgrade|remove|help} [args]"
+      exit 1
+      ;;
 esac
