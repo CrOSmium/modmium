@@ -34,6 +34,7 @@ login() {
 # -- Pre TUI init --
 stty -echo
 [[ -f /root/.givemecrosh ]] && exec /usr/bin/crosh.old # flag to just use crosh instead of MOSH
+echo -ne "\033]0;MOSH\007"
 source /usr/lib/libmosh.sh
 login
 if [[ -d /usr/local/nix/store ]]; then
