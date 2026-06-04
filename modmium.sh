@@ -245,7 +245,7 @@ checkWP(){
 		    if [[ $(crossystem wpsw_cur) == "0" ]]; then
 				echo -e "HWWP off, continuing."
 		    else
-				fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
+				fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
 		    fi
 		fi
 	fi
@@ -260,7 +260,7 @@ checkAPROV(){
       *) fail "How did we get here..?" ;;
     esac
   else
-    echo -e "Device is not Ti50, so APROV does not exist, continuing..."
+    echo -e "Device is not Ti50, continuing..."
   fi
 }
 
@@ -440,7 +440,7 @@ flashDevFW(){
 		fi
 		vpd -i RO_VPD -s dev_firmware=1
   else
-    fail "You are already using DevFW!" keepflag
+    fail "You are already using custom boot keys!" keepflag
   fi
   sleep 0.5
 
