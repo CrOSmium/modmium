@@ -32,6 +32,7 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
 fi
 if [[ ! -f "$jsonFile" ]]; then
   cd /usr/local/share/policy-test-tool || exit 1
+  ldconfig
 	echo -e "${B}Dumping device policy to json...${N}"
 	python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
 	echo -e "${G}Done! Starting editor...${N}"
@@ -296,7 +297,8 @@ submenu(){
 
 		tput cup 0 0
 		echo -e "${P}=== $title (Page $((currentPage + 1))) ===${N}"
-
+		[[ $title == Reporting ]] && \
+		echo -e "${B}NOTE: Changing device policies stops reporting to the Google Admin Console. Modifying these does nothing.${N}\n"
 		for r in $(seq 0 $((maxRows - 1))); do
 			tput cup $((r + 2)) 0
 			for c in $(seq 0 $((numCols - 1))); do
