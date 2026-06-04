@@ -58,6 +58,8 @@ done
 unset sh
 
 # The section below is unique to Modmium, and is only used to replace the VT(s) with a slightly altered version of MOSH and add a login prompt.
+# written by DMD
+
 login() {
   passwd="$(sudo cat /mnt/stateful_partition/etc/mosh.passwd 2>/dev/null)"
   if [[ "$passwd" ]]; then
