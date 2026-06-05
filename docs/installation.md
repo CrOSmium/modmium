@@ -14,7 +14,7 @@
   * +: Once the image is created, no internet connection is required to install
   * +: Can prepare bootsplashes and policy.json
   * +: Allows custom modifications to Modmium
-  * -: Requires a linux environment to build, this can include WSL if you're using Windows
+  * -: Requires a linux environment to build (you can use WSL if you're building on Windows)
   * -: More complicated to install
 
 ## VT2 Installation
@@ -50,4 +50,4 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 ## Flags (ADVANCED USERS ONLY)
 * `modmium.sh` flags:
   * `-u`/`--userkeys`: If you have a USB drive with your own signing keys on them, you can use it. Be sure to plug it into the chromebook before running `modmium.sh`; yes, even the second time (`-b` will be ignored if you pass `-u`.)
-  * `-b`/`--backup`: default true, whether or not to create a firmware backup. pass `--nobackup` if you are absolutely certain you don't need one (Strongly advise you **don't** do this, but if you know what you're doing, we can't stop you).
+  * `-b`/`--backup`: default true, whether or not to create a firmware backup. pass `--nobackup` if you are absolutely certain you don't need one (We recommend you **don't** do this, but if you know what you're doing, we can't stop you).
