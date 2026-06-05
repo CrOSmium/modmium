@@ -79,7 +79,7 @@ getFlags(){
 Usage:
 $0 -i <path/to/recovery.bin> [flags]
 OR
-$0 -b <board> -v <version> [flags]"
+$0 -b <board> -v <version> [flags]
 EOF
   )
   DEFINE_string image "" "Path to recovery image (use if not autobuilding)" "i"
@@ -87,13 +87,15 @@ EOF
   DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
   DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
   DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels" "m"
-  DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys (plug in the drive to back them up to before starting building)." "u"
+  DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys. If only this flag is passed, then userkeys will be generated without building an image." "u"
+  DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to back up user-made signing keys. Do not disable unless you know what you're doing." "ba"
   DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
   DEFINE_boolean bootsplash "$FLAGS_FALSE" "Whether or not to install bootsplash(es) in bootsplash/ (optional, requires inkscape)." "s"
   FLAGS $@ || exit $?
   if ! [[
     ( -z $FLAGS_board && -z $FLAGS_version && -n $FLAGS_image ) ||
-    ( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image )
+    ( -n $FLAGS_board && -n $FLAGS_version && -z $FLAGS_image ) ||
+    ( $FLAGS_userkeys -eq $FLAGS_TRUE )
     ]]; then
     flags_help
     exit 1
@@ -401,8 +403,9 @@ main(){
   checkFlagValidity
   checkDependencies
   if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
-    [[ ! -d build-utils/keys/userkeys ]] && genUserKeys
-    backupUserKeys
+    [[ ! -d build-utils/keys/userkeys ]] && genUserKeys || echo -e "${G}Userkeys already present in build-utils/keys/userkeys${N}"
+    [[ ( -n $FLAGS_image ) || ( -n $FLAGS_board ) ]] || return 0
+    [[ $FLAGS_nobackup -eq $FLAGS_TRUE ]] || backupUserKeys
   fi
   [[ $FLAGS_bootsplash == $FLAGS_TRUE ]] && bootsplash
   [[ -n $FLAGS_board && -n $FLAGS_version ]] && downloadImage
