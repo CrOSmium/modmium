@@ -10,7 +10,7 @@ updch() {
     CRITUPD=1
     return
   fi
-  [[ $hr -lt 13 || $hr -gt 17 || $((RANDOM % 4)) -ne 0 ]] && return # 1/4 chance to check the modfwver, and only from 1-6 PM local
+  [[ $hr -lt 13 || $hr -gt 17 || $((RANDOM % 8)) -ne 0 ]] && return # 1/4 chance to check the modfwver, and only from 1-6 PM local
   remote=$(curl -sL "https://dmdtutorials.com/modfwver.txt" | tr -d '\r\n[:space:]')
   
   if [[ $remote -gt $curnum ]]; then 
