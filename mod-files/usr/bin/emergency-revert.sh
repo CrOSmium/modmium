@@ -15,7 +15,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null; then
   source /etc/profile # required to get emerge working in mosh
   if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
     printf 'y\n\nn' | dev_install --reinstall
-  	touch /mnt/stateful_partition/.devinstall_complete
+    touch /mnt/stateful_partition/.devinstall_complete
   fi
   ldconfig # reload shared libraries to include python libs
   emerge git file protobuf-python
@@ -27,11 +27,11 @@ fail(){
   start powerd &>/dev/null
   if [[ -f oldbios.bin && $2 == restore ]]; then
     echo -e "${B}Attempting restore from firmware backup in 3 seconds...${N}"
-  	sleep 3
-  	flashrom -w oldbios.bin
-  	echo -e "Done. Hopefully all is well now. Sleeping forever so you can look at logs."
-  	echo -e "${D}If everything looks good, hit Ctrl+C to exit.${N}"
-  	sleep infinity
+    sleep 3
+    flashrom -w oldbios.bin
+    echo -e "Done. Hopefully all is well now. Sleeping forever so you can look at logs."
+    echo -e "${D}If everything looks good, hit Ctrl+C to exit.${N}"
+    sleep infinity
   fi
   sleep 2
   factoryreset=0
@@ -41,15 +41,15 @@ fail(){
 checkWP(){
   writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
   if [[ $writeprotect == *"disabled"* ]]; then
-  	echo -e "FWWP is currently ${R}DISABLED${N}, continuing..."
+    echo -e "FWWP is currently ${R}DISABLED${N}, continuing..."
   else
-  	echo -e "FWWP is currently ${G}ENABLED${N}, checking for wp range..."
-  	wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
-  	if [[ $wprange != "" ]]; then
-  		fail "WP range is set to 0,0 but you must fully disable FWWP before continuing."
-  	else
-  		fail "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
-  	fi
+    echo -e "FWWP is currently ${G}ENABLED${N}, checking for wp range..."
+    wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
+    if [[ $wprange != "" ]]; then
+      fail "WP range is set to 0,0 but you must fully disable FWWP before continuing."
+    else
+      fail "WP range is still set, please disable your FWWP by following this guide: ${G}https://crosmium.dev/FWWP${N}"
+    fi
   fi
 }
 
@@ -74,26 +74,26 @@ revertMPkeys(){
     echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
     sleep 2
     echo "Modmium stock firmware restore script by codenerd87"
-  	workdir=$(mktemp -d) || fail "Failed to make tmp dir"
-  	cd ${workdir}
-  	model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
-  	chromeos-firmwareupdate -m output --output_dir ${workdir} --model ${model} || fail "Failed to extract firmware shellball"
-  	rm ec.bin image.bin #we must save 16mb ram :whale:
-  	echo "Reading old bios"
-  	flashrom -r oldbios.bin || fail "Failed to read current bios."
+    workdir=$(mktemp -d) || fail "Failed to make tmp dir"
+    cd ${workdir}
+    model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
+    chromeos-firmwareupdate -m output --output_dir ${workdir} --model ${model} || fail "Failed to extract firmware shellball"
+    rm ec.bin image.bin #we must save 16mb ram :whale:
+    echo "Reading old bios"
+    flashrom -r oldbios.bin || fail "Failed to read current bios."
 
     echo "Extracting VPD from current bios"
-  	cbfstool oldbios.bin read -r RO_VPD -f rovpd.bin || fail "Failed to extract RO_VPD"
-  	cbfstool oldbios.bin read -r RW_VPD -f rwvpd.bin || fail "Failed to extract RW_VPD"
-  	echo "Injecting VPD into new bios"
-  	cbfstool bios.bin write -r RO_VPD -f rovpd.bin || fail "Failed to inject RO_VPD"
-  	cbfstool bios.bin write -r RW_VPD -f rwvpd.bin || fail "Failed to inject RW_VPD"
+    cbfstool oldbios.bin read -r RO_VPD -f rovpd.bin || fail "Failed to extract RO_VPD"
+    cbfstool oldbios.bin read -r RW_VPD -f rwvpd.bin || fail "Failed to extract RW_VPD"
+    echo "Injecting VPD into new bios"
+    cbfstool bios.bin write -r RO_VPD -f rovpd.bin || fail "Failed to inject RO_VPD"
+    cbfstool bios.bin write -r RW_VPD -f rwvpd.bin || fail "Failed to inject RW_VPD"
 
     echo "VPD successfully transplated"
 
     echo "Transplanting HWID"
-  	futility gbb oldbios.bin -g --hwid | sed "s/hardware_id: //" > hwid.txt || fail "Failed to extract HWID"
-  	futility gbb bios.bin -s --hwid="$(cat hwid.txt)" || fail "Failed to inject HWID"
+    futility gbb oldbios.bin -g --hwid | sed "s/hardware_id: //" > hwid.txt || fail "Failed to extract HWID"
+    futility gbb bios.bin -s --hwid="$(cat hwid.txt)" || fail "Failed to inject HWID"
 
     echo "HWID successfully transplated"
 
@@ -101,9 +101,9 @@ revertMPkeys(){
     futility gbb bios.bin -s --flags=0xa0b1 || fail "Failed to set GBB flags"
 
     echo "Flashing new bios, ${R}do not power off your device!${N}"
-  	flashrom -w bios.bin || fail "Uh oh, flash failed. Join https://discord.crosbreaker.com for support" restore
-  	vpd -d dev_firmware
-  	echo "Firmware flashed successfully!"
+    flashrom -w bios.bin || fail "Uh oh, flash failed. Join https://discord.crosbreaker.com for support" restore
+    vpd -d dev_firmware
+    echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
       echo -e "${B}Do you want to unkeyroll? [y/N]"
@@ -175,9 +175,9 @@ installCros() {
   bytes=()
   for byte in $rawkv; do
     while [[ -n $byte ]]; do
-  		bytes+=( "${byte:0:2}" )
-  		byte="${byte:2}"
-  	done
+      bytes+=( "${byte:0:2}" )
+      byte="${byte:2}"
+    done
   done
   if [[ ${bytes[0]} -eq 10 ]]; then
     kernver=$(( ${bytes[4]}<<0 | ${bytes[5]}<<8 ))

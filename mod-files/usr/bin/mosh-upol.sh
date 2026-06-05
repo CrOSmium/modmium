@@ -95,12 +95,12 @@ PYEOF
   rm -f /tmp/_pol_conv.py
 
   for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
-  	val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
-  	if [[ "$val" != "null" && -n "$val" ]]; then
-  		export ${policy}="\"${policy}\": ${val},"
-  	else
-  		export ${policy}=""
-  	fi
+    val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
+    if [[ "$val" != "null" && -n "$val" ]]; then
+      export ${policy}="\"${policy}\": ${val},"
+    else
+      export ${policy}=""
+    fi
   done
 
   echo -e "${B}Extracting extension configs from extracted.json...${N}"

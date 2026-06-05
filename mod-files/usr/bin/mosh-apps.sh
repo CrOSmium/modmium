@@ -68,7 +68,7 @@ full_menu() {
   stty -echo
   tput civis
   while true; do
-  	display_menu
+    display_menu
     read -rsn1 key
     if [[ "$key" == $'\x1b' ]]; then
       read -rsn2 -t 1 keyseq

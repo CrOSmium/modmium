@@ -115,6 +115,10 @@ def unquote_numbers(d: dict) -> dict:
 
 
 def convert_scalar(field, val):
+    if field.type in (field.TYPE_STRING, field.TYPE_BYTES):
+        if isinstance(val, (int, float)):
+            return str(int(val)) if isinstance(val, float) and val == int(val) else str(val)
+        return val
     if field.type == field.TYPE_ENUM and field.name in STRING_ENUM_PREFIXES:
         pfx = STRING_ENUM_PREFIXES[field.name]
         if isinstance(val, list):

@@ -19,7 +19,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null; then
   source /etc/profile # required to get emerge working in mosh
   if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
     printf 'y\n\nn' | dev_install --reinstall
-  	touch /mnt/stateful_partition/.devinstall_complete
+    touch /mnt/stateful_partition/.devinstall_complete
   fi
   ldconfig # reload shared libraries to include python libs
   emerge git file
@@ -83,15 +83,15 @@ askBranch(){
 dropModFiles() {
   modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
   for file in $modFiles; do
-  	if [[ -d $file ]]; then
-  		:
-  	elif [[ -f $file ]]; then
-  		realFile=$(echo "$file" | sed 's/^.*mod-files//')
-  		mkdir -p $(dirname $realFile)
-  		cp $file $realFile
-  		chown 0:0 $realFile
-  		chmod 777 $realFile
-  	fi
+    if [[ -d $file ]]; then
+      :
+    elif [[ -f $file ]]; then
+      realFile=$(echo "$file" | sed 's/^.*mod-files//')
+      mkdir -p $(dirname $realFile)
+      cp $file $realFile
+      chown 0:0 $realFile
+      chmod 777 $realFile
+    fi
   done
   if [[ -d /usr/local/share/policy-test-tool ]]; then
      cp -r /usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
@@ -108,9 +108,9 @@ updateModmium() {
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-  	git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-  	git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
@@ -202,9 +202,9 @@ installCros() {
   bytes=()
   for byte in $rawkv; do
     while [[ -n $byte ]]; do
-  		bytes+=( "${byte:0:2}" )
-  		byte="${byte:2}"
-  	done
+      bytes+=( "${byte:0:2}" )
+      byte="${byte:2}"
+    done
   done
   if [[ ${bytes[0]} -eq 10 ]]; then
     kernver=$(( ${bytes[4]}<<0 | ${bytes[5]}<<8 ))
@@ -214,10 +214,10 @@ installCros() {
   # end aurora-inspired part
   futility vbutil_kernel --repack ${installKern} \
     --keyblock ${keydir}/kernel.keyblock \
-  	--signprivate ${keydir}/kernel_data_key.vbprivk \
-  	--config config.txt \
-  	--version $kernver \
-  	--oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
+    --signprivate ${keydir}/kernel_data_key.vbprivk \
+    --config config.txt \
+    --version $kernver \
+    --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
   rm -rf config.txt
 
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
@@ -227,9 +227,9 @@ installCros() {
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-  	git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-  	git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 

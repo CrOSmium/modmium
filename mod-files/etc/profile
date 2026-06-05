@@ -34,16 +34,16 @@ if [ -n "${BASH_VERSION}" ] ; then
   # including color.  We leave out color here because not all
   # terminals support it.
   if [ -f /etc/bash/bashrc ] ; then
-  	# Bash login shells run only /etc/profile
-  	# Bash non-login shells run only /etc/bash/bashrc
-  	# Since we want to run /etc/bash/bashrc regardless, we source it 
-  	# from here.  It is unfortunate that there is no way to do 
-  	# this *after* the user's .bash_profile runs (without putting 
-  	# it in the user's dot-files), but it shouldn't make any 
-  	# difference.
-  	. /etc/bash/bashrc
+    # Bash login shells run only /etc/profile
+    # Bash non-login shells run only /etc/bash/bashrc
+    # Since we want to run /etc/bash/bashrc regardless, we source it 
+    # from here.  It is unfortunate that there is no way to do 
+    # this *after* the user's .bash_profile runs (without putting 
+    # it in the user's dot-files), but it shouldn't make any 
+    # difference.
+    . /etc/bash/bashrc
   else
-  	PS1='\u@\h \w \$ '
+    PS1='\u@\h \w \$ '
   fi
 else
   # Setup a bland default prompt.  Since this prompt should be useable

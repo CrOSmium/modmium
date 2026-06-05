@@ -7,7 +7,7 @@ source /usr/lib/libmosh.sh
 fail() {
   echo -e "$1"
   for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0 2>/dev/null); do
-  	sudo chown -R chronos:chronos "$downloadsDir/bootsplashes" &>/dev/null
+    sudo chown -R chronos:chronos "$downloadsDir/bootsplashes" &>/dev/null
   done
   sleep 3
   exit
@@ -19,24 +19,24 @@ cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
 get_installed_bootsplashes() {
   stty echo
   for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
-  	mkdir -p ${downloadsDir}/bootsplashes
-  	cp /bootsplash/* ${downloadsDir}/bootsplashes >/dev/null 2>&1
-  	chmod 777 ${downloadsDir}/bootsplashes/*
-  	chown 0:0 ${downloadsDir}/bootsplashes/*
+    mkdir -p ${downloadsDir}/bootsplashes
+    cp /bootsplash/* ${downloadsDir}/bootsplashes >/dev/null 2>&1
+    chmod 777 ${downloadsDir}/bootsplashes/*
+    chown 0:0 ${downloadsDir}/bootsplashes/*
   done
   echo -e "${G}Placed all installed bootsplashes in Downloads/bootsplashes/ for you to preview.${N}
 Open the Files app to see them."
   for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
-  	echo $(basename $image)
+    echo $(basename $image)
   done
   echo -ne "Enter one of the filenames above: "
   read -rep "" bootsplash
   bootsplash=/bootsplash/$bootsplash
   shouldExit=true
   for image in $(find /bootsplash -mindepth 1 -name '*.png' | sort); do
-  	if [[ "$bootsplash" == "$image" ]]; then
-  		shouldExit=false
-  	fi
+    if [[ "$bootsplash" == "$image" ]]; then
+      shouldExit=false
+    fi
   done
   stty -echo
 }
@@ -48,28 +48,28 @@ fi
 
 move_images() {
   if [[ -z $(find $cros_assets -name '*.old') ]]; then
-  	for assets in cros_assets cros_assets_2; do
-  		for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.png'); do
-  			mv $splashframe ${splashframe}.old
-  			if [[ $splashframe == *"00.png" ]]; then
-  				cp $1 $splashframe
-  			fi
-  		done
-  	done
+    for assets in cros_assets cros_assets_2; do
+      for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.png'); do
+        mv $splashframe ${splashframe}.old
+        if [[ $splashframe == *"00.png" ]]; then
+          cp $1 $splashframe
+        fi
+      done
+    done
   else
-  	for assets in cros_assets cros_assets_2; do
-  		cp $1 ${!assets}/boot_splash_frame00.png
-  	done
+    for assets in cros_assets cros_assets_2; do
+      cp $1 ${!assets}/boot_splash_frame00.png
+    done
   fi
 }
 
 replace() {
   get_installed_bootsplashes
   if [[ $shouldExit == true ]]; then
-  	fail "${R}Invalid filename...${N}"
+    fail "${R}Invalid filename...${N}"
   else
-  	move_images $bootsplash
-  	echo -e "${B}Replaced bootsplash!${N}"
+    move_images $bootsplash
+    echo -e "${B}Replaced bootsplash!${N}"
   fi
   fail
 }
@@ -80,8 +80,8 @@ replace_custom() {
   read -rep " > " custom_img_path
   custom_img_path=$(find /home/user/*/MyFiles -maxdepth 0 | head -n 1)/${custom_img_path}
   if [[ -f $custom_img_path ]]; then
-  	move_images $custom_img_path
-  	echo -e "${B}Replaced bootsplash!${N}"
+    move_images $custom_img_path
+    echo -e "${B}Replaced bootsplash!${N}"
   else
     fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
   fi
@@ -91,9 +91,9 @@ replace_custom() {
 
 restore() {
   for assets in cros_assets cros_assets_2; do
-  	for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.old'); do
-  		mv ${splashframe} ${splashframe%.*}
-  	done
+    for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.old'); do
+      mv ${splashframe} ${splashframe%.*}
+    done
   done
   echo -e "${B}Restored bootsplash!${N}"
   echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
@@ -109,9 +109,9 @@ download_backup() {
   bsdtar -xf chromeos_bootsplash.zip
   echo -e "${Y}Creating backup...${N}"
   for assets in $cros_assets $cros_assets_2; do
-  	for splashframe in boot_splash_frame*.png; do
-  		cp $splashframe ${assets}/${splashframe}.old
-  	done
+    for splashframe in boot_splash_frame*.png; do
+      cp $splashframe ${assets}/${splashframe}.old
+    done
   done
   echo -e "${Y}Cleaning up!${N}"
   cd ..
@@ -125,13 +125,13 @@ remove() {
   read -p "Contnue? (y/N) " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-  	echo -e "${Y}Removing bootsplash...${N}"
-  	for assets in cros_assets cros_assets_2; do
-  	  for file in $(find ${!assets} -name 'boot_splash_frame*.png'); do
-  			rm $file
-  		done
-  	done
-  	echo -e "${G}Removed bootsplash!${N}"
+    echo -e "${Y}Removing bootsplash...${N}"
+    for assets in cros_assets cros_assets_2; do
+      for file in $(find ${!assets} -name 'boot_splash_frame*.png'); do
+        rm $file
+      done
+    done
+    echo -e "${G}Removed bootsplash!${N}"
   fi
   fail
 }
@@ -140,10 +140,10 @@ menu_reset(){
   options=("${G}Replace bootsplash with modmium bootsplash${N}" "${G}Replace bootsplash with custom image${N}" "${G}Restore stock bootsplash${N}" "${G}Download stock bootsplash and save to backup${N}" "${G}Remove bootsplash${N}" "Go Back")
   functions=("replace" "replace_custom" "restore" "download_backup" "remove" "quit")
   if [[ $replace_broken == $FLAGS_TRUE ]]; then
-  	for array in options functions; do
-  		declare -n target=$array
-  		target=("${target[@]:1}")
-  	done
+    for array in options functions; do
+      declare -n target=$array
+      target=("${target[@]:1}")
+    done
   fi
   menuText=$(cat <<EOF
 ${P}+##############################################+

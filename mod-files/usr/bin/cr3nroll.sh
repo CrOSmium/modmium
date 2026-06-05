@@ -91,14 +91,14 @@ get_fixed_dst_drive() {
         esac
       fi
       DEFAULT_ROOTDEV="{$dev}"
-  	done
+    done
   fi
   if [ -z "${DEFAULT_ROOTDEV}" ]; then
-  	dev=""
+    dev=""
   else
-  	dev="/dev/$(basename ${DEFAULT_ROOTDEV})"
+    dev="/dev/$(basename ${DEFAULT_ROOTDEV})"
     if [ ! -b "${dev}" ]; then
-    	dev=""
+      dev=""
     fi
   fi
   echo "${dev}"
@@ -110,7 +110,7 @@ full_menu() {
   tput civis
   tput sc
   while true; do
-  	tput rc
+    tput rc
       display_menu
       read -rsn1 key
       if [[ "$key" == $'\x1b' ]]; then
@@ -200,11 +200,11 @@ display_menu() {
   esac
   echo ""
   for i in "${!options[@]}"; do
-  	if [[ $i -eq $selected_index ]]; then
-  		printf "\e[7m > ${options[$i]} \e[0m\n"
-  	else
-  		printf "   ${options[$i]}      \n"
-  	fi
+    if [[ $i -eq $selected_index ]]; then
+      printf "\e[7m > ${options[$i]} \e[0m\n"
+    else
+      printf "   ${options[$i]}      \n"
+    fi
   done
 }
 
@@ -228,17 +228,17 @@ savecurrentkeys() {
   echo -e "Enter name to save enrollment keys as"
   tput cnorm
   KEYNAMEC() {
-  	echo -ne "Key name: "
-  	read KEYNAME
-  	sleep 0.4
-  	if [[ "$KEYNAME" =~ [[:space:]_] ]]; then
-  		echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
-  		KEYNAMEC
-  	fi
-  	if [[ $KEYNAME = "" ]]; then
-  		echo -e "(Invalid Keyname! Cannot be empty!)"
-  		KEYNAMEC
-  	fi
+    echo -ne "Key name: "
+    read KEYNAME
+    sleep 0.4
+    if [[ "$KEYNAME" =~ [[:space:]_] ]]; then
+      echo -e "(Invalid Keyname! Cannot be contain a space OR underscore!)"
+      KEYNAMEC
+    fi
+    if [[ $KEYNAME = "" ]]; then
+      echo -e "(Invalid Keyname! Cannot be empty!)"
+      KEYNAMEC
+    fi
   }
   KEYNAMEC
   echo -e "Setting enrollment keyname to '$KEYNAME'"
@@ -256,15 +256,15 @@ savecurrentkeys() {
   echo -ne "(Y/N): "
   read YESNT
   if [[ "${YESNT}" = [Yy] ]]; then
-  	echo -e "Saving keys (to RW_VPD)..."
-  	vpd -i RW_VPD -s "saved_"$KEYNAME"_stable_device_secret"="$STABLEDEV"
-  	sleep 0.3
-  	vpd -i RW_VPD -s "saved_"$KEYNAME"_serial_number"="$SERIAL"
-  	sleep 0.3
-  	echo -e "Keys written to VPD!"
-  	sleep 0.8
+    echo -e "Saving keys (to RW_VPD)..."
+    vpd -i RW_VPD -s "saved_"$KEYNAME"_stable_device_secret"="$STABLEDEV"
+    sleep 0.3
+    vpd -i RW_VPD -s "saved_"$KEYNAME"_serial_number"="$SERIAL"
+    sleep 0.3
+    echo -e "Keys written to VPD!"
+    sleep 0.8
   else
-  	echo -e "Declined!"
+    echo -e "Declined!"
   fi
   sleep 1
   echo -e "Returning to menu..."
@@ -291,9 +291,9 @@ genkeys() {
         sleep 0.67
         # super mega cool serial number generator
         KEYNAME="$(printf 'CR%s%s%s' \
-      	"$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)" \
-     		"$(openssl rand -base64 64 | tr -dc 'A-NP-Z A-NP-Z A-NP-Z 0-9' | tr -d ' ' | head -c4)" \
-      	"$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)")"
+        "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)" \
+         "$(openssl rand -base64 64 | tr -dc 'A-NP-Z A-NP-Z A-NP-Z 0-9' | tr -d ' ' | head -c4)" \
+        "$(openssl rand -hex 16 | tr -dc '0-9' | head -c1)")"
       else
         echo -e "What do you want your serial number to be?"
         currentsn=$(vpd -i RO_VPD -g "serial_number")
@@ -366,103 +366,103 @@ loadsavedkeys() {
   echo -e "\nCurrently active serial number: '$(vpd -i RO_VPD -g "serial_number")'"
   echo ""
   if [[ ${#KEYNAMES[@]} -eq 0 ]]; then
-  	echo -e "No Keys found!"
-  	sleep 2
-  	clear
-  	menu_reset
-  	full_menu
+    echo -e "No Keys found!"
+    sleep 2
+    clear
+    menu_reset
+    full_menu
   else
-  	options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
-  	num_options=${#options[@]}
+    options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
+    num_options=${#options[@]}
 
-  	PS3=$'\nSelection: '
-  	select key in "${options[@]}"; do
-  		case "$key" in
-  		"-- RETURN TO MENU --")
-  			menu_reset
-  			full_menu
-  			;;
-  		"")
-  			echo "Invalid selection, try again."
-  			;;
-  		*)
-  			echo -e "(Selected '$key')"
-  			echo -e "\n${R}Warning: Setting your enrollment keys is highly destructive, I recommend saving your factory ones before you select any keys.${N}\n\n(This script will attempt to back them up automatically if you haven't, but I still highly recommend doing it manually)\n"
-  			read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
-  			if [[ "$confirmation" != "yy" ]]; then
-  				menu_reset
-  				full_menu
-  			fi
-  			clear
-  			menu_logo
+    PS3=$'\nSelection: '
+    select key in "${options[@]}"; do
+      case "$key" in
+      "-- RETURN TO MENU --")
+        menu_reset
+        full_menu
+        ;;
+      "")
+        echo "Invalid selection, try again."
+        ;;
+      *)
+        echo -e "(Selected '$key')"
+        echo -e "\n${R}Warning: Setting your enrollment keys is highly destructive, I recommend saving your factory ones before you select any keys.${N}\n\n(This script will attempt to back them up automatically if you haven't, but I still highly recommend doing it manually)\n"
+        read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
+        if [[ "$confirmation" != "yy" ]]; then
+          menu_reset
+          full_menu
+        fi
+        clear
+        menu_logo
 
-  			if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
-  				vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
-  				echo -e "if you see this that means that you don't have your factory SDS (stable_device_secret) backed up, It will be backed up in the next step."
-  			else
-  				echo -e "Found valid factory entry (SDS)!"
-  			fi
-  			if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
-  				vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
-  				echo -e "if you see this that means that you don't have your factory SN backed up, It will be backed up in the next step."
-  			else
-  				echo -e "Found valid factory entry (SN)!"
-  			fi
-  			sleep 1.5
-  			overrideSet() {
-  				clear
-  				trap 'echo -e "\nWrite cancelled, no keys were written!" && sleep 2 && menu_reset && full_menu ' SIGINT
-  				echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				sleep 1.5
-  				clear
-  				echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Writing in: 3"
-  				sleep 1.5
-  				clear
-  				echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Writing in: 2"
-  				sleep 1.5
-  				clear
-  				echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Writing in: 1"
-  				sleep 2
-  				clear
+        if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
+          vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
+          echo -e "if you see this that means that you don't have your factory SDS (stable_device_secret) backed up, It will be backed up in the next step."
+        else
+          echo -e "Found valid factory entry (SDS)!"
+        fi
+        if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
+          vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
+          echo -e "if you see this that means that you don't have your factory SN backed up, It will be backed up in the next step."
+        else
+          echo -e "Found valid factory entry (SN)!"
+        fi
+        sleep 1.5
+        overrideSet() {
+          clear
+          trap 'echo -e "\nWrite cancelled, no keys were written!" && sleep 2 && menu_reset && full_menu ' SIGINT
+          echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          sleep 1.5
+          clear
+          echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Writing in: 3"
+          sleep 1.5
+          clear
+          echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Writing in: 2"
+          sleep 1.5
+          clear
+          echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Writing in: 1"
+          sleep 2
+          clear
 
-  				echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "${R}Writing keys...${N}"
-  				sleep 0.8
-  				clear
-  				menu_logo
-  				echo -e "Checking factory info..."
-  				sleep 1.7
-  				if [[ "$(vpd -i RW_VPD -g "factory_backup")" != "2" ]]; then
-  					echo -e "Backing up factory info..."
-  					sleep 1.7
-  					if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
-  						vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
-  						vpd -i RW_VPD -s "factory_backup"="$(($(vpd -i RW_VPD -g "factory_backup") + 1))"
-  						echo -e "Wrote factory info! (SDS)"
-  					fi
-  					if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
-  						vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
-  						vpd -i RW_VPD -s "factory_backup"="$(($(vpd -i RW_VPD -g "factory_backup") + 1))"
-  						echo -e "Wrote factory info! (SN)"
-  					fi
-  				fi
-  				echo -e "Writing keys to RO_VPD..."
-  				vpd -i RO_VPD -s "serial_number"="$(vpd -i RW_VPD -g "saved_${key}_serial_number")"
-  				vpd -i RO_VPD -s "stable_device_secret_DO_NOT_SHARE"="$(vpd -i RW_VPD -g "saved_${key}_stable_device_secret")"
-  				echo -e "Keys written to VPD!"
-  				sleep 1.5
-  				menu_reset
-  				full_menu
-  			}
-  			overrideSet
-  			menu_reset
-  			full_menu
-  			;;
-  		esac
-  	done
+          echo -e "Writing selected keys to RO_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "${R}Writing keys...${N}"
+          sleep 0.8
+          clear
+          menu_logo
+          echo -e "Checking factory info..."
+          sleep 1.7
+          if [[ "$(vpd -i RW_VPD -g "factory_backup")" != "2" ]]; then
+            echo -e "Backing up factory info..."
+            sleep 1.7
+            if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
+              vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
+              vpd -i RW_VPD -s "factory_backup"="$(($(vpd -i RW_VPD -g "factory_backup") + 1))"
+              echo -e "Wrote factory info! (SDS)"
+            fi
+            if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
+              vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
+              vpd -i RW_VPD -s "factory_backup"="$(($(vpd -i RW_VPD -g "factory_backup") + 1))"
+              echo -e "Wrote factory info! (SN)"
+            fi
+          fi
+          echo -e "Writing keys to RO_VPD..."
+          vpd -i RO_VPD -s "serial_number"="$(vpd -i RW_VPD -g "saved_${key}_serial_number")"
+          vpd -i RO_VPD -s "stable_device_secret_DO_NOT_SHARE"="$(vpd -i RW_VPD -g "saved_${key}_stable_device_secret")"
+          echo -e "Keys written to VPD!"
+          sleep 1.5
+          menu_reset
+          full_menu
+        }
+        overrideSet
+        menu_reset
+        full_menu
+        ;;
+      esac
+    done
   fi
 }
 
@@ -475,34 +475,34 @@ importkeys() {
   echo -ne "Directory: "
   read impdirec
   if [[ -d "$impdirec" ]]; then
-  	if [[ -f "$impdirec/RO.vpd" ]] && [[ -f "$impdirec/RW.vpd" ]]; then
-  		echo -e "Importing VPD from '$impdirec/RO.vpd' and '$impdirec/RW.vpd'... ${R}[THIS MAY TAKE A WHILE]${N}"
+    if [[ -f "$impdirec/RO.vpd" ]] && [[ -f "$impdirec/RW.vpd" ]]; then
+      echo -e "Importing VPD from '$impdirec/RO.vpd' and '$impdirec/RW.vpd'... ${R}[THIS MAY TAKE A WHILE]${N}"
 
-  		sudo vpd -i RW_VPD -l >RW_backup.txt # this is to make sure you can recover if my sh1tty script fucks up
-  		sudo vpd -i RO_VPD -l >RO_backup.txt
-  		sleep 1
-  		echo -e "Importing RW_VPD..."
-  		sudo vpd -i RW_VPD -O
-  		while IFS= read -r line; do
-  			clean_line=$(echo "$line" | tr -d '"')
-  			sudo vpd -i RW_VPD -s "$clean_line"
-  		done <"$impdirec/RW.vpd"
-  		echo -e "Imported RW_VPD!"
-  		sleep 1.6
-  		echo -e "Importing RO_VPD..."
-  		sudo vpd -i RO_VPD -O
-  		while IFS= read -r line; do
-  			clean_line=$(echo "$line" | tr -d '"')
-  			sudo vpd -i RO_VPD -s "$clean_line"
-  		done <"$impdirec/RO.vpd"
-  		menu_reset
-  		full_menu
-  	else
-  		echo -e "File not found! Returning to menu..."
-  		sleep 1.2
-  		menu_reset
-  		full_menu
-  	fi
+      sudo vpd -i RW_VPD -l >RW_backup.txt # this is to make sure you can recover if my sh1tty script fucks up
+      sudo vpd -i RO_VPD -l >RO_backup.txt
+      sleep 1
+      echo -e "Importing RW_VPD..."
+      sudo vpd -i RW_VPD -O
+      while IFS= read -r line; do
+        clean_line=$(echo "$line" | tr -d '"')
+        sudo vpd -i RW_VPD -s "$clean_line"
+      done <"$impdirec/RW.vpd"
+      echo -e "Imported RW_VPD!"
+      sleep 1.6
+      echo -e "Importing RO_VPD..."
+      sudo vpd -i RO_VPD -O
+      while IFS= read -r line; do
+        clean_line=$(echo "$line" | tr -d '"')
+        sudo vpd -i RO_VPD -s "$clean_line"
+      done <"$impdirec/RO.vpd"
+      menu_reset
+      full_menu
+    else
+      echo -e "File not found! Returning to menu..."
+      sleep 1.2
+      menu_reset
+      full_menu
+    fi
   fi
 }
 
@@ -519,76 +519,76 @@ editkeys() {
   echo ""
   sleep 0.2
   if [[ ${#KEYNAMES[@]} -eq 0 ]]; then
-  	echo -e "No Keys found!"
-  	sleep 1.2
-  	clear
-  	menu_reset
-  	full_menu
+    echo -e "No Keys found!"
+    sleep 1.2
+    clear
+    menu_reset
+    full_menu
   else
-  	options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
-  	num_options=${#options[@]}
+    options=("-- RETURN TO MENU --" ${KEYNAMES[@]})
+    num_options=${#options[@]}
 
-  	PS3=$'\nSelection: '
-  	select key in "${options[@]}"; do
-  		case "$key" in
-  		"-- RETURN TO MENU --")
-  			menu_reset
-  			full_menu
-  			;;
-  		"")
-  			echo "Invalid selection, try again."
-  			;;
-  		*)
-  			echo -e "(Selected '$key')"
-  			echo -e "\n${R}Warning: This will ${R}erase${N} the selected keys from the saved enrollment keys PERMANENTLY${N}\n"
-  			read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
-  			if [[ "$confirmation" != "yy" ]]; then
-  				menu_reset
-  				full_menu
-  			fi
-  			clear
-  			menu_logo
-  			sleep 0.2
-  			overrideSet2() {
-  				clear
-  				trap 'echo -e "\nErase cancelled, no keys were deleted!" && sleep 2 && menu_reset && full_menu ' SIGINT
-  				echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				sleep 1.5
-  				clear
-  				echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Erasing in: 3"
-  				sleep 1.5
-  				clear
-  				echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Erasing in: 2"
-  				sleep 1.5
-  				clear
-  				echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "Erasing in: 1"
-  				sleep 2
-  				clear
+    PS3=$'\nSelection: '
+    select key in "${options[@]}"; do
+      case "$key" in
+      "-- RETURN TO MENU --")
+        menu_reset
+        full_menu
+        ;;
+      "")
+        echo "Invalid selection, try again."
+        ;;
+      *)
+        echo -e "(Selected '$key')"
+        echo -e "\n${R}Warning: This will ${R}erase${N} the selected keys from the saved enrollment keys PERMANENTLY${N}\n"
+        read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
+        if [[ "$confirmation" != "yy" ]]; then
+          menu_reset
+          full_menu
+        fi
+        clear
+        menu_logo
+        sleep 0.2
+        overrideSet2() {
+          clear
+          trap 'echo -e "\nErase cancelled, no keys were deleted!" && sleep 2 && menu_reset && full_menu ' SIGINT
+          echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          sleep 1.5
+          clear
+          echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Erasing in: 3"
+          sleep 1.5
+          clear
+          echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Erasing in: 2"
+          sleep 1.5
+          clear
+          echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "Erasing in: 1"
+          sleep 2
+          clear
 
-  				echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
-  				echo -e "${R}Writing keys...${N}"
-  				sleep 0.8
-  				clear
-  				menu_logo
-  				echo -e "Erasing selected keys from RW_VPD..."
-  				sleep 1
-  				vpd -i RW_VPD -d "saved_${key}_serial_number"
-  				vpd -i RW_VPD -d "saved_${key}_stable_device_secret"
-  				sleep 0.5
-  				echo -e "Keys erased from RW_VPD successfully!"
-  				sleep 2
-  				menu_reset
-  				full_menu
-  			}
-  			overrideSet2
-  			menu_reset
-  			full_menu
-  			;;
-  		esac
-  	done
+          echo -e "Erasing selected keys from RW_VPD in 3 seconds, press CTRL-C to cancel if you change your mind. ${R}THIS IS HIGHLY DESTRUCTIVE${N}"
+          echo -e "${R}Writing keys...${N}"
+          sleep 0.8
+          clear
+          menu_logo
+          echo -e "Erasing selected keys from RW_VPD..."
+          sleep 1
+          vpd -i RW_VPD -d "saved_${key}_serial_number"
+          vpd -i RW_VPD -d "saved_${key}_stable_device_secret"
+          sleep 0.5
+          echo -e "Keys erased from RW_VPD successfully!"
+          sleep 2
+          menu_reset
+          full_menu
+        }
+        overrideSet2
+        menu_reset
+        full_menu
+        ;;
+      esac
+    done
   fi
 }
 
@@ -602,35 +602,35 @@ backupvpd() {
   read sdirec
   sleep 0.67
   if [[ -d "$sdirec" ]]; then
-  	vpd -i RO_VPD -l
-  	sleep 0.67
-  	vpd -i RW_VPD -l
-  	sleep 0.67
-  	mkdir "$sdirec/vpd"
-  	vpd -i RO_VPD -l >$sdirec/vpd/RO.vpd
-  	vpd -i RW_VPD -l >$sdirec/vpd/RW.vpd
-  	echo -e "Copy complete, Validating..."
-  	if [[ -f "$sdirec/vpd/RO.vpd" ]]; then
-  		echo -e "Validated!"
-  		sleep 0.67
-  		echo -e "Backup complete! Returning to menu..."
-  		sleep 3.2
-  		menu_reset
-  		full_menu
-  	else
-  		echo ""
-  		echo -e "Validation failed, check if you're in the correct environment, or if the directory is writeable."
-  		sleep 2
-  		echo -e "Returning to menu..."
-  		sleep 1
-  		menu_reset
-  		full_menu
-  	fi
+    vpd -i RO_VPD -l
+    sleep 0.67
+    vpd -i RW_VPD -l
+    sleep 0.67
+    mkdir "$sdirec/vpd"
+    vpd -i RO_VPD -l >$sdirec/vpd/RO.vpd
+    vpd -i RW_VPD -l >$sdirec/vpd/RW.vpd
+    echo -e "Copy complete, Validating..."
+    if [[ -f "$sdirec/vpd/RO.vpd" ]]; then
+      echo -e "Validated!"
+      sleep 0.67
+      echo -e "Backup complete! Returning to menu..."
+      sleep 3.2
+      menu_reset
+      full_menu
+    else
+      echo ""
+      echo -e "Validation failed, check if you're in the correct environment, or if the directory is writeable."
+      sleep 2
+      echo -e "Returning to menu..."
+      sleep 1
+      menu_reset
+      full_menu
+    fi
   else
-  	echo -e "Not a valid directory! Returning to menu..."
-  	sleep 1
-  	menu_reset
-  	full_menu
+    echo -e "Not a valid directory! Returning to menu..."
+    sleep 1
+    menu_reset
+    full_menu
   fi
 }
 restorefactoryinfo() {
@@ -640,17 +640,17 @@ restorefactoryinfo() {
   echo -ne "(Y/N): "
   read YESNT3
   if [[ "${YESNT3}" = [Yy] ]]; then
-  	if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")" ]]; then
-  		echo -e "You are already using your factory enrollment keys :P\n\n Returning to menu..."
-  		sleep 2
-  		menu_reset
-  		full_menu
-  	fi
+    if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")" ]]; then
+      echo -e "You are already using your factory enrollment keys :P\n\n Returning to menu..."
+      sleep 2
+      menu_reset
+      full_menu
+    fi
   else
-  	echo -e "Declined! Returning to menu..."
-  	sleep 0.8
-  	menu_reset
-  	full_menu
+    echo -e "Declined! Returning to menu..."
+    sleep 0.8
+    menu_reset
+    full_menu
   fi
   echo -e "Restoring factory enrollment keys..."
   vpd -i RO_VPD -s "stable_device_secret_DO_NOT_SHARE"="$(vpd -i RO_VPD -g "factory_stable_device_secret")"
@@ -671,48 +671,48 @@ firstfactorybackup() {
   read -r -n 1 -p "Press Y to continue, or press any key to exit..." yesnts
 
   if [[ "$yesnts" == "y" ]]; then
-  	echo -e "\n\nSaving factory enrollment info to RO_VPD..."
-  	wrotekey=0
-  	sleep 0.67
-  	if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
-  		vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
-  		echo -e "${G}Written!${N}"
-  		wrotekey=$(($wrotekey + 1))
-  	else
-  		echo -e "Key (factory_serial_number) already saved, no need to write!"
-  		wrotekey=$(($wrotekey + 1))
-  	fi
-  	sleep 0.67
-  	if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
-  		if [[ "$wrotekey" == "1" ]]; then
-  			vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
-  			echo -e "${G}Written!${N}"
-  			wrotekey=$(($wrotekey + 1))
-  		else
-  			echo -e "Backup incomplete! Please make a support ticket in the Discord, or fix it yourself by running these commands when your factory info is CONFIRMED active."
-  			echo -e "vpd -i RO_VPD -d "factory_stable_device_secret""
-  			echo -e "vpd -i RO_VPD -d "factory_serial_number""
-  			echo -e "vpd -i RW_VPD -d "factory_backup""
-  			echo -e "Running these WILL wipe your currently backed up factory info!"
-  		fi
-  	else
-  		echo -e "Key (factory_stable_device_secret) already saved, no need to write!"
-  	fi
-  	sleep 0.67
-  	[[ $wrotekey == 2 ]] && vpd -i RW_VPD -s "factory_backup"="2"
-  	if [[ "$wrotekey" != 2 ]]; then
-  		echo -e "An error may have occured in your backup, please verify your RO_VPD manually below"
-  		vpd -i RO_VPD -l
-  		echo -e "\nIf both factory entries are still there, or did save correctly, ${B}please press enter to continue${R}\nIf they did not, please stay on this screen and make a support ticket in the Discord."
-  		read -r
-  	fi
-  	echo -e "Enrollment info backed up under 'factory_serial_number' and 'factory_stable_device_secret'!\nReturning to menu..."
-  	sleep 4
-  	menu_reset
-  	full_menu
+    echo -e "\n\nSaving factory enrollment info to RO_VPD..."
+    wrotekey=0
+    sleep 0.67
+    if [[ "$(vpd -i RO_VPD -g "factory_serial_number")" == "" ]]; then
+      vpd -i RO_VPD -s "factory_serial_number"="$(vpd -i RO_VPD -g "serial_number")"
+      echo -e "${G}Written!${N}"
+      wrotekey=$(($wrotekey + 1))
+    else
+      echo -e "Key (factory_serial_number) already saved, no need to write!"
+      wrotekey=$(($wrotekey + 1))
+    fi
+    sleep 0.67
+    if [[ "$(vpd -i RO_VPD -g "factory_stable_device_secret")" == "" ]]; then
+      if [[ "$wrotekey" == "1" ]]; then
+        vpd -i RO_VPD -s "factory_stable_device_secret"="$(vpd -i RO_VPD -g "stable_device_secret_DO_NOT_SHARE")"
+        echo -e "${G}Written!${N}"
+        wrotekey=$(($wrotekey + 1))
+      else
+        echo -e "Backup incomplete! Please make a support ticket in the Discord, or fix it yourself by running these commands when your factory info is CONFIRMED active."
+        echo -e "vpd -i RO_VPD -d "factory_stable_device_secret""
+        echo -e "vpd -i RO_VPD -d "factory_serial_number""
+        echo -e "vpd -i RW_VPD -d "factory_backup""
+        echo -e "Running these WILL wipe your currently backed up factory info!"
+      fi
+    else
+      echo -e "Key (factory_stable_device_secret) already saved, no need to write!"
+    fi
+    sleep 0.67
+    [[ $wrotekey == 2 ]] && vpd -i RW_VPD -s "factory_backup"="2"
+    if [[ "$wrotekey" != 2 ]]; then
+      echo -e "An error may have occured in your backup, please verify your RO_VPD manually below"
+      vpd -i RO_VPD -l
+      echo -e "\nIf both factory entries are still there, or did save correctly, ${B}please press enter to continue${R}\nIf they did not, please stay on this screen and make a support ticket in the Discord."
+      read -r
+    fi
+    echo -e "Enrollment info backed up under 'factory_serial_number' and 'factory_stable_device_secret'!\nReturning to menu..."
+    sleep 4
+    menu_reset
+    full_menu
   else
-  	menu_reset
-  	full_menu
+    menu_reset
+    full_menu
   fi
 }
 deprovision() {
@@ -723,87 +723,87 @@ deprovision() {
 
   sleep 0.67
   if [[ "$MILESTONE" == "" ]]; then
-  	echo -e "${R}Could not get milestone version, is ChromeOS installed?${N}"
-  	sleep 2.6
-  	echo -e "Returning to menu..."
-  	menu_reset
-  	full_menu
+    echo -e "${R}Could not get milestone version, is ChromeOS installed?${N}"
+    sleep 2.6
+    echo -e "Returning to menu..."
+    menu_reset
+    full_menu
   fi
   echo -e "ChromeOS milestone: R$MILESTONE"
 
   if [[ "$MILESTONE" -le 111 ]]; then
-  	echo -e "Why are you using Cr3nroll on R$MILESTONE q-q"
-  	echo -e "Disabling Enrollment (R111 and below [CHECK_ENROLLMENT=0])..."
-  	vpd -i RW_VPD -s "block_devmode"="0"
-  	vpd -i RW_VPD -s "check_enrollment"="0"
-  	sleep 4
-  	menu_reset
-  	full_menu
+    echo -e "Why are you using Cr3nroll on R$MILESTONE q-q"
+    echo -e "Disabling Enrollment (R111 and below [CHECK_ENROLLMENT=0])..."
+    vpd -i RW_VPD -s "block_devmode"="0"
+    vpd -i RW_VPD -s "check_enrollment"="0"
+    sleep 4
+    menu_reset
+    full_menu
   else
-  	if [[ "$MILESTONE" -ge 148 ]]; then
-  		echo -e "\n${R}Sorry, no unenrollment found for your version (yet), try downgrading if you can!${N}"
-  		sleep 0.67
-  		echo -e "Returning to menu..."
-  		sleep 3.5
-  	else
-  		if [[ "$MILESTONE" -ge 106 && "$MILESTONE" -le 132 ]]; then
-  			echo -e "Your version supports Br0ker, launching it now!"
-  			if [[ "$BROKER_ENABLED" == "true" ]]; then
-  				exec bash "$BROKER_PATH"
-  			else
-  				sleep 0.67
-  				echo -e "${R}Sorry, Br0ker support is disabled, checking for Quicksilver instead...${N}"
-  				sleep 2.6
-  				if [[ "$MILESTONE" -ge 125 ]]; then
-  					echo -e "\nYour version supports ${G}Quicksilver${N}! (you are using R$MILESTONE, which supports Br0ker, but it is disabled.)"
-  					echo ""
-  					echo -e "\n${R}Warning: This will prevent editing enrollment configs and enrolling until Quicksilver is removed.) [ONLY WORKS BELOW R143]\n${N}"
-  					echo -e "If you powerwash after updating past R142 you will be re-enrolled!"
-  					read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
-  					if [[ "$confirmation" != "yy" ]]; then
-  						menu_reset
-  						full_menu
-  					fi
-  					echo -e "\nDisabling Enrollment..."
-  					sleep 1
-  					vpd -i RW_VPD -s "re_enrollment_key"="$(openssl rand -hex 32)"
-  					echo -e "Done! Returning to menu..."
-  					sleep 2
-  					menu_reset
-  					full_menu
-  				else
-  					echo -e "${R}Your version is too low to be unenrolled without Br0ker, and it has been disabled.${N}\nReturning to menu..."
-  					sleep 3.2
-  				fi
-  			fi
-  		else
-  			if [[ "$MILESTONE" -ge 133 && "$MILESTONE" -le 142 ]]; then
-  				echo -e "\nYour version supports ${G}Quicksilver${N}!"
-  				echo ""
-  				echo -e "\n${R}Warning: This will prevent editing enrollment configs and enrolling until Quicksilver is removed.) [ONLY WORKS BELOW R143]\n${N}"
-  				echo -e "If you powerwash after updating past R142 you will be re-enrolled!"
-  				read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
-  				if [[ "$confirmation" != "yy" ]]; then
-  					menu_reset
-  					full_menu
-  				fi
-  				echo -e "\nDisabling Enrollment..."
-  				sleep 1
-  				vpd -i RW_VPD -s "re_enrollment_key"="$(openssl rand -hex 32)"
-  				echo -e "Done! Returning to menu..."
-  				sleep 2
-  				menu_reset
-  				full_menu
-  			else
-  				if [[ "$MILESTONE" -ge 143 ]]; then
-  					echo -e "\n${R}Sorry, your version supports ${B}reqwrite${N}, but it has not released yet.${N}"
-  					sleep 0.67
-  					echo -e "Returning to menu..."
-  					sleep 3.5
-  				fi
-  			fi
-  		fi
-  	fi
+    if [[ "$MILESTONE" -ge 148 ]]; then
+      echo -e "\n${R}Sorry, no unenrollment found for your version (yet), try downgrading if you can!${N}"
+      sleep 0.67
+      echo -e "Returning to menu..."
+      sleep 3.5
+    else
+      if [[ "$MILESTONE" -ge 106 && "$MILESTONE" -le 132 ]]; then
+        echo -e "Your version supports Br0ker, launching it now!"
+        if [[ "$BROKER_ENABLED" == "true" ]]; then
+          exec bash "$BROKER_PATH"
+        else
+          sleep 0.67
+          echo -e "${R}Sorry, Br0ker support is disabled, checking for Quicksilver instead...${N}"
+          sleep 2.6
+          if [[ "$MILESTONE" -ge 125 ]]; then
+            echo -e "\nYour version supports ${G}Quicksilver${N}! (you are using R$MILESTONE, which supports Br0ker, but it is disabled.)"
+            echo ""
+            echo -e "\n${R}Warning: This will prevent editing enrollment configs and enrolling until Quicksilver is removed.) [ONLY WORKS BELOW R143]\n${N}"
+            echo -e "If you powerwash after updating past R142 you will be re-enrolled!"
+            read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
+            if [[ "$confirmation" != "yy" ]]; then
+              menu_reset
+              full_menu
+            fi
+            echo -e "\nDisabling Enrollment..."
+            sleep 1
+            vpd -i RW_VPD -s "re_enrollment_key"="$(openssl rand -hex 32)"
+            echo -e "Done! Returning to menu..."
+            sleep 2
+            menu_reset
+            full_menu
+          else
+            echo -e "${R}Your version is too low to be unenrolled without Br0ker, and it has been disabled.${N}\nReturning to menu..."
+            sleep 3.2
+          fi
+        fi
+      else
+        if [[ "$MILESTONE" -ge 133 && "$MILESTONE" -le 142 ]]; then
+          echo -e "\nYour version supports ${G}Quicksilver${N}!"
+          echo ""
+          echo -e "\n${R}Warning: This will prevent editing enrollment configs and enrolling until Quicksilver is removed.) [ONLY WORKS BELOW R143]\n${N}"
+          echo -e "If you powerwash after updating past R142 you will be re-enrolled!"
+          read -r -n 2 -s -p "Double click Y to continue, or hold any other key to exit..." confirmation
+          if [[ "$confirmation" != "yy" ]]; then
+            menu_reset
+            full_menu
+          fi
+          echo -e "\nDisabling Enrollment..."
+          sleep 1
+          vpd -i RW_VPD -s "re_enrollment_key"="$(openssl rand -hex 32)"
+          echo -e "Done! Returning to menu..."
+          sleep 2
+          menu_reset
+          full_menu
+        else
+          if [[ "$MILESTONE" -ge 143 ]]; then
+            echo -e "\n${R}Sorry, your version supports ${B}reqwrite${N}, but it has not released yet.${N}"
+            sleep 0.67
+            echo -e "Returning to menu..."
+            sleep 3.5
+          fi
+        fi
+      fi
+    fi
   fi
   menu_reset
   full_menu
@@ -880,16 +880,16 @@ wipestate() {
   echo -e "Are you sure you want to wipe stateful?"
   read -r -p "(Y/N): " confirmation
   if [[ "$confirmation" == [Yy]* ]]; then
-  	mkfs.ext4 -F -b 4096 -L H-STATE "$stateful"
-  	echo -e "Stateful wiped successfully!\nReturning to menu..."
-  	sleep 1
-  	menu_reset
-  	full_menu
+    mkfs.ext4 -F -b 4096 -L H-STATE "$stateful"
+    echo -e "Stateful wiped successfully!\nReturning to menu..."
+    sleep 1
+    menu_reset
+    full_menu
   else
-  	echo -e "Denied, returning to menu..."
-  	sleep 0.67
-  	menu_reset
-  	full_menu
+    echo -e "Denied, returning to menu..."
+    sleep 0.67
+    menu_reset
+    full_menu
   fi
 }
 
@@ -925,58 +925,58 @@ selector() {
 
     case "$clean_input" in
         1*)
-  		fixinput
-  		savecurrentkeys ;;
+      fixinput
+      savecurrentkeys ;;
         2*)
-  		fixinput
-  		loadsavedkeys ;;
+      fixinput
+      loadsavedkeys ;;
         3*)
-  		fixinput
-  		genkeys ;;
-  	4*)
-  		fixinput
-  		importkeys ;;
-  	5*)
-  		fixinput
-  		editkeys ;;
-  	6*)
-  		fixinput
-  		backupvpd ;;
-  	7*)
-  		fixinput
-  		restorefactoryinfo ;;
-  	8*)
-  		fixinput
-  		firstfactorybackup ;;
-  	[Hh]*)
-  		fixinput
-  		helpmenu ;;
+      fixinput
+      genkeys ;;
+    4*)
+      fixinput
+      importkeys ;;
+    5*)
+      fixinput
+      editkeys ;;
+    6*)
+      fixinput
+      backupvpd ;;
+    7*)
+      fixinput
+      restorefactoryinfo ;;
+    8*)
+      fixinput
+      firstfactorybackup ;;
+    [Hh]*)
+      fixinput
+      helpmenu ;;
         [Bb]*)
-  		runscript "/bin/bash" ;;
+      runscript "/bin/bash" ;;
         [Dd]*)
-  		fixinput
-  		deprovision ;;
+      fixinput
+      deprovision ;;
         [Rr]*)
-  		fixinput
-  		removeqs ;;
-  	[Tt]*)
-  		fixinput
-  		touchdev ;;
-  	[Ww]*)
-  		fixinput
-  		wipestate ;;
-  	[Uu]*)
-  		fixinput
-  		unblockdev ;;
+      fixinput
+      removeqs ;;
+    [Tt]*)
+      fixinput
+      touchdev ;;
+    [Ww]*)
+      fixinput
+      wipestate ;;
+    [Uu]*)
+      fixinput
+      unblockdev ;;
         0*)
             fixinput
-  		if [[ "$REBOOT_ON_EXIT" == "true" ]]; then
-  			echo -e "Exiting..."
-  			reboot
-  		else
-  			exit 0
-  		fi
-  		;;
+      if [[ "$REBOOT_ON_EXIT" == "true" ]]; then
+        echo -e "Exiting..."
+        reboot
+      else
+        exit 0
+      fi
+      ;;
         *)
             return ;;
     esac
