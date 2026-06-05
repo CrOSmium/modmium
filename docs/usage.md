@@ -11,6 +11,11 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 * To return from a submenu to the main menu, either use the given `Exit` button or press **[Ctrl+C]**
 * To open a new tab, press **[Ctrl+Shift+T]**; to close the tab press `Exit` in the main menu
     * To close all tabs, press **[Ctrl+Shift+W]**
+> [!WARNING]
+> EXTENSIONS CAN SEE MOSH, they cannot see VT-MOSH though.
+
+<br>
+
 > [!NOTE]
 > if you dislike MOSH, or need to turn it into regular crosh, just run the command `touch /root/.givemecrosh` as `root`.
 <br>
