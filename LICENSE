@@ -684,7 +684,8 @@ versions of this work, provided that:
 1. Pursuant to Section 7(b) of the GNU General Public License, version 3, 
    you must preserve the original author attributions, contributor credits, 
    and copyright notices in the "About", "Credits", or equivalent legal 
-   notices menu of the user interface.
+   notices menu in the user interface. Attributions or contributor credits
+   [comments] must remain on top of any file that contains them.
 
 2. If the work displays a graphical or textual user interface, these 
    credits must remain visible, legible, and reasonably accessible to 
