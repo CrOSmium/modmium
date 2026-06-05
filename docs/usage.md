@@ -38,3 +38,6 @@ VT-MOSH is a terminal UI (TUI) nearly identical to regular MOSH.
     * See [./unbricking.md](unbricking.md)
 * Disabling VT-MOSH
      * Run this command as `root` in MOSH: `touch /usr/local/.defaultvt`
+* Disabling critical update warnings
+     * In some cases, you may want to prevent Modmium from checking if a critical update is available, or hide the warning. That can be done by running `touch /root/.iamsecure` as `root` in MOSH, it will *completely* disable the critical update checker.
+     * (A common reason for disabling the critical update warnings would be when you are somewhere that has strict checking or flagging for modmium-related URLs, and you want to avoid triggering anything)
