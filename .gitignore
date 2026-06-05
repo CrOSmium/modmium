@@ -1,4 +1,5 @@
-chromeos_startup
+config_2.txt
+recovery.zip
 *.bin
 cros_sign_backups*
 *mount.sh
@@ -11,3 +12,4 @@ userkeys
 .realuser
 tests/
 *.pyc
+mnt*

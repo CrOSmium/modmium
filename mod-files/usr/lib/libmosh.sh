@@ -2,7 +2,7 @@
 
 # written by DMD
 
-STABLEVERSIONS=$(cat /root/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
+STABLEVERSIONS=$(cat /usr/share/.stable_versions.txt) # just add a version to this file if you tested it and it has no issues
 source /usr/share/misc/shflags
 
 # -- Root escalation --
@@ -25,16 +25,7 @@ N=$'\033[0m'
 D=$'\033[1;90m'
 UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
-
-
-milestone() {
-  if [[ -f /root/.milestone ]]; then
-    MILESTONE=$(cat /root/.milestone)  # using as_system slows MOSH's startup a lot, so it does this instead.
-  else
-    MILESTONE=$(as_system "grep MILESTONE /etc/lsb-release | cut -d= -f2" | tr -d '\r')
-    as_system "echo $MILESTONE > /root/.milestone"
-  fi
-}
+MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
 
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
@@ -139,7 +130,7 @@ display_menu() {
   if [[ "$MILESTONE" == "" ]]; then
   	echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
   elif [[ "$MILESTONE" -le 131 ]]; then
-    echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
+    echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}), which is not officially supported by Modmium."
   elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
   	echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${branch}) --"
   else

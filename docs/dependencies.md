@@ -1,12 +1,16 @@
+# IF YOUR DISTRO HAS AN OUTDATED VBOOT-UTILS OR DOESN'T HAVE IT, SEE [COMPILATION INSTRUCTIONS](./vboot-utils.md)
+
 ## Arch Linux:
 ```bash
-yay -S --needed curl wget jq pv util-linux coreutils vboot-utils
+yay -S --needed curl wget jq pv util-linux coreutils libarchive vboot-utils
 yay -S inkscape # Optional, only required for custom bootsplash
 ```
 
 ## Debian (requires sid repo)
 ```bash
 sudo apt update
-sudo apt install -y curl wget pv util-linux coreutils sed vboot-utils
+sudo apt install -y curl wget pv util-linux coreutils sed libarchive-tools vboot-utils
 sudo apt install -y inkscape # Optional, only required for custom bootsplash
+# note, you may also have to run this if bsdtar is not found
+alias bsdtar=tar
 ```

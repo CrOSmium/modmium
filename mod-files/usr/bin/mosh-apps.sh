@@ -7,7 +7,6 @@ source /usr/lib/libmosh.sh
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-milestone
 
 if [[ ! -f /usr/local/config/apps.conf ]]; then
 	as_system mkdir -p /usr/local/config
@@ -42,10 +41,10 @@ EOF
     sleep 1
     echo -e "Returning to MOSH..."
     sleep 3
-    exec /usr/bin/crosh
+    exit 0
   fi
 }
-index
+
 
 selector() {
   torun="${paths[$selected_index]}"
@@ -55,8 +54,8 @@ selector() {
   fi
 
   case "$torun" in
-    *crosh)
-      exec /usr/bin/crosh
+    *"exit 0")
+      exit 0
       ;;
     *)
       runscript "$torun"
@@ -119,6 +118,7 @@ display_menu() {
   done
 }
 clear
+index
 full_menu
 tput cnorm
 selector

@@ -6,17 +6,18 @@ source /usr/lib/libmosh.sh
 
 fail() {
 	echo -e "$1"
-	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
-		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes"
+	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0 2>/dev/null); do
+		sudo chown -R chronos:chronos "$downloadsDir/bootsplashes" &>/dev/null
 	done
 	sleep 3
-	return
+	exit
 }
 cros_assets="/usr/share/chromeos-assets/images_100_percent"
 cros_assets_2="/usr/share/chromeos-assets/images_200_percent"
 
 # gets chosen bootsplash
 get_installed_bootsplashes() {
+  stty echo
 	for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0); do
 		mkdir -p ${downloadsDir}/bootsplashes
 		cp /bootsplash/* ${downloadsDir}/bootsplashes >/dev/null 2>&1
@@ -37,6 +38,7 @@ Open the Files app to see them."
 			shouldExit=false
 		fi
 	done
+	stty -echo
 }
 
 # checks if image was built with bootsplashes
@@ -46,8 +48,8 @@ fi
 
 move_images() {
 	if [[ -z $(find $cros_assets -name '*.old') ]]; then
-		for assets in $cros_assets $cros_assets_2; do
-			for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.png'); do
+		for assets in cros_assets cros_assets_2; do
+			for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.png'); do
 				mv $splashframe ${splashframe}.old
 				if [[ $splashframe == *"00.png" ]]; then
 					cp $1 $splashframe
@@ -55,8 +57,8 @@ move_images() {
 			done
 		done
 	else
-		for assets in $cros_assets $cros_assets_2; do
-			cp $1 ${assets}/boot_splash_frame00.png
+		for assets in cros_assets cros_assets_2; do
+			cp $1 ${!assets}/boot_splash_frame00.png
 		done
 	fi
 }
@@ -69,44 +71,53 @@ replace() {
 		move_images $bootsplash
 		echo -e "${B}Replaced bootsplash!${N}"
 	fi
+	fail
 }
 
-replace_custom() { # this is broken rn, can someone figure out whats happening? it seems like it just doesnt replace it at all
-# try using this now, obviously this won't fix it but it could help figure out what the problem is
-	echo -e "${G}Enter the FULL path to the custom image!${N}"
+replace_custom() {
+  stty echo
+	echo -e "${G}Enter the relative path to the custom image (from the root of the Files app).${N}"
 	read -rep " > " custom_img_path
-	if [ -f "$custom_img_path" ]; then
+	custom_img_path=$(find /home/user/*/MyFiles -maxdepth 0 | head -n 1)/${custom_img_path}
+	if [[ -f $custom_img_path ]]; then
 		move_images $custom_img_path
 		echo -e "${B}Replaced bootsplash!${N}"
 	else
-    	fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
+    fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
 	fi
+	fail
+	stty -echo
 }
 
 restore() {
-	for assets in $cros_assets $cros_assets_2; do
-		for splashframe in $(find $assets -mindepth 1 -name 'boot_splash_frame*.old'); do
+	for assets in cros_assets cros_assets_2; do
+		for splashframe in $(find ${!assets} -mindepth 1 -name 'boot_splash_frame*.old'); do
 			mv ${splashframe} ${splashframe%.*}
 		done
 	done
 	echo -e "${B}Restored bootsplash!${N}"
 	echo -e "${Y}Note: if the bootsplash is missing or it didn't restore, use the \"Download stock bootsplash\" option${N}" # lol just incase something happens ig
+	fail
 }
 
 download_backup() {
+  tempdir=$(mktemp -d)
+  cd $tempdir
 	echo -e "${G}Downloading stock bootsplash...${N}"
 	curl -LO https://dl.xz8f.gay/chromeos_bootsplash.zip
 	echo -e "${Y}Unzipping...${N}"
 	bsdtar -xf chromeos_bootsplash.zip
-	echo -e "${Y}Creating backup...${N}" # should this say something different? idk
+	echo -e "${Y}Creating backup...${N}"
 	for assets in $cros_assets $cros_assets_2; do
 		for splashframe in boot_splash_frame*.png; do
 			cp $splashframe ${assets}/${splashframe}.old
 		done
 	done
 	echo -e "${Y}Cleaning up!${N}"
-	rm chromeos_bootsplash.zip boot_splash_frame*.png
-	echo -e "${B}Done! Use option 3 (Restore stock bootsplash) to restore the stock bootsplash${N}"
+	cd ..
+	rm -rf $tempdir chromeos_bootsplash.zip boot_splash_frame*.png
+	echo -e "${B}Done! Use the "Restore stock bootsplash" option to restore.${N}"
+	fail
 }
 
 remove() {
@@ -115,10 +126,14 @@ remove() {
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]; then
 		echo -e "${Y}Removing bootsplash...${N}"
-		rm "$cros_assets/boot_splash_frame*.png"
-		rm "$cros_assets_2/boot_splash_frame*.png"
+		for assets in cros_assets cros_assets_2; do
+		  for file in $(find ${!assets} -name 'boot_splash_frame*.png'); do
+				rm $file
+			done
+		done
 		echo -e "${G}Removed bootsplash!${N}"
 	fi
+	fail
 }
 
 menu_reset(){
@@ -142,7 +157,6 @@ EOF
 	num_options=${#options[@]}
 }
 
-milestone
 menu_reset
 clear
 full_menu

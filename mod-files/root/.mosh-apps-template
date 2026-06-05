@@ -2,4 +2,4 @@
 # FORMAT: 'COMMAND | NAME'
 
 vi /usr/local/config/apps.conf | Edit apps.conf
-/usr/bin/crosh | Go Back
+exit 0 | Go Back

@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend
 
-POLICY_TEST_TOOL_PATH = "/usr/local/share/policy-test-tool"
+POLICY_TEST_TOOL_PATH = "/usr/share/.policy-test-tool"
 sys.path.insert(0, POLICY_TEST_TOOL_PATH)
 
 import chrome_device_policy_pb2
@@ -22,7 +22,16 @@ from blob_generator import generate_device_policy_schema, apply_device_policies
 MANUAL_MAP_PATH = f"{POLICY_TEST_TOOL_PATH}/manual_device_policy_proto_map.yaml"
 DEVICESETTINGS_DIR = "/var/lib/devicesettings"
 OWNER_KEY_PATH = f"{DEVICESETTINGS_DIR}/owner.key"
-POLICY_PATH = f"{DEVICESETTINGS_DIR}/policy.1"
+
+
+def find_policy_path() -> str:
+    candidates = [
+        f for f in os.listdir(DEVICESETTINGS_DIR)
+        if f.startswith("policy.") and f[7:].isdigit()
+    ] if os.path.isdir(DEVICESETTINGS_DIR) else []
+    if not candidates:
+        return f"{DEVICESETTINGS_DIR}/policy.1"
+    return f"{DEVICESETTINGS_DIR}/{max(candidates, key=lambda f: int(f[7:]))}"
 
 STRING_ENUM_PREFIXES = {"allowed_connection_types": "CONNECTION_TYPE_"}
 
@@ -65,6 +74,8 @@ def build_policy_fetch_response(pk, device_settings, policy_data) -> bytes:
     pd.CopyFrom(policy_data)
     pd.policy_value = device_settings.SerializeToString()
     pd.timestamp = int(time.time() * 1000)
+    if policy_data.request_token:
+        pd.request_token = policy_data.request_token
     pd_bytes = pd.SerializeToString()
     resp = dm.PolicyFetchResponse()
     resp.policy_data = pd_bytes
@@ -74,12 +85,13 @@ def build_policy_fetch_response(pk, device_settings, policy_data) -> bytes:
 
 
 def write_devicesettings(owner_key_der: bytes, policy_fetch_response: bytes):
+    policy_path = find_policy_path()
     os.makedirs(DEVICESETTINGS_DIR, exist_ok=True)
-    for f in [OWNER_KEY_PATH, POLICY_PATH]:
+    for f in [OWNER_KEY_PATH, policy_path]:
         if os.path.exists(f) and not os.path.exists(f + ".bak.enterprise"):
             shutil.copy2(f, f + ".bak.enterprise")
             print(f"backed up {f}")
-    for path, data in [(OWNER_KEY_PATH, owner_key_der), (POLICY_PATH, policy_fetch_response)]:
+    for path, data in [(OWNER_KEY_PATH, owner_key_der), (policy_path, policy_fetch_response)]:
         open(path, "wb").write(data)
         os.chown(path, 0, 0)
         os.chmod(path, 0o644)
@@ -275,7 +287,7 @@ def main():
 
     simple_policies = json.load(open(sys.argv[1], encoding="utf-8"))
     device_schema = generate_device_policy_schema(MANUAL_MAP_PATH)
-    policy_data, ds = read_existing_policy(POLICY_PATH)
+    policy_data, ds = read_existing_policy(find_policy_path())
 
     for key, value in unquote_numbers(simple_policies["device"]).items():
         if value is None:
@@ -309,6 +321,8 @@ def main():
 
     pk, pub = generate_keypair()
     write_devicesettings(public_key_to_der(pub), build_policy_fetch_response(pk, ds, policy_data))
+    with open("/root/dmtoken.txt", "w") as f:
+        f.write(policy_data.request_token)
     subprocess.run(["initctl", "restart", "ui"], check=True)
 
 
