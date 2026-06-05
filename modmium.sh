@@ -204,15 +204,16 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
 
-  echo -e "${G}Done, reboot and you should boot into Modmium!${N}"
-  crossystem disable_dev_request=1
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
-  start powerd &>/dev/null
-  sleep 2
-  exit 0
+  echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
+  read -n1 -r
+  [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
+  echo -e "${B}Rebooting!${N}"
+  reboot
+  sleep infinity
 }
 
 

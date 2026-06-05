@@ -170,6 +170,7 @@ installCros() {
       fail "${R}Exiting...${N}"
     fi
   fi
+  [[ ( $MILESTONE -gt $VERSION ) && ( $MILESTONE -gt 140 ) ]] && echo -e "${Y}You may have to remove and sign back into your account(s) after downgrading. Continuing anyways...${N}"
   askBranch
   getImageLink
 
@@ -279,15 +280,16 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
 
-  echo -e "${G}Done, reboot to apply update!!${N}"
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
-  start powerd &>/dev/null
-  sleep 2
-  stty -echo
-  exit 0
+  echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
+  read -n1 -r
+  [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
+  echo -e "${B}Rebooting!${N}"
+  reboot
+  sleep infinity
 }
 
 
