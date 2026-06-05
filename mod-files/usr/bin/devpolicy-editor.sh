@@ -15,7 +15,6 @@ source /usr/lib/libmosh.sh
 if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   mkdir -p /usr/local/share
   rm -rf /usr/local/share/policy-test-tool
-  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
 
   source /etc/profile # emerge breaks without this
   echo -e "${B}Installing required dependencies...${N}"
@@ -28,9 +27,11 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   ldconfig # emerge breaks without this too
   emerge cryptography nano pyyaml protobuf-python
 
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   touch $DEVPOL_FILE
 fi
 if [[ ! -f "$jsonFile" ]]; then
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool || exit 1
   ldconfig
   echo -e "${B}Dumping device policy to json...${N}"
