@@ -14,7 +14,7 @@
   * +: Once the image is created, no internet connection is required to install
   * +: Can prepare bootsplashes and policy.json
   * +: Allows custom modifications to Modmium
-  * -: Requires a linux environment to build (you can use WSL if you're building on Windows)
+  * -: Requires a linux environment to build (you can use WSL if you're building on Windows. the dependencies will be the same as Ubuntu)
   * -: More complicated to install
 
 ## VT2 Installation
