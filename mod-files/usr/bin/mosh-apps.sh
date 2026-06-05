@@ -9,8 +9,8 @@ source /usr/lib/libmosh.sh
 tput civis # :whale:
 
 if [[ ! -f /usr/local/config/apps.conf ]]; then
-	as_system mkdir -p /usr/local/config
-	as_system "cp /root/.mosh-apps-template /usr/local/config/apps.conf"
+  as_system mkdir -p /usr/local/config
+  as_system "cp /root/.mosh-apps-template /usr/local/config/apps.conf"
 fi
 
 index() {
@@ -65,13 +65,13 @@ selector() {
 
 full_menu() {
   clear
-	stty -echo
+  stty -echo
   tput civis
   while true; do
-		display_menu
+  	display_menu
     read -rsn1 key
     if [[ "$key" == $'\x1b' ]]; then
-    	read -rsn2 -t 1 keyseq
+      read -rsn2 -t 1 keyseq
       case "$keyseq" in
         '[A')
           selected_index=$(((selected_index - 1 + num_options) % num_options))
@@ -81,27 +81,27 @@ full_menu() {
           ;;
       esac
     elif [[ "$key" =~ [1-9] ]]; then
-    	target_index=$((key - 1))
+      target_index=$((key - 1))
       if [ "$target_index" -lt "$num_options" ]; then
         selected_index=$target_index
       fi
     elif [[ "$key" == "" ]]; then
-    	break
+      break
     fi
-  	tput rc
+    tput rc
   done
   selector
 }
 display_menu() {
-	tput sc
+  tput sc
   menu_logo
 
   if [[ "$MILESTONE" == "" ]]; then
-  	echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
+    echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
   elif [[ "$MILESTONE" -le 131 ]]; then
     echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
   elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-  	echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${branch}) --"
+    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${branch}) --"
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
@@ -110,11 +110,11 @@ display_menu() {
   fi
   echo ""
   for i in "${!options[@]}"; do
-  	if [[ $i -eq $selected_index ]]; then
-    	printf "\e[7m > ${options[$i]} \e[0m\n"
+    if [[ $i -eq $selected_index ]]; then
+      printf "\e[7m > ${options[$i]} \e[0m\n"
     else
-    	printf "   ${options[$i]}      \n"
-  	fi
+      printf "   ${options[$i]}      \n"
+    fi
   done
 }
 clear

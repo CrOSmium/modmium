@@ -36,27 +36,27 @@ exit 0
 }
 
 modsplash(){
-	runscript /usr/bin/modify-bootsplash.sh
+  runscript /usr/bin/modify-bootsplash.sh
 }
 cr3nroll(){
-	runscript /usr/bin/cr3nroll.sh
+  runscript /usr/bin/cr3nroll.sh
 }
 erevert(){
-	runscript /usr/bin/emergency-revert.sh
+  runscript /usr/bin/emergency-revert.sh
 }
 prenix(){
-	runscript /usr/bin/nix-preinstall.sh
+  runscript /usr/bin/nix-preinstall.sh
 }
 credits(){
-	runscriptnoroot creditsMenu
+  runscriptnoroot creditsMenu
 }
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
-	options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
-	functions=("modsplash"  "cr3nroll" "erevert" "prenix" "credits" "quit")
-	num_options=${#options[@]}
+  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
+  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "credits" "quit")
+  num_options=${#options[@]}
 }
 
 menu_reset

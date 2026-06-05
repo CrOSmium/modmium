@@ -38,49 +38,49 @@ echo -ne "\033]0;MOSH\007"
 source /usr/lib/libmosh.sh
 login
 if [[ -d /usr/local/nix/store ]]; then
-	# issues can get caused if a user has a custom shell.
-	# before, this code only ran if .bashrc was sourced,
-	# but the shell wouldn't open if .bashrc wasn't sourced
-	# chicken and egg. we fix it here.
-	if ! mountpoint -q /nix; then
-		sudo mkdir -p /nix
+  # issues can get caused if a user has a custom shell.
+  # before, this code only ran if .bashrc was sourced,
+  # but the shell wouldn't open if .bashrc wasn't sourced
+  # chicken and egg. we fix it here.
+  if ! mountpoint -q /nix; then
+  	sudo mkdir -p /nix
     sudo mount --bind /usr/local/nix /nix
-	fi
-	sudo . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
-	unset LD_LIBRARY_PATH
+  fi
+  sudo . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+  unset LD_LIBRARY_PATH
 fi
 
 # -- FUNCTIONS --
 
 rootsh(){
-	runscript "sudo -i -u root"
+  runscript "sudo -i -u root"
 }
 chronosh(){
-	runscript "sudo -i -u chronos"
+  runscript "sudo -i -u chronos"
 }
 crosh(){
-	runscriptnoroot "exec /usr/bin/crosh.old"
+  runscriptnoroot "exec /usr/bin/crosh.old"
 }
 update(){
-	runscript /usr/bin/update-modmium.sh
+  runscript /usr/bin/update-modmium.sh
 }
 devpol(){
-	runscript /usr/bin/devpolicy-editor.sh
+  runscript /usr/bin/devpolicy-editor.sh
 }
 apps(){
-	runscript /usr/bin/mosh-apps.sh
+  runscript /usr/bin/mosh-apps.sh
 }
 misc(){
-	runscript /usr/bin/mosh-misc.sh
+  runscript /usr/bin/mosh-misc.sh
 }
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
 menu_reset() {
-	options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
-	functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
-	num_options=${#options[@]}
+  options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
+  functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
+  num_options=${#options[@]}
 }
 
 menu_reset
