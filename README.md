@@ -27,6 +27,3 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
 If you need any kind of support, please join the [crosbreaker discord server](https://discord.crosbreaker.com) for help.
 
 ------------
-
-"*For the love of everything don't use this to cheat. I personally made this out of a passion for learning and programming (it's by far been the most difficult, fun, and largest project I've worked on). 
-Your minds are incredible things, don't let them go to waste please.*" - maria

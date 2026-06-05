@@ -17,7 +17,7 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 <br>
 
 > [!NOTE]
-> if you dislike MOSH, or need to turn it into regular crosh, just run the command `touch /root/.givemecrosh` as `root`.
+> if you dislike MOSH, or need to turn it into regular crosh, just run the command `touch ~/.givemecrosh` as `root`.
 <br>
 
 ## VT-MOSH
