@@ -6,13 +6,13 @@ We use a set of Google tools named policy-test-tool and fake_dmserver (see [the 
 You'll want to do this if you want your enterprise's extensions to install, for example if they have monitoring software and would get suspicious if you didn't have it (Note: the extensions won't be force-installed, meaning you'll be able to toggle enterprise extensions on and off like a normal extension in `chrome://extensions`).
 
 1. Install and boot modmium in verified (see [./installation.md](./installation.md).)
-2. (Optional) Obtain your enteprise's policy file (see [obtaining your policy file after install](#obtaining-your-policy-file-after-install))
+2. (Optional) Obtain your enterprise's policy file (see [obtaining your policy file after install](#obtaining-your-policy-file-after-install))
   - This is not required if you did the pre-install step, or don't want any enterprise settings on your user account.
 3. Open VT2 once __fully enrolled__, DO NOT SIGN IN YET.
-5. Navigate to `Edit User Policies`.
-4. Select `Run Policy Editor` and enter your enterprise email when prompted.
-5. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
-6. After you're logged in, return to VT2 and hit Ctrl+C
+4. Navigate to `Edit User Policies`.
+5. Select `Run Policy Editor` and enter your enterprise email when prompted.
+6. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
+7. After you're logged in, return to VT2 and hit Ctrl+C
 - Only ever run `Reinstall` if you want to edit policies for a different account, or update them for the same one with a new file.
 
 ## Obtaining your policy file after install
