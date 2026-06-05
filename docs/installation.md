@@ -26,7 +26,7 @@
 6. After it reboots, go through OOBE as normal and you'll be enrolled.
 
 > [!WARNING]
-> if you're using modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
+> If you're using modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
 
 ## Recovery Image
 1. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) for a how-to).
