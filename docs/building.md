@@ -2,9 +2,9 @@
 ```sh
 git clone https://github.com/CrOSmium/modmium && cd modmium 
 # if you want to download an image and autobuild
-./build_image.sh -b <board> -v <version> <flags>
+./build-image.sh -b <board> -v <version> <flags>
 # if you want to use a local image (non-destructive)
-./build_image.sh -i /path/to/image.bin <flags>
+./build-image.sh -i /path/to/image.bin <flags>
 ```
 The builder also has a few other flags, which can be seen by running the script with no arguments or passing `--help`, some of which are listed here.
 * `-k`, `--kernver` (hex int, 0 to ff)
