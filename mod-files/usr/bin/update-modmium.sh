@@ -150,8 +150,18 @@ installCros() {
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
+  if [[ $VERSION -lt $MILESTONE ]]; then
+  	echo -e "${R}WARNING: YOU ARE DOWNGRADING CHROMEOS ($MILESTONE -> $VERSION), THIS MAY CAUSE PROBLEMS OR WIPE USER DATA.${N}\nDo not make an issue report if you run into problems."
+	echo -e "${B}Continue anyways? [y/N]${N}"
+	read -rep ""
+	if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${B}Continuing...\n${N}"
+    else
+      fail "${R}Exiting...${N}"
+    fi
+  fi
   if [[ $VERSION -lt 131 ]]; then
-    echo -e "${R}WARNING. VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
+    echo -e "${R}WARNING: VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
     echo -e "${B}Continue anyways? [y/N]${N}"
     read -rep ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
