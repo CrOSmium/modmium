@@ -8,7 +8,7 @@ You'll want to do this if you want your enterprise's extensions to install, for 
 1. Install and boot modmium in verified (see [./installation.md](./installation.md).)
 2. (Optional) Obtain your enterprise's policy file (see [obtaining your policy file after install](#obtaining-your-policy-file-after-install))
   - This is not required if you did the pre-install step, or don't want any enterprise settings on your user account.
-3. Open VT2 once __fully enrolled__, DO NOT SIGN IN YET.
+3. Open VT2 once you've finished enrollment, a good place to enter is the "Enrollment is complete." screen. __DO NOT SIGN IN. IF YOU DID AND WANT TO EDIT USER POLICIES, POWERWASH AND TRY AGAIN.__
 4. Navigate to `Edit User Policies`.
 5. Select `Run Policy Editor` and enter your enterprise email when prompted.
 6. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
