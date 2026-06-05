@@ -11,6 +11,8 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 * To return from a submenu to the main menu, either use the given `Exit` button or press **[Ctrl+C]**
 * To open a new tab, press **[Ctrl+Shift+T]**; to close the tab press `Exit` in the main menu
     * To close all tabs, press **[Ctrl+Shift+W]**
+> [!NOTE]
+> if you dislike MOSH, or need to turn it into regular crosh, just run the command `touch /root/.givemecrosh` as `root`.
 <br>
 
 ## VT-MOSH
@@ -20,11 +22,10 @@ VT-MOSH is a terminal UI (TUI) nearly identical to regular MOSH.
 * To return from a submenu to the main menu, either use the given `Exit` button or press **[Ctrl+C]**<br>
 
 -- VT-MOSH does not have tabs --<br>
-\**F2 is often the forward arrow, but it may vary by device)*<br>
+\**(F2 is often the forward arrow, but it may vary by device)*<br>
 
-------------------------------------------------------------------------
-
-*Tip: You can put a password on MOSH, VT-MOSH, and all VT(s) by running the command `chromeos-setdevpasswd` as `root`.*
+> [!tip]
+> You can put a password on MOSH, VT-MOSH, and all VT(s) by running the command `chromeos-setdevpasswd` as `root`.
 ## Troubleshooting
 * Unable to use a modmium recovery image due to FWMP
     * See [./unbricking.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/unbricking.md)
