@@ -1,9 +1,9 @@
 # Usage instructions
 ## Policy editors
 * User policy editor 
-    * See [./user-policy-editor.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/user-policy-editor.md)
+    * See [./user-policy-editor.md](user-policy-editor.md)
 * Device policy editor
-    * See [./device-policy-editor.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/device-policy-editor.md)
+    * See [./device-policy-editor.md](device-policy-editor.md)
 ## MOSH
 To open MOSH, log into a user session, then press **[Ctrl+Alt+T]**<br>
 MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmium/cr3nroll).
@@ -12,7 +12,7 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 * To open a new tab, press **[Ctrl+Shift+T]**; to close the tab press `Exit` in the main menu
     * To close all tabs, press **[Ctrl+Shift+W]**
 > [!WARNING]
-> EXTENSIONS CAN SEE MOSH, they cannot see VT-MOSH though.
+> EXTENSIONS CAN SEE MOSH, they cannot see VT-MOSH though. Use the [user policy editor](user-policy-editor.md) to be able to toggle them off in chrome://extensions
 
 <br>
 
@@ -33,6 +33,6 @@ VT-MOSH is a terminal UI (TUI) nearly identical to regular MOSH.
 > You can put a password on MOSH, VT-MOSH, and all VT(s) by running the command `chromeos-setdevpasswd` as `root`.
 ## Troubleshooting
 * Unable to use a modmium recovery image due to FWMP
-    * See [./unbricking.md](https://github.com/CrOSmium/modmium/blob/nightly/docs/unbricking.md)
+    * See [./unbricking.md](unbricking.md)
 * Disabling VT-MOSH
      * Run this command as `root` in MOSH: `touch /usr/local/.defaultvt`
