@@ -34,7 +34,7 @@ menu_reset(){
   functions=("installNix" "quit")
   fi
   num_options=${#options[@]}
-  [[ $VERSION -gt 140 ]] && WARNING="${R}Nix installation is known to be unstable on versions above 140.${N} Proceed at your own risk."
+  [[ $MILESTONE -gt 140 ]] && WARNING="${R}Nix installation is known to be unstable on versions above 140.${N} Proceed at your own risk."
   menuText=$(cat <<EOF
 $WARNING
 This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}
