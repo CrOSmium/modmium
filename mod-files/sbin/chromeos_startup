@@ -115,10 +115,10 @@ if [[ $(crossystem devsw_boot) -eq 0 ]]; then
   if [ -f /.deprovision ]; then
     version=$(cat /.deprovision)
     if [[ $version -lt 143 ]]; then
-     	vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
+       vpd -i RW_VPD -s re_enrollment_key=$(openssl rand -hex 32)
     else
-     	sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
-     	echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
+       sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
+       echo --enterprise-enable-state-determination=never >>/etc/chrome_dev.conf
     fi
   else
     vpd -i RW_VPD -d re_enrollment_key

@@ -68,8 +68,8 @@ EOF
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
-	python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
-	cat > /tmp/_pol_conv.py << 'PYEOF'
+  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
+  cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
 with open(sys.argv[1]) as f:
   data = json.load(f)
@@ -91,20 +91,20 @@ print(lines[0])
 for line in lines[1:]:
   print("    " + line)
 PYEOF
-	extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
-	rm -f /tmp/_pol_conv.py
+  extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
+  rm -f /tmp/_pol_conv.py
 
-	for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
-		val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
-		if [[ "$val" != "null" && -n "$val" ]]; then
-			export ${policy}="\"${policy}\": ${val},"
-		else
-			export ${policy}=""
-		fi
-	done
+  for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
+  	val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
+  	if [[ "$val" != "null" && -n "$val" ]]; then
+  		export ${policy}="\"${policy}\": ${val},"
+  	else
+  		export ${policy}=""
+  	fi
+  done
 
-	echo -e "${B}Extracting extension configs from extracted.json...${N}"
-	extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
+  echo -e "${B}Extracting extension configs from extracted.json...${N}"
+  extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
 
   cat > /usr/local/share/policy-test-tool/policies.json << EOF
 {
@@ -155,7 +155,7 @@ PYEOF
   "device": {}
 }
 EOF
-	cat <<EOF | xargs -0 echo -ne
+  cat <<EOF | xargs -0 echo -ne
 ${G}Policy file successfully written!
 Location: /usr/local/share/policy-test-tool/policies.json
 Configured for: ${email}${N}"
