@@ -21,13 +21,15 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 <br>
 
 ## VT-MOSH
+> [!NOTE]
+> *F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
+>
+> *This varies across devices.*
+
 To open VT-MOSH via VT-2, press **[Ctrl+Alt+F2]**\* on any menu and login as `root` or `chronos`.<br>
 VT-MOSH is a terminal UI (TUI) nearly identical to regular MOSH.
 * Navigation is done with arrow or number keys
 * To return from a submenu to the main menu, either use the given `Exit` button or press **[Ctrl+C]**<br>
-
--- VT-MOSH does not have tabs --<br>
-\**(F2 is often the forward arrow, but it may vary by device)*<br>
 
 > [!tip]
 > You can put a password on MOSH, VT-MOSH, and all VT(s) by running the command `chromeos-setdevpasswd` as `root`.
