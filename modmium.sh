@@ -9,7 +9,7 @@ FLAGS $@
 fail(){
   echo -e "$1"
   if [[ $2 != "keepflag" ]]; then
-  	vpd -d dev_firmware
+    vpd -d dev_firmware
   fi
   umount $BACKUP >/dev/null 2>&1
   sleep 3
@@ -145,9 +145,9 @@ installCros() {
   bytes=()
   for byte in $rawkv; do
     while [[ -n $byte ]]; do
-  		bytes+=( "${byte:0:2}" )
-  		byte="${byte:2}"
-  	done
+      bytes+=( "${byte:0:2}" )
+      byte="${byte:2}"
+    done
   done
   if [[ ${bytes[0]} -eq 10 ]]; then
     kernver=$(( ${bytes[4]}<<0 | ${bytes[5]}<<8 ))
@@ -157,10 +157,10 @@ installCros() {
   # end aurora-inspired part
   futility vbutil_kernel --repack ${installKern} \
     --keyblock ${keydir}/kernel.keyblock \
-  	--signprivate ${keydir}/kernel_data_key.vbprivk \
-  	--config config.txt \
-  	--version $kernver \
-  	--oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}" keepflag
+    --signprivate ${keydir}/kernel_data_key.vbprivk \
+    --config config.txt \
+    --version $kernver \
+    --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}" keepflag
   rm -rf config.txt
 
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
@@ -169,9 +169,9 @@ installCros() {
   cd /mnt/stateful_partition/git
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-  	git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
   else
-  	git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -235,20 +235,20 @@ logo() {
 checkWP(){
   writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
   if [[ $writeprotect == *"disabled"* ]]; then
-  	echo -e "FWWP is currently ${G}DISABLED${N}, continuing..."
+    echo -e "FWWP is currently ${G}DISABLED${N}, continuing..."
   else
-  	echo -e "FWWP is currently ${N}ENABLED${N}, checking for wp range..."
-  	wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
-  	if [[ $wprange != "" ]]; then
-  		echo -e "WP range allows for flashing, continuing."
-  	else
-  		echo -e "WP range non-zero, checking for HWWP."
-  	    if [[ $(crossystem wpsw_cur) == "0" ]]; then
-  			echo -e "HWWP off, continuing."
-  	    else
-  			fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
-  	    fi
-  	fi
+    echo -e "FWWP is currently ${N}ENABLED${N}, checking for wp range..."
+    wprange=$(flashrom --wp-status 2>&1 | grep -E "range: start=0x[0-9a-f]+, len=0x00000000")
+    if [[ $wprange != "" ]]; then
+      echo -e "WP range allows for flashing, continuing."
+    else
+      echo -e "WP range non-zero, checking for HWWP."
+        if [[ $(crossystem wpsw_cur) == "0" ]]; then
+        echo -e "HWWP off, continuing."
+        else
+        fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
+        fi
+    fi
   fi
 }
 
@@ -270,7 +270,7 @@ askConfirmation(){
   echo ""
   if [[ "$confirmation" != "yy" ]]; then
     echo -e "Denied! exiting.."
-  	exit 0
+    exit 0
   fi
 }
 
@@ -298,15 +298,15 @@ get_largest_cros_blockdev() {
 selUserBackup(){
   echo -e "These are the vfat drives/partitions connected to your device:"
   for drive in $(lsblk -lo NAME,FSTYPE | grep vfat | awk '{print $1}'); do
-  	echo /dev/$drive
+    echo /dev/$drive
   done
   echo -e "Type the drive that the signing keys [userkeys] were backed up to (/dev/sdX or sdX are acceptable)...${N}"
   read -ep "Drive: " driveloc
   driveloc="${driveloc%/}"
   if [[ $driveloc == *"/dev/"* ]]; then
-  	if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
   else
-  	if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
   fi
 }
 
@@ -322,7 +322,7 @@ modmiumInstall(){
      read -ep "Drive: " driveloc
      driveloc="${driveloc%/}"
      if [[ $driveloc == *"/dev/"* ]]; then
-  		if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
      else
        if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
      fi
@@ -331,15 +331,15 @@ modmiumInstall(){
     keydir=/usr/share/vboot/devkeys
   fi
   if ! which git &>/dev/null || ! which file &>/dev/null; then
-  	echo -e "${R}Dependencies not installed, installing...${N}"
-  	source /etc/profile # required to get emerge working
-  	if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-  	  printf 'y\n\nn' | dev_install --reinstall
-  		touch /mnt/stateful_partition/.devinstall_complete
-  	fi
-  	ldconfig # reload shared libraries to include python libs
-  	emerge git file
-  	cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+    echo -e "${R}Dependencies not installed, installing...${N}"
+    source /etc/profile # required to get emerge working
+    if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
+      printf 'y\n\nn' | dev_install --reinstall
+      touch /mnt/stateful_partition/.devinstall_complete
+    fi
+    ldconfig # reload shared libraries to include python libs
+    emerge git file
+    cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
   installCros # :whale:
@@ -349,11 +349,11 @@ selectBackup(){
   mkdir -p $BACKUP
   [[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
   if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
-  	cat <<EOF | xargs -0 echo -ne
+    cat <<EOF | xargs -0 echo -ne
 Would you like to ${R}ERASE${N} an external (D)rive and backup to it, or backup to a directory? (D = drive, P = directory)
 Backing up to a (D)rive is highly recommended, but if you know what you're doing, [or already have a mount (P)oint], you can use a directory
 EOF
-  	read -ep "(d/p): " resp
+    read -ep "(d/p): " resp
     if [[ $resp =~ ^[Dd]$ ]]; then
       drivelist=$(lsblk -dpno NAME,SIZE,MODEL | grep -Ev "$(get_largest_cros_blockdev)|loop|ram" || fail "${R}No connected drives, exiting...${N}")
       cat <<EOF | xargs -0 echo -ne
@@ -364,82 +364,82 @@ EOF
       read -ep "Drive: " driveloc
       driveloc="${driveloc%/}"
       if [[ $driveloc == *"/dev/"* ]]; then
-  			mkfs.vfat -I -F 32 $driveloc || fail "${R}Unable to wipe device, exiting...${N}"
+        mkfs.vfat -I -F 32 $driveloc || fail "${R}Unable to wipe device, exiting...${N}"
         mkdir -p $BACKUP
-  			mount $driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
-  		else
+        mount $driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
+      else
         mkfs.vfat -I -F 32 /dev/$driveloc || fail "${R}Unable to wipe device, exiting...${N}"
         mkdir -p /tmp/backupdir
          mount /dev/$driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
       fi
-   		if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
-  			fail "${R}Unable to write to backup, exiting...${N}"
-  		fi
-  		DRIVEBACKUP=1
-  	elif [[ $resp =~ ^[Pp]$ ]]; then
+       if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
+        fail "${R}Unable to write to backup, exiting...${N}"
+      fi
+      DRIVEBACKUP=1
+    elif [[ $resp =~ ^[Pp]$ ]]; then
       echo -e "What directory would you like to backup to?"
       read -ep "Dir: " BACKUP
-  		if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
-  			fail "${R}Unable to write to backup, exiting...${N}"
-  		else
-      	echo -e "Valid directory!"
-  		fi
-  	else
-  		fail "Invalid response, exiting..."
-  	fi
+      if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
+        fail "${R}Unable to write to backup, exiting...${N}"
+      else
+        echo -e "Valid directory!"
+      fi
+    else
+      fail "Invalid response, exiting..."
+    fi
   else
-  	echo -e "These are the vfat drives/partitions connected to your device:"
-  	for drive in $(lsblk -lo NAME,FSTYPE | grep vfat | awk '{print $1}'); do
-  		echo /dev/$drive
-  	done
-  	echo -e "Type the drive that the signing keys were backed up to (/dev/sdX or sdX are acceptable)...${N}"
+    echo -e "These are the vfat drives/partitions connected to your device:"
+    for drive in $(lsblk -lo NAME,FSTYPE | grep vfat | awk '{print $1}'); do
+      echo /dev/$drive
+    done
+    echo -e "Type the drive that the signing keys were backed up to (/dev/sdX or sdX are acceptable)...${N}"
     read -ep "Drive: " driveloc
     driveloc="${driveloc%/}"
     if [[ $driveloc == *"/dev/"* ]]; then
-  		if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
     else
       if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
     fi
-  	if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
-  		fail "${R}Unable to write to backup.${N}"
-  	fi
-  	DRIVEBACKUP=1
+    if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
+      fail "${R}Unable to write to backup.${N}"
+    fi
+    DRIVEBACKUP=1
   fi
   if [[ $(df $BACKUP | awk '{print $4}' | tail -n 1) -lt 16384 ]]; then
-  	fail "${R}NOT ENOUGH EMPTY SPACE ON DRIVE. Exiting...${N}"
+    fail "${R}NOT ENOUGH EMPTY SPACE ON DRIVE. Exiting...${N}"
   fi
 }
 
 flashDevFW(){
   DEVFW=$(vpd -i RO_VPD -g "dev_firmware" 2>&1)
   (
-  	device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1 || \
-  	cryptohome --action=remove_firmware_management_parameters >/dev/null 2>&1
-  	device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 || \
-  	cryptohome --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1
+    device_management_client --action=remove_firmware_management_parameters >/dev/null 2>&1 || \
+    cryptohome --action=remove_firmware_management_parameters >/dev/null 2>&1
+    device_management_client --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1 || \
+    cryptohome --action=set_firmware_management_parameters --flags=0x0 >/dev/null 2>&1
   ) \
   || \
   ( initctl stop tcsd >/dev/null 2>&1
-  	initctl stop trunksd >/dev/null 2>&1
-  	tpmc clear; tpmc def 0x100a 0x28 0x12000
-  	tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    initctl stop trunksd >/dev/null 2>&1
+    tpmc clear; tpmc def 0x100a 0x28 0x12000
+    tpmc write 0x100a 76 28 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
   ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 
   if [[ $DEVFW != 1 ]]; then
-  	# flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
+    # flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
     if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
-  		/usr/share/vboot/bin/make_dev_ssd.sh --force -r
-  		/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --to /tmp/devfw.bin
-  		futility gbb -s /tmp/devfw.bin --flags=0xa0b1
-  		flashrom -w /tmp/devfw.bin
-  	else
-  		/usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
-  		/usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
-  		futility gbb -s /tmp/devfw.bin --flags=0xa0b1
-  		flashrom -w /tmp/devfw.bin
-  	sync # sync because I dont trust ChromeOS
-  	fi
-  	vpd -i RO_VPD -s dev_firmware=1
+      /usr/share/vboot/bin/make_dev_ssd.sh --force -r
+      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --to /tmp/devfw.bin
+      futility gbb -s /tmp/devfw.bin --flags=0xa0b1
+      flashrom -w /tmp/devfw.bin
+    else
+      /usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
+      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
+      futility gbb -s /tmp/devfw.bin --flags=0xa0b1
+      flashrom -w /tmp/devfw.bin
+    sync # sync because I dont trust ChromeOS
+    fi
+    vpd -i RO_VPD -s dev_firmware=1
   else
     fail "You are already using custom boot keys!" keepflag
   fi

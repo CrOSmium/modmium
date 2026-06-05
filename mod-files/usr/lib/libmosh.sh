@@ -69,14 +69,14 @@ get_fixed_dst_drive() {
         esac
       fi
       DEFAULT_ROOTDEV="{$dev}"
-  	done
+    done
   fi
   if [ -z "${DEFAULT_ROOTDEV}" ]; then
-  	dev=""
+    dev=""
   else
-  	dev="/dev/$(basename ${DEFAULT_ROOTDEV})"
+    dev="/dev/$(basename ${DEFAULT_ROOTDEV})"
     if [ ! -b "${dev}" ]; then
-    	dev=""
+      dev=""
     fi
   fi
   echo "${dev}"
@@ -93,9 +93,9 @@ runscript() {
 
 selector() {
   for option in ${!options[@]}; do
-  	if [[ $selected_index == $option ]]; then
-  		${functions[$option]}
-  	fi
+    if [[ $selected_index == $option ]]; then
+      ${functions[$option]}
+    fi
   done
 }
 
@@ -141,7 +141,7 @@ display_menu() {
 
   for i in "${!options[@]}"; do
     if [[ $i -eq $selected_index ]]; then
-  		printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
+      printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
     else
       printf "   $(($i + 1))) ${options[$i]}      \n"
     fi
@@ -152,7 +152,7 @@ full_menu() {
   stty -echo
   tput civis
   while true; do
-  	display_menu
+    display_menu
     read -rsn1 key
     if [[ "$key" == $'\x1b' ]]; then
       read -rsn2 -t 1 keyseq

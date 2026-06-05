@@ -22,9 +22,9 @@ Options:
 EOF
 
   if [[ $# -ne 0 ]]; then
-  	die "unknown option $*"
+    die "unknown option $*"
   else
-  	exit 0
+    exit 0
   fi
 }
 
@@ -40,29 +40,29 @@ main() {
   local input_fd=0 # stdin
   local output_fd=1 # stdout
   while [[ $# -gt 0 ]]; do
-  	case $1 in
-  	--input)
-  		if ! exec 3< "$2"; then
-  			die "Failed to open input file '$2'"
-  		fi
-  		input_fd=3
-  		shift
-  		;;
-  	--output)
-  		if ! exec 4> "$2"; then
-  			die "Failed to open output file '$2'"
-  		fi
-  		output_fd=4
-  		shift
-  		;;
-  	-h|--help)
-  		usage
-  		;;
-  	*)
-  		usage "$1"
-  		;;
-  	esac
-  	shift
+    case $1 in
+    --input)
+      if ! exec 3< "$2"; then
+        die "Failed to open input file '$2'"
+      fi
+      input_fd=3
+      shift
+      ;;
+    --output)
+      if ! exec 4> "$2"; then
+        die "Failed to open output file '$2'"
+      fi
+      output_fd=4
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      usage "$1"
+      ;;
+    esac
+    shift
   done
 
   # A `vbprivk` is comprised of an 8 byte header followed by a DER encoded
@@ -74,8 +74,8 @@ main() {
   vb2_crypto_algorithm="$(readi64 <&"${input_fd}")"
 
   if [[ "${vb2_crypto_algorithm}" -lt 0 || \
-  		"${vb2_crypto_algorithm}" -gt 17 ]]; then
-  	die "Unknown vbprivk format"
+      "${vb2_crypto_algorithm}" -gt 17 ]]; then
+    die "Unknown vbprivk format"
   fi
 
   # Convert the remainder of the input_fd to base64.

@@ -178,14 +178,14 @@ disallowInput(){
 
 confirmOrCancel(){
   case ${currentType} in
-  	'string')
-  		if [[ ! $currentVal =~ ^[\{\[] ]]; then
-  			echo "Current value: ${currentVal}"
-  		fi
-  		;;
-  	'number')
-  		echo "Current value: ${currentVal}"
-  		;;
+    'string')
+      if [[ ! $currentVal =~ ^[\{\[] ]]; then
+        echo "Current value: ${currentVal}"
+      fi
+      ;;
+    'number')
+      echo "Current value: ${currentVal}"
+      ;;
   esac
   echo -e "${D}(Press Enter to edit, Esc to cancel)${N}"
   read -rsn1 k
@@ -199,54 +199,54 @@ editJsonValue(){
   local currentVal=$(jq -r --arg k "$key" '.device[$k]' "$jsonFile")
 
   if [ "$currentType" == "boolean" ]; then
-  	newVal="true"; [ "$currentVal" == "true" ] && newVal="false"
-  	jq --arg k "$key" --argjson v "$newVal" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+    newVal="true"; [ "$currentVal" == "true" ] && newVal="false"
+    jq --arg k "$key" --argjson v "$newVal" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
   elif [[ "$currentType" == "string" ]]; then
-  	if [[ "$currentVal" =~ ^[\{\[] ]] && echo "$currentVal" | jq . >/dev/null 2>&1; then
-  		allowInput
-  		echo -e "${Y}Editing compressed object for ${N}$key"
-  		confirmOrCancel || { disallowInput; return; }
-  		echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
-  		"${EDITOR:-nano}" "/tmp/mosh_tmp.json"
-  		if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
-  			local minified=$(jq -c . "/tmp/mosh_tmp.json")
-  			jq --arg k "$key" --arg v "$minified" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
-  		else
-  			echo -e "${R}Invalid syntax, changes discarded.${N}"
-  			sleep 2
-  		fi
-  		rm -f "/tmp/mosh_tmp.json"
-  		disallowInput
-  	else
-  		allowInput
-  		echo -e "${B}Editing ${N}$key"
-  		confirmOrCancel || { disallowInput; return; }
-  		read -p "Enter new value: " newval
-  		jq --arg k "$key" --arg v "$newval" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
-  		disallowInput
-  	fi
+    if [[ "$currentVal" =~ ^[\{\[] ]] && echo "$currentVal" | jq . >/dev/null 2>&1; then
+      allowInput
+      echo -e "${Y}Editing compressed object for ${N}$key"
+      confirmOrCancel || { disallowInput; return; }
+      echo "$currentVal" | jq . > "/tmp/mosh_tmp.json"
+      "${EDITOR:-nano}" "/tmp/mosh_tmp.json"
+      if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
+        local minified=$(jq -c . "/tmp/mosh_tmp.json")
+        jq --arg k "$key" --arg v "$minified" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+      else
+        echo -e "${R}Invalid syntax, changes discarded.${N}"
+        sleep 2
+      fi
+      rm -f "/tmp/mosh_tmp.json"
+      disallowInput
+    else
+      allowInput
+      echo -e "${B}Editing ${N}$key"
+      confirmOrCancel || { disallowInput; return; }
+      read -p "Enter new value: " newval
+      jq --arg k "$key" --arg v "$newval" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+      disallowInput
+    fi
   elif [ "$currentType" == "number" ]; then
-  	allowInput
-  	echo -e "${B}Editing ${N}$key"
-  	confirmOrCancel || { disallowInput; return; }
-  	read -p "Enter new value: " newval
-  	jq --arg k "$key" --argjson v "$newval" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" 2>/dev/null
-  	if [ $? -eq 0 ]; then mv "${jsonFile}.tmp" "$jsonFile"; fi
-  	disallowInput
+    allowInput
+    echo -e "${B}Editing ${N}$key"
+    confirmOrCancel || { disallowInput; return; }
+    read -p "Enter new value: " newval
+    jq --arg k "$key" --argjson v "$newval" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" 2>/dev/null
+    if [ $? -eq 0 ]; then mv "${jsonFile}.tmp" "$jsonFile"; fi
+    disallowInput
   else
-  	allowInput
-  	echo -e "${Y}Warning: $key is a complicated object.${N}"
-  	confirmOrCancel || { disallowInput; return; }
-  	jq --arg k "$key" '.device[$k]' "$jsonFile" > "/tmp/mosh_tmp.json"
-  	"${EDITOR:-nano}" "/tmp/mosh_tmp.json"
-  	if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
-  		jq --arg k "$key" --argjson v "$(< /tmp/mosh_tmp.json)" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
-  	else
-  		echo -e "${R}Invalid JSON syntax. Changes discarded.${N}"
-  		sleep 2
-  	fi
-  	rm -f "/tmp/mosh_tmp.json"
-  	disallowInput
+    allowInput
+    echo -e "${Y}Warning: $key is a complicated object.${N}"
+    confirmOrCancel || { disallowInput; return; }
+    jq --arg k "$key" '.device[$k]' "$jsonFile" > "/tmp/mosh_tmp.json"
+    "${EDITOR:-nano}" "/tmp/mosh_tmp.json"
+    if jq . "/tmp/mosh_tmp.json" &>/dev/null; then
+      jq --arg k "$key" --argjson v "$(< /tmp/mosh_tmp.json)" '.device[$k] = $v' "$jsonFile" > "${jsonFile}.tmp" && mv "${jsonFile}.tmp" "$jsonFile"
+    else
+      echo -e "${R}Invalid JSON syntax. Changes discarded.${N}"
+      sleep 2
+    fi
+    rm -f "/tmp/mosh_tmp.json"
+    disallowInput
   fi
 }
 
@@ -258,87 +258,87 @@ submenu(){
   local options=()
 
   loadData(){
-  	options=()
-  	for k in "${keys[@]}"; do
-  		local val=$(jq -r --arg k "$k" '.device[$k]' "$jsonFile")
-  		local vtype=$(jq -r --arg k "$k" '.device[$k] | type' "$jsonFile")
-  		local dispName="${k:0:28}"
-  		[[ ${#k} -gt 28 ]] && dispName="${dispName}.."
-  		if [ "$vtype" == "boolean" ]; then
-  			[[ "$val" == "true" ]] && options+=("[${G}ON${N}]  $dispName") || options+=("[${R}OFF${N}] $dispName")
-  		elif [ "$vtype" == "array" ] || [ "$vtype" == "object" ]; then
-  			options+=("[${Y}{..}${N}] $dispName")
-  		else
-  			if [[ "$vtype" == "string" && "$val" =~ ^[\{\[] ]] && echo "$val" | jq . >/dev/null 2>&1; then
-  				options+=("[${Y}{\"${N}] $dispName")
-  			else
-  				local dispVal="${val:0:12}"
-  				[[ ${#val} -gt 12 ]] && dispVal="${dispVal}.."
-  				options+=("[${B}${dispVal//$'\n'/ }${N}] $dispName")
-  			fi
-  		fi
-  	done
-  	options+=("<-- Back")
+    options=()
+    for k in "${keys[@]}"; do
+      local val=$(jq -r --arg k "$k" '.device[$k]' "$jsonFile")
+      local vtype=$(jq -r --arg k "$k" '.device[$k] | type' "$jsonFile")
+      local dispName="${k:0:28}"
+      [[ ${#k} -gt 28 ]] && dispName="${dispName}.."
+      if [ "$vtype" == "boolean" ]; then
+        [[ "$val" == "true" ]] && options+=("[${G}ON${N}]  $dispName") || options+=("[${R}OFF${N}] $dispName")
+      elif [ "$vtype" == "array" ] || [ "$vtype" == "object" ]; then
+        options+=("[${Y}{..}${N}] $dispName")
+      else
+        if [[ "$vtype" == "string" && "$val" =~ ^[\{\[] ]] && echo "$val" | jq . >/dev/null 2>&1; then
+          options+=("[${Y}{\"${N}] $dispName")
+        else
+          local dispVal="${val:0:12}"
+          [[ ${#val} -gt 12 ]] && dispVal="${dispVal}.."
+          options+=("[${B}${dispVal//$'\n'/ }${N}] $dispName")
+        fi
+      fi
+    done
+    options+=("<-- Back")
   }
 
   clear
   loadData
   while :; do
-  	local numOptions=${#options[@]}
-  	local termHeight=$(tput lines)
-  	local termWidth=$(tput cols)
-  	local maxRows=$((termHeight - 6))
-  	local colWidth=42
-  	local numCols=$((termWidth / colWidth))
-  	[[ $numCols -lt 1 ]] && numCols=1
+    local numOptions=${#options[@]}
+    local termHeight=$(tput lines)
+    local termWidth=$(tput cols)
+    local maxRows=$((termHeight - 6))
+    local colWidth=42
+    local numCols=$((termWidth / colWidth))
+    [[ $numCols -lt 1 ]] && numCols=1
 
-  	local itemsPerPage=$((maxRows * numCols))
-  	local currentPage=$((subSelectedIndex / itemsPerPage))
-  	local pageStart=$((currentPage * itemsPerPage))
+    local itemsPerPage=$((maxRows * numCols))
+    local currentPage=$((subSelectedIndex / itemsPerPage))
+    local pageStart=$((currentPage * itemsPerPage))
 
-  	tput cup 0 0
-  	echo -e "${P}=== $title (Page $((currentPage + 1))) ===${N}"
-  	[[ $title == Reporting ]] && \
-  	echo -e "${B}NOTE: Changing device policies stops reporting to the Google Admin Console. Modifying these does nothing.${N}\n"
-  	for r in $(seq 0 $((maxRows - 1))); do
-  		tput cup $((r + 2)) 0
-  		for c in $(seq 0 $((numCols - 1))); do
-  			local idx=$((pageStart + r + (c * maxRows)))
-  			if [ $idx -lt $numOptions ]; then
-  				local out="${options[$idx]}"
-  				if [ $idx -eq $subSelectedIndex ]; then
-  					printf "\e[7m %-${colWidth}s \e[0m" "$out"
-  				else
-  					printf " %-${colWidth}s " "$out"
-  				fi
-  			fi
-  		done
-  		tput el
-  	done
-  	tput ed
+    tput cup 0 0
+    echo -e "${P}=== $title (Page $((currentPage + 1))) ===${N}"
+    [[ $title == Reporting ]] && \
+    echo -e "${B}NOTE: Changing device policies stops reporting to the Google Admin Console. Modifying these does nothing.${N}\n"
+    for r in $(seq 0 $((maxRows - 1))); do
+      tput cup $((r + 2)) 0
+      for c in $(seq 0 $((numCols - 1))); do
+        local idx=$((pageStart + r + (c * maxRows)))
+        if [ $idx -lt $numOptions ]; then
+          local out="${options[$idx]}"
+          if [ $idx -eq $subSelectedIndex ]; then
+            printf "\e[7m %-${colWidth}s \e[0m" "$out"
+          else
+            printf " %-${colWidth}s " "$out"
+          fi
+        fi
+      done
+      tput el
+    done
+    tput ed
 
-  	read -rsn1 key
-  	if [[ "$key" == $'\x1b' ]]; then
-  		read -rsn2 -t 0.05 keyseq
-  		while read -rsn1 -t 0.01 _; do :; done
-  		[[ -z "$keyseq" ]] && break
-  		case "$keyseq" in
-  			'[A') subSelectedIndex=$(((subSelectedIndex - 1 + numOptions) % numOptions)) ;;
-  			'[B') subSelectedIndex=$(((subSelectedIndex + 1) % numOptions)) ;;
-  			'[C') [[ $((subSelectedIndex + maxRows)) -lt $numOptions ]] && subSelectedIndex=$((subSelectedIndex + maxRows)) ;;
-  			'[D') [[ $((subSelectedIndex - maxRows)) -ge 0 ]] && subSelectedIndex=$((subSelectedIndex - maxRows)) ;;
-  		esac
-  	elif [[ "$key" == $'\x7f' || "$key" == $'\b' ]]; then
-  		break
-  	elif [[ "$key" == "" ]]; then
-  		if [ $subSelectedIndex -eq $((numOptions - 1)) ]; then
-  			break
-  		else
-  			editJsonValue "${keys[$subSelectedIndex]}"
-  			loadData
-  			clear
-  		fi
-  	fi
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+      read -rsn2 -t 0.05 keyseq
+      while read -rsn1 -t 0.01 _; do :; done
+      [[ -z "$keyseq" ]] && break
+      case "$keyseq" in
+        '[A') subSelectedIndex=$(((subSelectedIndex - 1 + numOptions) % numOptions)) ;;
+        '[B') subSelectedIndex=$(((subSelectedIndex + 1) % numOptions)) ;;
+        '[C') [[ $((subSelectedIndex + maxRows)) -lt $numOptions ]] && subSelectedIndex=$((subSelectedIndex + maxRows)) ;;
+        '[D') [[ $((subSelectedIndex - maxRows)) -ge 0 ]] && subSelectedIndex=$((subSelectedIndex - maxRows)) ;;
+      esac
+    elif [[ "$key" == $'\x7f' || "$key" == $'\b' ]]; then
+      break
+    elif [[ "$key" == "" ]]; then
+      if [ $subSelectedIndex -eq $((numOptions - 1)) ]; then
+        break
+      else
+        editJsonValue "${keys[$subSelectedIndex]}"
+        loadData
+        clear
+      fi
+    fi
   done
   clear
 }
@@ -354,53 +354,53 @@ mainNumOptions=${#mainMenuOptions[@]}
 
 full_menu(){
   while :; do
-  	tput cup 0 0
-  	main_menu_logo
-  	echo ""
-  	for i in "${!mainMenuOptions[@]}"; do
-  		if [[ $i -eq $mainSelectedIndex ]]; then
-  			printf "\e[7m > %-40s \e[0m\n" "${mainMenuOptions[$i]}"
-  		else
-  			printf "   %-45s\n" "${mainMenuOptions[$i]}"
-  		fi
-  	done
-  	tput ed
+    tput cup 0 0
+    main_menu_logo
+    echo ""
+    for i in "${!mainMenuOptions[@]}"; do
+      if [[ $i -eq $mainSelectedIndex ]]; then
+        printf "\e[7m > %-40s \e[0m\n" "${mainMenuOptions[$i]}"
+      else
+        printf "   %-45s\n" "${mainMenuOptions[$i]}"
+      fi
+    done
+    tput ed
 
-  	read -rsn1 key
-  	if [[ "$key" == $'\x1b' ]]; then
-  		read -rsn2 -t 0.05 keyseq
-  		while read -rsn1 -t 0.01 _; do :; done
-  		case "$keyseq" in
-  			'[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
-  			'[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
-  		esac
-  	elif [[ "$key" =~ [1-7] ]]; then
-  		mainSelectedIndex=$((key - 1))
-  	elif [[ "$key" == "" ]]; then
-  		case $mainSelectedIndex in
-  			0) submenu "Restrictions" "${RESTRICTIONS[@]}" ;;
-  			1) submenu "Reporting" "${REPORTING[@]}" ;;
-  			2) submenu "Enterprise Settings" "${ENTERPRISE[@]}" ;;
-  			3) submenu "Misc Settings" "${MISC[@]}" ;;
-  			4)
-  				allowInput
-  				echo -e "${G}Applying device policies!${N}"
-  				python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
-  			5)
-  				allowInput
-  				echo -e "${Y}Reverting changes!${N}"
-  				pushd /var/lib/devicesettings &> /dev/null
-  				mv owner.key.bak.enterprise owner.key &> /dev/null
-  				local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
-  				[[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
-  				popd &> /dev/null
-  				rm -rf $jsonFile
-  				echo -e "${G}Done!${N}"; sleep 2; restart ui; exit 0 ;;
+    read -rsn1 key
+    if [[ "$key" == $'\x1b' ]]; then
+      read -rsn2 -t 0.05 keyseq
+      while read -rsn1 -t 0.01 _; do :; done
+      case "$keyseq" in
+        '[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
+        '[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
+      esac
+    elif [[ "$key" =~ [1-7] ]]; then
+      mainSelectedIndex=$((key - 1))
+    elif [[ "$key" == "" ]]; then
+      case $mainSelectedIndex in
+        0) submenu "Restrictions" "${RESTRICTIONS[@]}" ;;
+        1) submenu "Reporting" "${REPORTING[@]}" ;;
+        2) submenu "Enterprise Settings" "${ENTERPRISE[@]}" ;;
+        3) submenu "Misc Settings" "${MISC[@]}" ;;
+        4)
+          allowInput
+          echo -e "${G}Applying device policies!${N}"
+          python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
+        5)
+          allowInput
+          echo -e "${Y}Reverting changes!${N}"
+          pushd /var/lib/devicesettings &> /dev/null
+          mv owner.key.bak.enterprise owner.key &> /dev/null
+          local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
+          [[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
+          popd &> /dev/null
+          rm -rf $jsonFile
+          echo -e "${G}Done!${N}"; sleep 2; restart ui; exit 0 ;;
         6)
           exit 0 ;;
-  		esac
-  		clear
-  	fi
+      esac
+      clear
+    fi
   done
 }
 

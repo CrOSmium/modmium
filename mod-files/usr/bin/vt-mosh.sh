@@ -35,7 +35,7 @@ if [[ -d /usr/local/nix/store ]]; then
   # but the shell wouldn't open if .bashrc wasn't sourced
   # chicken and egg. we fix it here.
   if ! mountpoint -q /nix; then
-  	sudo mkdir -p /nix
+    sudo mkdir -p /nix
     sudo mount --bind /usr/local/nix /nix
   fi
   sudo source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
