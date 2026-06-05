@@ -1,4 +1,4 @@
-If you would like to contribute, we accept PR's! Please don't open PR's into the stable branch though, everything new goes through nightly first.
+If you would like to contribute, we accept PR's! **Please don't open PR's into the stable branch though**, everything new goes through nightly first.
 
 ## repo layout
 (thank you mariah!)

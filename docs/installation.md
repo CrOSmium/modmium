@@ -3,6 +3,7 @@
 > The "Emergency Revert" option in MOSH means keeping a firmware backup isn't *strictly necessary*, however, it is still best practice to keep one in case your VPD gets messed up somehow.
 > WP (and APROV if on Ti50) **must** be disabled before installation, the script will refuse to run if it is on.
 
+
 ## Pros and Cons
 * VT2 Installation:
   * +: Doesn't require a linux machine to build
@@ -23,6 +24,9 @@
 4. After devfw is installed, reboot, then run the command again to install Modmium to disk (this is necessary to make the rootfs read-writable).
 5. Return to secure mode.
 6. After it reboots, go through OOBE as normal and you'll be enrolled.
+
+> [!WARNING]
+> If you're using modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
 
 ## Recovery Image
 1. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) for a how-to).

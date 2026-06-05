@@ -15,7 +15,6 @@ source /usr/lib/libmosh.sh
 if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   mkdir -p /usr/local/share
   rm -rf /usr/local/share/policy-test-tool
-  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
 
   source /etc/profile # emerge breaks without this
   echo -e "${B}Installing required dependencies...${N}"
@@ -28,9 +27,11 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   ldconfig # emerge breaks without this too
   emerge cryptography nano pyyaml protobuf-python
 
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   touch $DEVPOL_FILE
 fi
 if [[ ! -f "$jsonFile" ]]; then
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool || exit 1
   ldconfig
   echo -e "${B}Dumping device policy to json...${N}"
@@ -347,7 +348,7 @@ main_menu_logo(){
   echo -e "Use arrows to navigate. Enter to select. Esc to go back."
 }
 
-mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies" "6) Reset All Changes")
+mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) Misc" "5) Apply Policies" "6) Reset All Changes" "7) Exit")
 mainSelectedIndex=0
 mainNumOptions=${#mainMenuOptions[@]}
 
@@ -373,7 +374,7 @@ full_menu(){
   			'[A') mainSelectedIndex=$(((mainSelectedIndex - 1 + mainNumOptions) % mainNumOptions)) ;;
   			'[B') mainSelectedIndex=$(((mainSelectedIndex + 1) % mainNumOptions)) ;;
   		esac
-  	elif [[ "$key" =~ [1-6] ]]; then
+  	elif [[ "$key" =~ [1-7] ]]; then
   		mainSelectedIndex=$((key - 1))
   	elif [[ "$key" == "" ]]; then
   		case $mainSelectedIndex in
@@ -395,6 +396,8 @@ full_menu(){
   				popd &> /dev/null
   				rm -rf $jsonFile
   				echo -e "${G}Done!${N}"; sleep 2; restart ui; exit 0 ;;
+        6)
+          exit 0 ;;
   		esac
   		clear
   	fi
