@@ -6,7 +6,7 @@
 
 ## Pros and Cons
 * VT2 Installation:
-  * +: Doesn't require a linux machine to build
+  * +: Doesn't require a linux environment to build
   * +: More convenient to install
   * -: Requires internet connection every time you install
   * -: Doesn't come with bootsplashes or policy.json pre-installed
@@ -14,10 +14,14 @@
   * +: Once the image is created, no internet connection is required to install
   * +: Can prepare bootsplashes and policy.json
   * +: Allows custom modifications to Modmium
-  * -: Requires a linux machine to build
+  * -: Requires a linux environment to build (you can use WSL if you're building on Windows. the dependencies will be the same as Ubuntu)
   * -: More complicated to install
 
 ## VT2 Installation
+> [!NOTE]
+> *F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
+>
+> *This varies across devices.*
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
 2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
 3. Open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>`
@@ -45,5 +49,5 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 
 ## Flags (ADVANCED USERS ONLY)
 * `modmium.sh` flags:
-  * `-u`/`--userkeys`: if you have a usb drive with your own signing keys on them, you can use it. be sure to plug it into the chromebook before running `modmium.sh`; yes, even the second time (`-b` will be ignored if you pass `-u`)
-  * `-b`/`--backup`: default true, whether or not to create a firmware backup. pass `--nobackup` if you are absolutely certain you don't need one (strongly advise you don't do this, but if you know what you're doing, we can't stop you).
+  * `-u`/`--userkeys`: If you have a USB drive with your own signing keys on them, you can use it. Be sure to plug it into the chromebook before running `modmium.sh`; yes, even the second time (`-b` will be ignored if you pass `-u`.)
+  * `-b`/`--backup`: default true, whether or not to create a firmware backup. pass `--nobackup` if you are absolutely certain you don't need one (We recommend you **don't** do this, but if you know what you're doing, we can't stop you).

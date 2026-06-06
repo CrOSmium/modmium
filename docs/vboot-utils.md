@@ -2,8 +2,10 @@
 * Your distro doesn't provide vboot-utils
 * Your distro's package is super outdated 
 In these cases, you are able to compile it from source (though running tests will fail unless you satisfy all dependencies, this script only really relies on futility and vbutil_kernel, both of which do not interact with chromeos-flashrom or coreboot).
+* You could be using WSL to build and got a "manual intervention" error trying to install it automatically.
 ## Building
-(Note, this assumes you have the standard toolchain; git, a compiler, etc..)
+> [!NOTE]
+> This assumes you have the standard toolchain; git, a compiler, etc..
 ```bash
 git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference --depth 1 # depth 1 to save time
 cd vboot_reference

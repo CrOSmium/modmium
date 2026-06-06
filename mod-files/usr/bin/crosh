@@ -1,6 +1,24 @@
 #!/bin/bash
 # written by DMD
 
+# -- CRITICAL UPDATE NOTICE THING --
+updch() {
+  hr=$(date +%H)
+  [[ -f /root/.iamsecure ]] && return
+  curnum=$(cat "/usr/share/.modfwver" 2>/dev/null || echo 0)
+  if [[ $curnum == 9999 ]]; then
+    CRITUPD=1
+    return
+  fi
+  [[ $hr -lt 13 || $hr -gt 17 || $((RANDOM % 8)) -ne 0 ]] && return # 1/4 chance to check the modfwver, and only from 1-6 PM local
+  remote=$(curl -sL "https://dmdtutorials.com/modfwver.txt" | tr -d '\r\n[:space:]')
+  
+  if [[ $remote -gt $curnum ]]; then 
+    CRITUPD=1
+    echo "9999" > /usr/share/.modfwver
+  fi
+}
+
 # -- LOGIN PROMPT --
 login() {
   passwd="$(sudo cat /mnt/stateful_partition/etc/mosh.passwd 2>/dev/null)"
@@ -37,6 +55,7 @@ stty -echo
 echo -ne "\033]0;MOSH\007"
 source /usr/lib/libmosh.sh
 login
+updch
 if [[ -d /usr/local/nix/store ]]; then
   # issues can get caused if a user has a custom shell.
   # before, this code only ran if .bashrc was sourced,
@@ -76,7 +95,7 @@ misc(){
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-
+[[ $CRITUPD == 1 ]] && menuText="\n${R}Warning: There is a critical Modmium update available, please update Modmium whenever possible.${N}\n"
 menu_reset() {
   options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
   functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
