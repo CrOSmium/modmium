@@ -86,7 +86,7 @@ EOF
   DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
   DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
   DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-  DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels" "m"
+  DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels. Also adds a shell." "m"
   DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys. If only this flag is passed, then userkeys will be generated without building an image." "u"
   DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to back up user-made signing keys. Do not disable unless you know what you're doing." "ba"
   DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
@@ -186,11 +186,10 @@ removeVerity(){
   for part in 2 4; do
     echo -e "${G}Dumping and modifying kernel ${part} commandline...${N}"
     futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
-    [ $part -eq 2 ] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
-    if [ $part -eq 4 ]; then
-      sed -i "s|cros_secure|cros_secure cros_debug|g" config_4.txt
+    [[ $part -eq 2 ]] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
+    if [[ $part -eq 4 ]]; then
+      sed -i "s|cros_secure|cros_debug|g" config_4.txt
     fi
-    sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
 
     if [[ -n $FLAGS_kernver ]]; then
       kernver=$FLAGS_kernver
@@ -210,9 +209,12 @@ removeVerity(){
   if [[ $FLAGS_minios == $FLAGS_TRUE ]]; then
     for part in 9 10; do
       echo -e "${G}Resigning miniOS kernel ${part}...${N}"
+      futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
+      sed -i "s|cros_secure|cros_debug|g" config_${part}.txt
       futility vbutil_kernel --repack ${loopDev}p$part \
         --keyblock ${keydir}/minios_kernel.keyblock \
         --signprivate ${keydir}/minios_kernel_data_key.vbprivk \
+        --config config_${part}.txt \
         --oldblob ${loopDev}p$part
     done
   fi
