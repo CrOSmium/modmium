@@ -86,7 +86,7 @@ EOF
   DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
   DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
   DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-  DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels. Also adds a shell." "m"
+  DEFINE_boolean minios "$FLAGS_TRUE" "Whether or not to resign the miniOS (internet recovery) kernels. Also adds a shell." "m"
   DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys. If only this flag is passed, then userkeys will be generated without building an image." "u"
   DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to back up user-made signing keys. Do not disable unless you know what you're doing." "ba"
   DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
@@ -124,13 +124,12 @@ checkFlagValidity(){
     FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
     local boardInList=$FLAGS_FALSE
     for board in $boards; do
-      if [[ "$FLAGS_board" == "$board" ]]; then
-        boardInList=$FLAGS_TRUE
-      fi
+      [[ $FLAGS_board == $board ]] && boardInList=$FLAGS_TRUE
     done
-    if [[ $boardInList != $FLAGS_TRUE ]]; then
-      fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
-    fi
+    [[ $boardInList == $FLAGS_TRUE ]] || fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
+    for board in $minios_boards; do
+      [[ $FLAGS_board == $board ]] || FLAGS_minios=$FLAGS_FALSE
+    done
   fi
   if [[ -n $FLAGS_kernver ]]; then
     if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ && ${#FLAGS_kernver} -lt 3 ]]; then
