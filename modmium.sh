@@ -334,11 +334,11 @@ modmiumInstall(){
     echo -e "${R}Dependencies not installed, installing...${N}"
     source /etc/profile # required to get emerge working
     if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-      printf 'y\n\nn' | dev_install --reinstall
+      printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
       touch /mnt/stateful_partition/.devinstall_complete
     fi
     ldconfig # reload shared libraries to include python libs
-    emerge git file
+    emerge git file || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
     cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup

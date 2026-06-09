@@ -10,18 +10,6 @@ source /usr/lib/libmosh.sh
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
-if ! which git &>/dev/null || ! which file &>/dev/null; then
-  echo -e "${R}Dependencies not installed, installing...${N}"
-  source /etc/profile # required to get emerge working in mosh
-  if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-    printf 'y\n\nn' | dev_install --reinstall
-    touch /mnt/stateful_partition/.devinstall_complete
-  fi
-  ldconfig # reload shared libraries to include python libs
-  emerge git file protobuf-python
-  cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
-fi
-
 fail(){
   echo -e "$1"
   start powerd &>/dev/null
@@ -37,6 +25,18 @@ fail(){
   factoryreset=0
   exit 0
 }
+
+if ! which git &>/dev/null || ! which file &>/dev/null; then
+  echo -e "${R}Dependencies not installed, installing...${N}"
+  source /etc/profile # required to get emerge working in mosh
+  if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
+    touch /mnt/stateful_partition/.devinstall_complete
+  fi
+  ldconfig # reload shared libraries to include python libs
+  emerge git file protobuf-python
+  cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+fi
 
 checkWP(){
   writeprotect=$(flashrom --wp-status 2>&1 | grep "disabled")
