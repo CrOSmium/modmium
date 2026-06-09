@@ -86,7 +86,6 @@ EOF
   DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
   DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
   DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-  DEFINE_boolean minios "$FLAGS_TRUE" "Whether or not to resign the miniOS (internet recovery) kernels. Also adds a shell." "m"
   DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys. If only this flag is passed, then userkeys will be generated without building an image." "u"
   DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to back up user-made signing keys. Do not disable unless you know what you're doing." "ba"
   DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
@@ -105,12 +104,19 @@ EOF
 checkFlagValidity(){
   if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
     fail "${R}File not found, please provide a path to an actual recovery image.${N}"
-  elif [[ -n $FLAGS_image && ( $FLAGS_image == "modmium.bin" ) ]]; then
-    fail "${R}Input image cannot have the same name as output image.${N} Rename it to something other than ${B}modmium.bin${N}"
+  else
+    local loopDev=$(losetup -Pf --show $FLAGS_image)
+    mount -o ro ${loopDev}p3 mnt --mkdir
+    local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
+    for candidate in $minios_boards; do
+      [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
+    done
+    umount mnt
+    rm -rf mnt
+    losetup -d ${loopDev}
   fi
-  if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
-    fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
-  fi
+
+  [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]] && fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   if [[ ( -n $FLAGS_version ) && ( $FLAGS_version -lt 131 ) ]]; then
     echo -e "${R}Versions below 131 are NOT supported, and issue reports involving them will be discarded.${B} Continue anyway? [y/N]${N}"
     read -rep ""
@@ -128,7 +134,7 @@ checkFlagValidity(){
     done
     [[ $boardInList == $FLAGS_TRUE ]] || fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
     for board in $minios_boards; do
-      [[ $FLAGS_board == $board ]] || FLAGS_minios=$FLAGS_FALSE
+      [[ $FLAGS_board == $board ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
     done
   fi
   if [[ -n $FLAGS_kernver ]]; then
@@ -136,9 +142,7 @@ checkFlagValidity(){
       fail "${R}Kernver is not hex or contains leading \"0x\".${N}"
     fi
   fi
-  if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
-    fail "${R}Policy json file doesn't exist.${N}"
-  fi
+  [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]] && fail "${R}Policy json file doesn't exist.${N}"
   if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
     if ! silence inkscape --version; then
       fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
