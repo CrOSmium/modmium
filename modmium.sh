@@ -263,6 +263,7 @@ checkWP(){
                         ;;
                     *) fail "How did we get here..?" ;;
                 esac
+            fi
         fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
         fi
     fi
