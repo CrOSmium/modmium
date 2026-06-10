@@ -108,3 +108,7 @@ case $(tty 2>/dev/null) in
       fi
   ;;
 esac
+
+if [ -d /nix/var/nix/profiles/default/bin ]; then
+    export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:$PATH"
+fi
