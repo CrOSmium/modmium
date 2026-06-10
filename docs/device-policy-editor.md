@@ -19,4 +19,4 @@ Policies are signed by a private key, and the corresponding public key is used t
     * Restrictions/VirtualMachinesAllowed (REQUIRED for Borealis/Crostini)
     * Restrictions/UnaffiliatedArcAllowed (Enable Play store, it DOES function if you set user policies, this reduces jank/odds of it breaking)
     * Enterprise Settings/DeviceOpenNetworkConfiguration (May contain `"DisableNetworkTypes": [ "VPN" ]` and/or `[ "Cellular" ]`  modify to be blank `"DisableNetworkTypes": []` if you want to use VPN/Mobile data)
-* When done editing, either press **[Ctrl+C]** to return to MOSH, then you can press `Apply Policies` to apply your changes!
+* When done editing, press **[Ctrl+C]** to return to MOSH, then you can press `Apply Policies` to apply your changes!
