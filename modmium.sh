@@ -444,7 +444,7 @@ flashDevFW(){
   ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 
   if [[ $DEVFW != 1 ]]; then
-    echo -e "Making firmware backup"
+    echo -e "Making firmware backup..."
     flashrom -r $BACKUP/backup_$(date +"%Y%m%d").rom
     # flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
     if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
