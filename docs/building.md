@@ -1,6 +1,6 @@
 ## Build instructions
 ```sh
-git clone https://github.com/CrOSmium/modmium && cd modmium 
+git clone https://github.com/CrOSmium/modmium -b <branch> && cd modmium # branches are "stable" and "nightly" 
 # if you want to download an image and autobuild
 ./build-image.sh -b <board> -v <version> <flags>
 # if you want to use a local image (non-destructive)

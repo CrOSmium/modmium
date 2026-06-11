@@ -37,9 +37,9 @@ credits(){
   cat <<EOF | xargs -0 echo -ne
 Credits:
 ${R}mariahscarycarey: ${P}Lead developer; made image builder, device policy editor frontend, ChromeOS version switcher, did most bugfixing, and MANY small changes to other code.${N}
-\033[38;5;78mdmd: Project lead; made MOSH/libmosh, devfw & MPkeys manager, chromeos-setdevpasswd, base ChromeOS updater, post \033[38;5;126mkxtzownsu\033[38;5;78m code review, and lots of small changes.${N}
+\033[38;5;78mdmd: Project lead; made MOSH/libmosh, base devfw & MPkeys manager, chromeos-setdevpasswd, base ChromeOS updater, post \033[38;5;126mkxtzownsu\033[38;5;78m code review, and lots of small changes.${N}
 ${Y}lxrd: Discovered policy-test-tool and created device policy editing script, made a script to let us stream ChromeOS updates, integrated nix into Modmium.${N}
-\033[38;5;216mcodenerd87: Wrote code for restoring MPkeys, fixed devfw flashing on geralt.${N}
+\033[38;5;216mcodenerd87: Wrote code for restoring MPkeys, fixed devfw flashing on geralt, firmware manager${N}
 \033[38;5;126mkxtzownsu: Did code review to make sure we weren't skidding until he stepped down [05-26-2026].${N}
 \033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
@@ -86,7 +86,6 @@ EOF
   DEFINE_string board "" "Name of board to autobuild (use if not manual building)" "b"
   DEFINE_string version "" "MILESTONE of version to autobuild (use if not manual building)" "v"
   DEFINE_string kernver "" "Kernver to sign kernels with (leave blank to not change). Don't put a leading 0x0001000 (\"0x00010007\" bad, \"7\" good)." "k"
-  DEFINE_boolean minios "$FLAGS_FALSE" "Whether or not to resign the miniOS (internet recovery) kernels" "m"
   DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to generate user-made signing keys. If only this flag is passed, then userkeys will be generated without building an image." "u"
   DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to back up user-made signing keys. Do not disable unless you know what you're doing." "ba"
   DEFINE_string json "" "Path to chrome://policy exported json (optional)." "j"
@@ -105,12 +104,19 @@ EOF
 checkFlagValidity(){
   if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
     fail "${R}File not found, please provide a path to an actual recovery image.${N}"
-  elif [[ -n $FLAGS_image && ( $FLAGS_image == "modmium.bin" ) ]]; then
-    fail "${R}Input image cannot have the same name as output image.${N} Rename it to something other than ${B}modmium.bin${N}"
+  else
+    local loopDev=$(losetup -Pf --show $FLAGS_image)
+    mount -o ro ${loopDev}p3 mnt --mkdir
+    local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
+    for candidate in $minios_boards; do
+      [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
+    done
+    umount mnt
+    rm -rf mnt
+    losetup -d ${loopDev}
   fi
-  if [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]]; then
-    fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
-  fi
+
+  [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]] && fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   if [[ ( -n $FLAGS_version ) && ( $FLAGS_version -lt 131 ) ]]; then
     echo -e "${R}Versions below 131 are NOT supported, and issue reports involving them will be discarded.${B} Continue anyway? [y/N]${N}"
     read -rep ""
@@ -124,22 +130,19 @@ checkFlagValidity(){
     FLAGS_board=$(echo "$FLAGS_board" | tr '[:upper:]' '[:lower:]') # This is needed due to the json file storing all boards as lowercase values
     local boardInList=$FLAGS_FALSE
     for board in $boards; do
-      if [[ "$FLAGS_board" == "$board" ]]; then
-        boardInList=$FLAGS_TRUE
-      fi
+      [[ $FLAGS_board == $board ]] && boardInList=$FLAGS_TRUE
     done
-    if [[ $boardInList != $FLAGS_TRUE ]]; then
-      fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
-    fi
+    [[ $boardInList == $FLAGS_TRUE ]] || fail "${R}Invalid board name.${N} See ${B}https://dl.crosbreaker.com/recovery-images${N} for a complete list."
+    for board in $minios_boards; do
+      [[ $FLAGS_board == $board ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
+    done
   fi
   if [[ -n $FLAGS_kernver ]]; then
     if ! [[ $FLAGS_kernver =~ ^[0-9A-Fa-f]{1,}$ && ${#FLAGS_kernver} -lt 3 ]]; then
       fail "${R}Kernver is not hex or contains leading \"0x\".${N}"
     fi
   fi
-  if [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]]; then
-    fail "${R}Policy json file doesn't exist.${N}"
-  fi
+  [[ -n $FLAGS_json && ! ( -f "$FLAGS_json" ) ]] && fail "${R}Policy json file doesn't exist.${N}"
   if [[ $FLAGS_bootsplash == $FLAGS_TRUE ]]; then
     if ! silence inkscape --version; then
       fail "${R}Inkscape NOT installed, either don't use a custom bootsplash or install inkscape.${N}"
@@ -186,11 +189,10 @@ removeVerity(){
   for part in 2 4; do
     echo -e "${G}Dumping and modifying kernel ${part} commandline...${N}"
     futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
-    [ $part -eq 2 ] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
-    if [ $part -eq 4 ]; then
-      sed -i "s|cros_secure|cros_secure cros_debug|g" config_4.txt
+    [[ $part -eq 2 ]] && sed -i "s|root=PARTUUID=[^ ]*|root=PARTUUID=$rootUUID|g" config_2.txt
+    if [[ $part -eq 4 ]]; then
+      sed -i "s|cros_secure|cros_debug|g" config_4.txt
     fi
-    sed -i 's/  */ /g; s/^ //; s/ $//' config_${part}.txt # fix double spacing
 
     if [[ -n $FLAGS_kernver ]]; then
       kernver=$FLAGS_kernver
@@ -210,9 +212,12 @@ removeVerity(){
   if [[ $FLAGS_minios == $FLAGS_TRUE ]]; then
     for part in 9 10; do
       echo -e "${G}Resigning miniOS kernel ${part}...${N}"
+      futility dump_kernel_config ${loopDev}p$part > config_${part}.txt
+      sed -i "s|cros_secure|cros_debug|g" config_${part}.txt
       futility vbutil_kernel --repack ${loopDev}p$part \
         --keyblock ${keydir}/minios_kernel.keyblock \
         --signprivate ${keydir}/minios_kernel_data_key.vbprivk \
+        --config config_${part}.txt \
         --oldblob ${loopDev}p$part
     done
   fi

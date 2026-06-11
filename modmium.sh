@@ -244,8 +244,26 @@ checkWP(){
     else
       echo -e "WP range non-zero, checking for HWWP."
         if [[ $(crossystem wpsw_cur) == "0" ]]; then
-        echo -e "HWWP off, continuing."
+        echo -e "HWWP off, attempting to disable SWWP."
+        flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
         else
+            if isti50=$(gsctool -a -I | grep AllowUnverifiedRo); then
+                setting=$(echo $isti50 | awk '{print $3}')
+                case $setting in
+                    Always)
+                        gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
+                        crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
+                        flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
+                        ;;
+                    Never)
+                        gsctool -a -I AllowUnverifiedRo:Always || fail "Failed to disable AP RO verification. Please open CCD and try again"
+                        gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
+                        crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
+                        flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
+                        ;;
+                    *) fail "How did we get here..?" ;;
+                esac
+            fi
         fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
         fi
     fi
@@ -334,11 +352,11 @@ modmiumInstall(){
     echo -e "${R}Dependencies not installed, installing...${N}"
     source /etc/profile # required to get emerge working
     if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-      printf 'y\n\nn' | dev_install --reinstall
+      printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
       touch /mnt/stateful_partition/.devinstall_complete
     fi
     ldconfig # reload shared libraries to include python libs
-    emerge git file
+    emerge git file || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
     cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
@@ -426,15 +444,17 @@ flashDevFW(){
   ) # we do this to *ensure* that FWMP is gone even if device_management_client is bugging out
 
   if [[ $DEVFW != 1 ]]; then
+    echo -e "Making firmware backup..."
+    flashrom -r $BACKUP/backup_$(date +"%Y%m%d").rom
     # flash gbb flags, devkeys, and set dev_firmware to 1 to prevent accidental reflashing :3
     if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
       /usr/share/vboot/bin/make_dev_ssd.sh --force -r
-      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --to /tmp/devfw.bin
+      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid $BACKUP --to /tmp/devfw.bin
       futility gbb -s /tmp/devfw.bin --flags=0xa0b1
       flashrom -w /tmp/devfw.bin
     else
       /usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
-      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid --backup_dir $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
+      /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
       futility gbb -s /tmp/devfw.bin --flags=0xa0b1
       flashrom -w /tmp/devfw.bin
     sync # sync because I dont trust ChromeOS
@@ -455,7 +475,7 @@ This requires write protection to be disabled, and it will be checked before thi
 Checking for Firmware Write Protection...
 EOF
   checkWP
-  checkAPROV
+  checkAPROV # Kinda useless now, no harm in keeping though!
 
   echo -e "Are you sure you want to flash DevFW firmware?"
   askConfirmation

@@ -13,6 +13,12 @@ POLICYFILE="/root/policy.json"
 
 # -- FUNCTIONS --
 
+fail(){
+  echo -e "$1"
+  sleep 3
+  exit 1
+}
+
 reinstall(){
   rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
   echo -e "${G}Removed .devinstall_complete and .policytesttool_setup markers.${N}"
@@ -36,7 +42,7 @@ install(){
 
   if [[ ! -f $DEVINSTALL_FILE ]]; then
     echo -e "${G}Installing required dependencies...${N}"
-    printf 'y\n\nn' | dev_install --reinstall
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
     ldconfig
     emerge protobuf-python
     touch $DEVINSTALL_FILE

@@ -25,6 +25,6 @@ if [[ -d /usr/local/nix/store ]]; then
     mkdir -p /nix
     mount --bind /usr/local/nix /nix
   fi
-  . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+  source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
   unset LD_LIBRARY_PATH
 fi

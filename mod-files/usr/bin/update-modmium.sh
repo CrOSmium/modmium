@@ -18,7 +18,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null; then
   echo -e "${R}Dependencies not installed, installing...${N}"
   source /etc/profile # required to get emerge working in mosh
   if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-    printf 'y\n\nn' | dev_install --reinstall
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
     touch /mnt/stateful_partition/.devinstall_complete
   fi
   ldconfig # reload shared libraries to include python libs

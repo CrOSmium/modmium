@@ -6,6 +6,12 @@ jsonFile="/usr/local/share/policy-test-tool/dump.json"
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 DEVPOL_FILE="/mnt/stateful_partition/.devpol_setup"
 
+fail(){
+  echo -e "$1"
+  sleep 3
+  exit 1
+}
+
 stty -echo
 tput civis
 clear
@@ -20,7 +26,7 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   echo -e "${B}Installing required dependencies...${N}"
 
   if [[ ! -f $DEVINSTALL_FILE ]]; then
-    printf 'y\n\nn' | dev_install --reinstall
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
     touch $DEVINSTALL_FILE
   fi
 
