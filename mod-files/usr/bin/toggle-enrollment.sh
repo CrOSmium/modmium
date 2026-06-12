@@ -71,7 +71,7 @@ tput civis # :whale:
 
 menu_reset() {
   menuText="\nManage Enrollment\n"
-  if [[ -f /.deprovision]]; then
+  if [[ -f /.deprovision ]]; then
   options=("Enable Enrollment" "Go Back")
   functions=("yesenroll" "quit")
   else
