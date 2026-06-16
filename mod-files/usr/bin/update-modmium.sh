@@ -280,6 +280,9 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
 
+  echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+  sync
+
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
@@ -320,6 +323,8 @@ toggleBootPriority(){
   cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
+  echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+  sync
   sleep 3
   exit
 }
