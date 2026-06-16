@@ -204,6 +204,9 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
 
+  echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+  sync
+
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
