@@ -320,10 +320,22 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
+  sync
+  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -ne "[y/N]: "
+  read pwr
+  if [[ "$pwr" =~ ^[Yy]$ ]]; then
+    echo -e "Your device ${R}will${N} powerwash on next boot."
+    echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+    sleep 0.3
+  else
+    echo -e "Your device will ${R}NOT${N} powerwash on next boot."
+    sleep 0.3
+  fi
+  echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
-  echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
   sync
   sleep 3
   exit
