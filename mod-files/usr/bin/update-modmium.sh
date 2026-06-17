@@ -356,7 +356,7 @@ toggleEnrollment(){
 }
 
 localAcc() {
-  runscript /usr/bin/localacc.sh
+  runscriptnoroot /usr/bin/localacc.sh # runscript caused problems, and update-modmium.sh is always running as root regardless
 }
 
 # -- MAIN SCRIPT --
