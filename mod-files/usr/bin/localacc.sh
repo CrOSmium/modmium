@@ -160,7 +160,6 @@ dbus-send \
   array:string:
 
 sync
-initctl restart ui
 GR=$'\033[38;5;46m'
 RE=$'\033[0m'
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
