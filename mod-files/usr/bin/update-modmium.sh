@@ -356,7 +356,6 @@ toggleEnrollment(){
 }
 
 localAcc() {
-  stty echo
   tput cnorm
   sudo bash /usr/bin/localacc.sh
   menu_reset
