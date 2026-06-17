@@ -209,8 +209,8 @@ installCros() {
   echo -e "${G}Done, reboot to return to factory ChromeOS!${N}"
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
-  cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
-  cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
+  cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
+  cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
   sleep 1
   stty -echo
   [[ $factoryreset == 1 ]] || fail "Exiting..."
