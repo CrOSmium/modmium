@@ -294,8 +294,8 @@ installCros() {
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
-  cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
-  cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
+  cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
+  cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
   sync
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
@@ -343,7 +343,7 @@ toggleBootPriority(){
     sleep 0.3
   fi
   echo -e "Switching active kernel..."
-  cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
+  cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
   sync
