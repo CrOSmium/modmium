@@ -214,12 +214,15 @@ if [[ "$SKIP_OOBE" -eq 1 ]]; then
   echo "UI restarted. Switch back to VT1 (Ctrl+Alt+F1) to continue..."
 
   while true; do
-    if [[ "$(basename "$(readlink /run/frecon/current 2>/dev/null)")" == "vt0" ]]; then
-      echo "VT1 detected, restarting UI again..."
+    cur="$(basename "$(readlink /run/frecon/current 2>/dev/null)")"
+
+    if [[ "$cur" != "vt1" && "$cur" != "vt2" && "$cur" != "vt3" ]]; then
+      echo "Detected $cur, restarting UI again..."
       sleep 1
       initctl restart ui
       break
     fi
+
     sleep 0.25
   done
 else
