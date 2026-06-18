@@ -285,7 +285,7 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
   sync
-  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
   echo -ne "[y/N]: "
   read pwr
   if [[ "$pwr" =~ ^[Yy]$ ]]; then
