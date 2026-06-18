@@ -33,5 +33,4 @@ pid=$PPID
 ggpid=$(awk '/PPid:/{print $2}' /proc/$(awk '/PPid:/{print $2}' /proc/$PPID/status 2>/dev/null)/status 2>/dev/null)
 if [ "$(cat /proc/$ggpid/comm 2>/dev/null)" = "crosh.old" ]; then 
   login
-  return 0
 fi
