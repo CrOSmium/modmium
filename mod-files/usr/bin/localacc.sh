@@ -15,6 +15,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null; then
   cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
 export PATH="/usr/local/bin:/usr/local/sbin:/usr/local/usr/bin:/usr/local/usr/sbin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH"
+export LD_LIBRARY_PATH="/usr/local/lib64:/usr/local/lib:/usr/local/usr/lib64:/usr/local/usr/lib:$LD_LIBRARY_PATH"
 
 PY="$(command -v python3 || command -v python)"
 [ -n "$PY" ] || {
