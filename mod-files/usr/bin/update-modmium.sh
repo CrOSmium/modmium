@@ -373,6 +373,7 @@ if [[ -f /etc/chrome_dev.conf ]]; then
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
   sync
   sleep 3
+  reboot -f
   exit
 }
 
