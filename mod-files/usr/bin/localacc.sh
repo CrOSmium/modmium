@@ -218,7 +218,7 @@ if [[ "$SKIP_OOBE" -eq 1 ]]; then
 
     if [[ "$cur" != "vt1" && "$cur" != "vt2" && "$cur" != "vt3" ]]; then
       echo "Detected $cur, restarting UI again..."
-      sleep 8
+      sleep 5
       initctl restart ui
       break
     fi
