@@ -35,7 +35,7 @@ def find_policy_path() -> str:
 
 STRING_ENUM_PREFIXES = {"allowed_connection_types": "CONNECTION_TYPE_"}
 
-BOOL_TRUE_DEFAULTS = {"DeviceWiFiAllowed", "DeviceAllowBluetooth", "DevicePowerwashAllowed", "DeviceHardwareVideoDecodingEnabled", "DeviceUserInitiatedFirmwareUpdatesEnabled"}
+BOOL_TRUE_DEFAULTS = {"DeviceWiFiAllowed", "DeviceAllowBluetooth", "DevicePowerwashAllowed", "DeviceHardwareVideoDecodingEnabled", "DeviceUserInitiatedFirmwareUpdatesEnabled", "DeviceUnaffiliatedCrostiniAllowed", "DeviceGuestModeEnabled"}
 
 
 def generate_keypair():

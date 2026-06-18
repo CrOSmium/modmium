@@ -20,7 +20,9 @@
 ## VT2 Installation
 > [!NOTE]
 > Minimum supported version is 131, issues/PRs about 130- will be ignored and closed
-> *F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
+
+> [!TIP]
+> F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
 >
 > *This varies across devices.*
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).

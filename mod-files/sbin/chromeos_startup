@@ -93,6 +93,7 @@ if [[ $(crossystem devsw_boot) -eq 0 ]]; then
     echo "Staging policyedit..."
     sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
     echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
+    echo "--disable-oobe-chromevox-hint-timer-for-testing" >>/etc/chrome_dev.conf
     echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
     touch /.policyedit_staged
     echo "Done"
@@ -127,6 +128,13 @@ if [[ $(crossystem devsw_boot) -eq 0 ]]; then
 else
   crossystem disable_dev_request=1
   reboot
+fi
+
+if [ -f /root/.removeskipoobeflag ]; then
+  echo "Removing one-time OOBE skip flag..."
+  sed -i '/oobe-skip-to-login/d' /etc/chrome_dev.conf
+  rm -f /root/.removeskipoobeflag
+  echo "Done"
 fi
 
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"

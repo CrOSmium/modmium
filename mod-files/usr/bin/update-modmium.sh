@@ -116,6 +116,7 @@ updateModmium() {
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
   echo -e "${G}Done! Cleaning up...${N}"
   rm -rf /mnt/stateful_partition/git/modmium
+  echo "$branch" > /.branch # actually update branch
   sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
   sleep 3
   stty -echo
@@ -235,6 +236,10 @@ installCros() {
 
   cd modmium
   mount ${installRoot} mnt --mkdir
+  if [[ -f /etc/chrome_dev.conf ]]; then
+  mkdir -p mnt/etc
+  cp -a /etc/chrome_dev.conf mnt/etc/chrome_dev.conf
+  fi
   for file in $(find mod-files -mindepth 1 -name "*"); do
     if [[ -d $file ]]; then
       :
@@ -280,7 +285,7 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
   sync
-  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
   echo -ne "[y/N]: "
   read pwr
   if [[ "$pwr" =~ ^[Yy]$ ]]; then
@@ -291,6 +296,16 @@ installCros() {
     echo -e "Your device will ${R}NOT${N} powerwash on next boot."
     sleep 0.3
   fi
+  # this is for compatability with other chromeos versions
+echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+read -r
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+  echo -e "${G}Uninstalling packages...${N}"
+  printf 'y\n' | dev_install --uninstall
+  rm -f /mnt/stateful_partition/.devinstall_complete
+else
+  echo -e "${B}Keeping packages installed.${N}"
+fi
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
@@ -330,8 +345,21 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
+if [[ -f /etc/chrome_dev.conf ]]; then
+  mkdir -p /tmp/opposite
+
+  newRoot=$((newKern + 1))
+  mount ${intdis_prefix}${newRoot} /tmp/opposite 2>/dev/null
+
+  mkdir -p /tmp/opposite/etc
+  cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
+
   sync
-  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  umount /tmp/opposite 2>/dev/null
+  rmdir /tmp/opposite 2>/dev/null
+  fi
+  sync
+  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
   echo -ne "[y/N]: "
   read pwr
   if [[ "$pwr" =~ ^[Yy]$ ]]; then
@@ -342,12 +370,23 @@ toggleBootPriority(){
     echo -e "Your device will ${R}NOT${N} powerwash on next boot."
     sleep 0.3
   fi
+  # this is for compatability with other chromeos versions
+echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+read -r
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+  echo -e "${G}Uninstalling packages...${N}"
+  printf 'y\n' | dev_install --uninstall
+  rm -f /mnt/stateful_partition/.devinstall_complete
+else
+  echo -e "${B}Keeping packages installed.${N}"
+fi
   echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
   sync
   sleep 3
+  reboot -f
   exit
 }
 

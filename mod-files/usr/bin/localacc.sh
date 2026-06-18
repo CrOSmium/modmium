@@ -19,9 +19,10 @@ ldconfig
 PY="$(command -v python3 || command -v python)"
 [ -n "$PY" ] || {
   echo "no python found :("
-  sleep 5
+  sleep 3
   exit 1
 }
+
 # -- user prompts --
 clear
 echo -e "-------------- ${G}Modmium Local Account Creator${N} --------------"
@@ -31,35 +32,67 @@ echo -e "What would you like your local account's USERNAME to be?"
 echo -ne "[USERNAME]: "
 read -re username 
 username=$(echo "$username" | tr ' ' '.' | tr '[:upper:]' '[:lower:]')
-U="$username@modmium.dev"
+while true; do
+  echo -ne "[CUSTOM DOMAIN (press enter for modmium.dev)]: "
+  read -re domain
+  domain=${domain:-modmium.dev}
+  if [[ "$domain" == *.* && "$domain" != *. ]]; then
+    break
+  else
+    echo "Invalid custom domain, it must contain at least one '.' and cannot end with '.'"
+  fi
+done
+U="$username@$domain"
 echo -e "Your account's email will be '${G}$U${N}'"
-echo -ne "[PASSWORD]: "
-read -rse pass 
-echo ""
-echo -ne "[CONFIRM PASSWORD]: "
-read -rse passconf
-echo ""
-if [[ "$pass" == "$passconf" ]]; then
-  P="$pass"
-else
-  echo -e "\nPasswords do not match!"
-  sleep 1
-  exit 1
-fi
+while true; do
+  echo -ne "[PASSWORD]: "
+  read -rse pass 
+  echo ""
+  echo -ne "[CONFIRM PASSWORD]: "
+  read -rse passconf
+  echo ""
+  if [[ "$pass" == "$passconf" ]]; then
+    P="$pass"
+    break
+  else
+    echo -e "Passwords do not match! Try again.\n"
+    sleep 1
+  fi
+done
 echo -e "What would you like your local account's DISPLAY name to be?"
 echo -ne "[DISPLAY NAME]: "
-read -r display
+read -re display
 N="$display"
 G="$username"
-
+if [[ $TERM == "xterm" ]]; then
+  while true; do
+    echo -ne "Do you want to skip OOBE? (ONLY DO THIS IF YOU HAVE NOT COMPLETED OOBE YET) [y/N]: "
+    read -r skip_oobe
+    case "${skip_oobe,,}" in
+      y|yes)
+        SKIP_OOBE=1
+        break
+        ;;
+      n|no|"")
+        SKIP_OOBE=0
+        break
+        ;;
+      *)
+        echo "Please enter Y or N."
+        ;;
+    esac
+  done
+else
+  SKIP_OOBE=0
+fi
 echo -e "Creating local account... (thanks Pilot Bell!)"
 sleep 2
+
 # -- actual account making --
 
 # Hey! if you think about removing any output from this, don't. It's very important that the user can see if it fails.
 L='gaia'
 H="$(cryptohome --action=obfuscate_user --user="$U" 2>/dev/null | tail -1)"
-
 
 cp -a "/home/chronos/Local State" "/home/chronos/Local State.bak.localacct"
 
@@ -153,7 +186,16 @@ for f in \
 do
   grep -qx -- "$f" /etc/chrome_dev.conf 2>/dev/null || echo "$f" >>/etc/chrome_dev.conf
 done
-
+RE=$'\033[0m'
+if [[ "$TERM" == "xterm-256color" ]]; then
+  echo -e "${R}Local account will be added to your current session, this may close MOSH.${RE}"
+  sleep 2
+fi
+if [[ "$SKIP_OOBE" -eq 1 ]]; then
+  grep -qx -- "--oobe-skip-to-login" /etc/chrome_dev.conf 2>/dev/null || \
+    echo "--oobe-skip-to-login" >> /etc/chrome_dev.conf
+    touch /root/.removeskipoobeflag
+fi
 dbus-send \
   --system \
   --print-reply \
@@ -166,7 +208,26 @@ dbus-send \
 
 sync
 GR=$'\033[38;5;46m'
-RE=$'\033[0m'
+[[ $TERM == "xterm-256color" ]] || initctl restart ui # this fixes a bug where it refuses to let you sign in if this is ran on the lock screen
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
-sleep 3
-exit 0
+if [[ "$SKIP_OOBE" -eq 1 ]]; then
+  initctl restart ui
+
+  echo "UI restarted. Exit out of VT to continue..."
+
+  while true; do
+    cur="$(basename "$(readlink /run/frecon/current 2>/dev/null)")"
+
+    if [[ "$cur" != "vt1" && "$cur" != "vt2" && "$cur" != "vt3" ]]; then
+      echo "Detected $cur, restarting UI again..."
+      sleep 3
+      initctl restart ui
+      break
+    fi
+
+    sleep 0.25
+  done
+else
+  sleep 3
+  exit 0
+fi
