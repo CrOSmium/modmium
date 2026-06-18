@@ -235,6 +235,10 @@ installCros() {
 
   cd modmium
   mount ${installRoot} mnt --mkdir
+  if [[ -f /etc/chrome_dev.conf ]]; then
+  mkdir -p mnt/etc
+  cp -a /etc/chrome_dev.conf mnt/etc/chrome_dev.conf
+  fi
   for file in $(find mod-files -mindepth 1 -name "*"); do
     if [[ -d $file ]]; then
       :
@@ -329,6 +333,17 @@ toggleBootPriority(){
   else
     currentKern=4
     newKern=2
+  fi
+  if [[ -f /etc/chrome_dev.conf ]]; then
+  mkdir -p /tmp/opposite
+  mount ${intdis_prefix}${newKern} /tmp/opposite 2>/dev/null
+
+  if [[ -d /tmp/opposite/etc ]]; then
+    cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
+  fi
+
+  umount /tmp/opposite 2>/dev/null
+  rmdir /tmp/opposite 2>/dev/null
   fi
   sync
   echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
