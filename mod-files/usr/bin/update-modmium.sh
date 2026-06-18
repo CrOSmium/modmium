@@ -116,6 +116,7 @@ updateModmium() {
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
   echo -e "${G}Done! Cleaning up...${N}"
   rm -rf /mnt/stateful_partition/git/modmium
+  echo "$branch" > /.branch # actually update branch
   sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
   sleep 3
   stty -echo
