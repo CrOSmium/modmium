@@ -54,7 +54,7 @@ else
 fi
 echo -e "What would you like your local account's DISPLAY name to be?"
 echo -ne "[DISPLAY NAME]: "
-read -r display
+read -re display
 N="$display"
 G="$username"
 
@@ -159,7 +159,11 @@ for f in \
 do
   grep -qx -- "$f" /etc/chrome_dev.conf 2>/dev/null || echo "$f" >>/etc/chrome_dev.conf
 done
-
+RE=$'\033[0m'
+if [[ "$TERM" == "xterm-256color" ]]; then
+  echo -e "${R}Local account will be added to your current session, this may close MOSH.${RE}"
+  sleep 2
+fi
 dbus-send \
   --system \
   --print-reply \
@@ -172,7 +176,6 @@ dbus-send \
 
 sync
 GR=$'\033[38;5;46m'
-RE=$'\033[0m'
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
 sleep 3
 exit 0
