@@ -215,6 +215,10 @@ installCros() {
     echo -e "Your device will ${R}NOT${N} powerwash on next boot."
     sleep 0.3
   fi
+  # this is for compatability with other chromeos versions
+  echo -e "Uninstalling packages..."
+  printf 'y\n' | dev_install --uninstall
+  rm /mnt/stateful_partition/.devinstall_complete
   echo -e "Switching active kernel..."
   
   activekern=$(get_booted_kernnum)
