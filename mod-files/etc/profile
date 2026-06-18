@@ -91,10 +91,6 @@ vt-mosh() {
   local pid=$PPID # :whale:
   [[ "$TERM" != "xterm" ]] && return 0
   while [ "$pid" -gt 1 ]; do
-    if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "crosh.old" ]; then 
-      login
-      return 0
-    fi
     [ "$(cat /proc/$pid/comm 2>/dev/null)" = "vt-mosh.sh" ] && return 0
     pid=$(awk '/^PPid:/{print $2}' /proc/$pid/status 2>/dev/null)
   done
