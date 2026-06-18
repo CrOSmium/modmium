@@ -34,7 +34,7 @@ read -re username
 username=$(echo "$username" | tr ' ' '.' | tr '[:upper:]' '[:lower:]')
 while true; do
   echo -ne "[CUSTOM DOMAIN (press enter for modmium.dev)]: "
-  read -r domain
+  read -re domain
   domain=${domain:-modmium.dev}
   if [[ "$domain" == *.* && "$domain" != *. ]]; then
     break
