@@ -14,7 +14,7 @@ if ! which git &>/dev/null || ! which file &>/dev/null; then
   emerge git file
   cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
 fi
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+export PATH="/usr/local/bin:/usr/local/sbin:/usr/local/usr/bin:/usr/local/usr/sbin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH"
 PY="$(command -v python3 || command -v python)"
 
 # -- user prompts --
