@@ -66,8 +66,8 @@ login() {
     hash=$(echo "$passwd" | cut -d: -f2)
     trap "" SIGINT
     stty -echo
-    echo -e "\nVT access has been locked with a password, please enter it below."
-    echo -ne "Enter VT password: "
+    echo -e "\n$loginname access has been locked with a password, please enter it below."
+    echo -ne "Enter $loginname password: "
     read -r auth
     stty echo
     echo ""
@@ -101,11 +101,13 @@ case $(tty 2>/dev/null) in
   /dev/pts/[0-9]*)
       pid=$PPID
       if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "crosh.old" ]; then 
+        loginname="Shell"
         login
         return 0
       fi
       if ! vt-mosh; then
           if [ -f /usr/local/.defaultvt ]; then
+            loginname="VT"
             login
             return 0
           fi
