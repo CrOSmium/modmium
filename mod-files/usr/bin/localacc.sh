@@ -212,14 +212,11 @@ GR=$'\033[38;5;46m'
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   initctl restart ui
-
-  echo "UI restarted. Exit out of VT to continue..."
+  echo "UI restarted. Waiting for VT change..."
 
   while true; do
-    cur="$(basename "$(readlink /run/frecon/current 2>/dev/null)")"
-
-    if [[ "$cur" != "vt1" && "$cur" != "vt2" && "$cur" != "vt3" ]]; then
-      echo "Detected $cur, restarting UI again..."
+    if [[ "$TERM" != "xterm" ]]; then
+      echo "VT has been exited..."
       sleep 3
       initctl restart ui
       break
