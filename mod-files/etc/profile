@@ -100,8 +100,7 @@ vt-mosh() {
 case $(tty 2>/dev/null) in
   /dev/pts/[0-9]*)
       pid=$PPID
-      ggpid=$(awk '/PPid:/{print $2}' /proc/$(awk '/PPid:/{print $2}' /proc/$pid/status 2>/dev/null)/status 2>/dev/null)
-      if [ "$(cat /proc/$ggpid/comm 2>/dev/null)" = "crosh.old" ]; then 
+      if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "crosh.old" ]; then 
         login
         return 0
       fi
