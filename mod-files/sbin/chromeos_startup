@@ -129,5 +129,12 @@ else
   reboot
 fi
 
+if [ -f /mnt/stateful_partition/.removeskipoobeflag ]; then
+  echo "Removing one-time OOBE skip flag..."
+  sed -i '/^--oobe-skip-to-login$/d' /etc/chrome_dev.conf
+  rm -f /mnt/stateful_partition/.removeskipoobeflag
+  echo "Done"
+fi
+
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
