@@ -334,14 +334,16 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
-  if [[ -f /etc/chrome_dev.conf ]]; then
+if [[ -f /etc/chrome_dev.conf ]]; then
   mkdir -p /tmp/opposite
-  mount ${intdis_prefix}${newKern} /tmp/opposite 2>/dev/null
 
-  if [[ -d /tmp/opposite/etc ]]; then
-    cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
-  fi
+  newRoot=$((newKern + 1))
+  mount ${intdis_prefix}${newRoot} /tmp/opposite 2>/dev/null
 
+  mkdir -p /tmp/opposite/etc
+  cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
+
+  sync
   umount /tmp/opposite 2>/dev/null
   rmdir /tmp/opposite 2>/dev/null
   fi
