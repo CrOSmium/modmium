@@ -297,9 +297,15 @@ installCros() {
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-  echo -e "Uninstalling packages..."
+echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+read -r
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+  echo -e "${G}Uninstalling packages...${N}"
   printf 'y\n' | dev_install --uninstall
-  rm /mnt/stateful_partition/.devinstall_complete
+  rm -f /mnt/stateful_partition/.devinstall_complete
+else
+  echo -e "${B}Keeping packages installed.${N}"
+fi
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
@@ -365,9 +371,15 @@ if [[ -f /etc/chrome_dev.conf ]]; then
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-  echo -e "Uninstalling packages..."
+echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+read -r
+if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+  echo -e "${G}Uninstalling packages...${N}"
   printf 'y\n' | dev_install --uninstall
-  rm /mnt/stateful_partition/.devinstall_complete
+  rm -f /mnt/stateful_partition/.devinstall_complete
+else
+  echo -e "${B}Keeping packages installed.${N}"
+fi
   echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
