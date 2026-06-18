@@ -28,3 +28,9 @@ if [[ -d /usr/local/nix/store ]]; then
   source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
   unset LD_LIBRARY_PATH
 fi
+
+pid=$PPID
+if [ "$(cat /proc/$pid/comm 2>/dev/null)" = "crosh.old" ]; then 
+  login
+  return 0
+fi
