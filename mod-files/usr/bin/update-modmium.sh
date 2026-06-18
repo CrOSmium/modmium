@@ -353,7 +353,7 @@ if [[ -f /etc/chrome_dev.conf ]]; then
   rmdir /tmp/opposite 2>/dev/null
   fi
   sync
-  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
   echo -ne "[y/N]: "
   read pwr
   if [[ "$pwr" =~ ^[Yy]$ ]]; then
