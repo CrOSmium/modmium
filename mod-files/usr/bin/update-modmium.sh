@@ -297,7 +297,7 @@ installCros() {
   fi
   # this is for compatability with other chromeos versions
   echo -e "Uninstalling packages..."
-  dev_install --uninstall
+  printf 'y\n' | dev_install --uninstall
   rm /mnt/stateful_partition/.devinstall_complete
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
@@ -365,7 +365,7 @@ if [[ -f /etc/chrome_dev.conf ]]; then
   fi
   # this is for compatability with other chromeos versions
   echo -e "Uninstalling packages..."
-  dev_install --uninstall
+  printf 'y\n' | dev_install --uninstall
   rm /mnt/stateful_partition/.devinstall_complete
   echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
