@@ -66,7 +66,7 @@ N="$display"
 G="$username"
 
 while true; do
-  echo -ne "Do you want to skip OOBE? (Must be in VT2). ONLY DO THIS IF YOU HAVE NOT COMPLETED OOBE YET [y/N]: "
+  echo -ne "Do you want to skip OOBE? (Must be in a VT). ONLY DO THIS IF YOU HAVE NOT COMPLETED OOBE YET [y/N]: "
   read -r skip_oobe
   case "${skip_oobe,,}" in
     y|yes)
