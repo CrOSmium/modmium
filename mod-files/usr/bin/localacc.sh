@@ -31,7 +31,13 @@ echo -e "What would you like your local account's USERNAME to be?"
 echo -ne "[USERNAME]: "
 read -re username 
 username=$(echo "$username" | tr ' ' '.' | tr '[:upper:]' '[:lower:]')
-U="$username@modmium.dev"
+
+echo -ne "Custom domain (press enter for modmium.dev): "
+read -r domain
+domain=${domain:-modmium.dev}
+
+U="$username@$domain"
+
 echo -e "Your account's email will be '${G}$U${N}'"
 echo -ne "[PASSWORD]: "
 read -rse pass 
