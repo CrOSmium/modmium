@@ -279,11 +279,24 @@ installCros() {
   sync
   umount mnt
   cd .. && rm -rf modmium
-
+  sync
+  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -ne "[y/N]: "
+  read pwr
+  if [[ "$pwr" =~ ^[Yy]$ ]]; then
+    echo -e "Your device ${R}will${N} powerwash on next boot."
+    echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+    sleep 0.3
+  else
+    echo -e "Your device will ${R}NOT${N} powerwash on next boot."
+    sleep 0.3
+  fi
+  echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
-  cgpt add -P 0 -T 0 -S 0 -i ${activekern} ${intdis}
-  cgpt add -P 15 -T 5 -S 1 -i ${inactivekern} ${intdis}
+  cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
+  cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
+  sync
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
   [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
@@ -317,9 +330,23 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
-  cgpt add $intdis -i $currentKern -P 0 -S 1 -T 0
+  sync
+  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+  echo -ne "[y/N]: "
+  read pwr
+  if [[ "$pwr" =~ ^[Yy]$ ]]; then
+    echo -e "Your device ${R}will${N} powerwash on next boot."
+    echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+    sleep 0.3
+  else
+    echo -e "Your device will ${R}NOT${N} powerwash on next boot."
+    sleep 0.3
+  fi
+  echo -e "Switching active kernel..."
+  cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
   echo -e "${G}Done! Switched to kernel on ${intdis_prefix}${newKern}${N}"
+  sync
   sleep 3
   exit
 }
@@ -327,14 +354,19 @@ toggleBootPriority(){
 toggleEnrollment(){
   runscript /usr/bin/toggle-enrollment.sh
 }
+
+localAcc() {
+  runscriptnoroot /usr/bin/localacc.sh
+}
+
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
 
 menu_reset() {
   menuText="\nModmium Manager\n"
-  options=("Update Modmium" "Change ChromeOS Version" "Toggle Enrollment" "Swap Boot Priority" "Exit")
-  functions=("updateModmium" "installCros" "toggleEnrollment" "toggleBootPriority" "quit")
+  options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Exit")
+  functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "quit")
   num_options=${#options[@]}
 }
 
