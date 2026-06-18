@@ -210,6 +210,7 @@ GR=$'\033[38;5;46m'
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   initctl restart ui
+  sleep 3
   initctl restart ui
 else
   sleep 3
