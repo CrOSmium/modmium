@@ -208,7 +208,21 @@ sync
 GR=$'\033[38;5;46m'
 [[ $TERM == "xterm-256color" ]] || initctl restart ui # this fixes a bug where it refuses to let you sign in if this is ran on the lock screen
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
-initctl restart ui
-initctl restart ui
-sleep 3
-exit 0
+if [[ "$SKIP_OOBE" -eq 1 ]]; then
+  initctl restart ui
+
+  echo "UI restarted. Switch back to VT1 (Ctrl+Alt+F1) to continue..."
+
+  while true; do
+    [[ "$(tty 2>/dev/null)" == "/dev/tty1" ]] && {
+      echo "VT1 detected, restarting UI again..."
+      sleep 1
+      initctl restart ui
+      break
+    }
+    sleep 0.25
+  done
+else
+  sleep 3
+  exit 0
+fi
