@@ -19,9 +19,10 @@ ldconfig
 PY="$(command -v python3 || command -v python)"
 [ -n "$PY" ] || {
   echo "no python found :("
-  sleep 5
+  sleep 3
   exit 1
 }
+
 # -- user prompts --
 clear
 echo -e "-------------- ${G}Modmium Local Account Creator${N} --------------"
@@ -31,41 +32,46 @@ echo -e "What would you like your local account's USERNAME to be?"
 echo -ne "[USERNAME]: "
 read -re username 
 username=$(echo "$username" | tr ' ' '.' | tr '[:upper:]' '[:lower:]')
-
-echo -ne "Custom domain (press enter for modmium.dev): "
-read -r domain
-domain=${domain:-modmium.dev}
-
+while true; do
+  echo -ne "[CUSTOM DOMAIN (press enter for modmium.dev)]: "
+  read -r domain
+  domain=${domain:-modmium.dev}
+  if [[ "$domain" == *.* && "$domain" != *. ]]; then
+    break
+  else
+    echo "Invalid custom domain, it must contain at least one '.' and cannot end with '.'"
+  fi
+done
 U="$username@$domain"
-
 echo -e "Your account's email will be '${G}$U${N}'"
-echo -ne "[PASSWORD]: "
-read -rse pass 
-echo ""
-echo -ne "[CONFIRM PASSWORD]: "
-read -rse passconf
-echo ""
-if [[ "$pass" == "$passconf" ]]; then
-  P="$pass"
-else
-  echo -e "\nPasswords do not match!"
-  sleep 1
-  exit 1
-fi
+while true; do
+  echo -ne "[PASSWORD]: "
+  read -rse pass 
+  echo ""
+  echo -ne "[CONFIRM PASSWORD]: "
+  read -rse passconf
+  echo ""
+  if [[ "$pass" == "$passconf" ]]; then
+    P="$pass"
+    break
+  else
+    echo -e "Passwords do not match! Try again.\n"
+    sleep 1
+  fi
+done
 echo -e "What would you like your local account's DISPLAY name to be?"
 echo -ne "[DISPLAY NAME]: "
 read -re display
 N="$display"
 G="$username"
-
 echo -e "Creating local account... (thanks Pilot Bell!)"
 sleep 2
+
 # -- actual account making --
 
 # Hey! if you think about removing any output from this, don't. It's very important that the user can see if it fails.
 L='gaia'
 H="$(cryptohome --action=obfuscate_user --user="$U" 2>/dev/null | tail -1)"
-
 
 cp -a "/home/chronos/Local State" "/home/chronos/Local State.bak.localacct"
 
