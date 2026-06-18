@@ -211,7 +211,7 @@ echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging i
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   initctl restart ui
 
-  echo "UI restarted. Switch back to VT1 (Ctrl+Alt+F1) to continue..."
+  echo "UI restarted. Exit out of VT to continue..."
 
   while true; do
     cur="$(basename "$(readlink /run/frecon/current 2>/dev/null)")"
