@@ -93,6 +93,7 @@ if [[ $(crossystem devsw_boot) -eq 0 ]]; then
     echo "Staging policyedit..."
     sed -i 's|stable-channel|testimage-channel|g' /etc/lsb-release
     echo "--disable-policy-key-verification" >>/etc/chrome_dev.conf
+    echo "disable-oobe-chromevox-hint-timer-for-testing" >>/etc/chrome_dev.conf
     echo "--disable-features=ExtensionManifestV2Unsupported" >>/etc/chrome_dev.conf
     touch /.policyedit_staged
     echo "Done"
