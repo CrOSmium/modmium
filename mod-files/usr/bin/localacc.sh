@@ -64,6 +64,25 @@ echo -ne "[DISPLAY NAME]: "
 read -re display
 N="$display"
 G="$username"
+
+while true; do
+  echo -ne "Do you want to skip OOBE? [y/N]: "
+  read -r skip_oobe
+  case "${skip_oobe,,}" in
+    y|yes)
+      SKIP_OOBE=1
+      break
+      ;;
+    n|no|"")
+      SKIP_OOBE=0
+      break
+      ;;
+    *)
+      echo "Please enter Y or N."
+      ;;
+  esac
+done
+
 echo -e "Creating local account... (thanks Pilot Bell!)"
 sleep 2
 
@@ -169,6 +188,10 @@ RE=$'\033[0m'
 if [[ "$TERM" == "xterm-256color" ]]; then
   echo -e "${R}Local account will be added to your current session, this may close MOSH.${RE}"
   sleep 2
+fi
+if [[ "$SKIP_OOBE" -eq 1 ]]; then
+  grep -qx -- "--oobe-skip-to-login" /etc/chrome_dev.conf 2>/dev/null || \
+    echo "--oobe-skip-to-login" >> /etc/chrome_dev.conf
 fi
 dbus-send \
   --system \
