@@ -66,7 +66,7 @@ N="$display"
 G="$username"
 
 while true; do
-  echo -ne "Do you want to skip OOBE? [y/N]: "
+  echo -ne "Do you want to skip OOBE? ONLY DO THIS IF YOU HAVE NOT COMPLETED OOBE YET [y/N]: "
   read -r skip_oobe
   case "${skip_oobe,,}" in
     y|yes)
@@ -192,6 +192,7 @@ fi
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   grep -qx -- "--oobe-skip-to-login" /etc/chrome_dev.conf 2>/dev/null || \
     echo "--oobe-skip-to-login" >> /etc/chrome_dev.conf
+    touch /mnt/stateful_partition/.removeskipoobeflag
 fi
 dbus-send \
   --system \
@@ -207,5 +208,7 @@ sync
 GR=$'\033[38;5;46m'
 [[ $TERM == "xterm-256color" ]] || initctl restart ui # this fixes a bug where it refuses to let you sign in if this is ran on the lock screen
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
+initctl restart ui
+initctl restart ui
 sleep 3
 exit 0
