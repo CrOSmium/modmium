@@ -192,7 +192,7 @@ fi
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   grep -qx -- "--oobe-skip-to-login" /etc/chrome_dev.conf 2>/dev/null || \
     echo "--oobe-skip-to-login" >> /etc/chrome_dev.conf
-    touch /mnt/stateful_partition/.removeskipoobeflag
+    touch /root/.removeskipoobeflag
 fi
 dbus-send \
   --system \
