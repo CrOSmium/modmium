@@ -71,7 +71,7 @@ studioMic(){
       mov $1, %eax
       ret
     .size _ZN12segmentation17FeatureManagement16IsFeatureEnabledERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE, .-_ZN12segmentation17FeatureManagement16IsFeatureEnabledERKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE
-    EOF
+EOF
     
     LD_LIBRARY_PATH="$BLIB" \
       "$B/as" --64 \
