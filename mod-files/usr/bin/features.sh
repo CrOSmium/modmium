@@ -267,9 +267,9 @@ EOF
       org.chromium.cras.Control.GetVoiceIsolationUIAppearance
     
       mv /etc/lsb-release.bak /etc/lsb-release
-    echo -e "Restarting UI..."
-    sleep 2
-    restart ui
+    echo -e "Exiting.."
+    sleep 1.67
+    exit 0 # w fix?
   else
     echo -e "Disabling Studio Mic..."
     sleep 1
@@ -564,7 +564,7 @@ EOF
 # -- MAIN SCRIPT --
 tput civis # :whale:
 menu_reset() {
-  menuText="\nFeature Toggles (THIS IS IN DEVELOPMENT, USE AT YOUR OWN RISK)\n"
+  menuText="\nFeature Toggles (THIS ENABLES FEATURES THAT MAY NOT WORK ON YOUR DEVICE, USE AT YOUR OWN RISK)\n"
   options=()
   checkStatus
   if [[ $chromebookplus == 1 ]]; then
