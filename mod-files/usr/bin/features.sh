@@ -57,15 +57,7 @@ studioMic(){
     MAGENTA=$(tput setaf 5)
     CYAN=$(tput setaf 6)
     BOLD=$(tput bold)
-    RESET=$(tput sgr0)
-    find /usr/local -mindepth 1 -depth \
-      ! \( \
-          -path '*/chard*' -o \
-          -path '*/bin/ChromeOS_PowerControl*' -o \
-          -path '*/sudocrosh*' \
-        \) \
-      -exec rm -rf {} +
-    
+    RESET=$(tput sgr0)    
     LSB_RELEASE="/etc/lsb-release"
     BACKUP="${LSB_RELEASE}.bak"
     BACKUP2="${LSB_RELEASE}.$(date +%Y%m%d-%H%M%S).bak"
@@ -272,14 +264,6 @@ EOF
       mv /etc/lsb-release.bak /etc/lsb-release
     
     ##############################################################
-    
-    find /usr/local -mindepth 1 -depth \
-      ! \( \
-          -path '*/chard*' -o \
-          -path '*/bin/ChromeOS_PowerControl*' -o \
-          -path '*/sudocrosh*' \
-        \) \
-      -exec rm -rf {} +
   else
     echo -e "Disabling Studio Mic..."
     sleep 1
