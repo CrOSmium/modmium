@@ -267,7 +267,9 @@ EOF
       org.chromium.cras.Control.GetVoiceIsolationUIAppearance
     
       mv /etc/lsb-release.bak /etc/lsb-release
-    
+    echo -e "Restarting UI..."
+    sleep 2
+    restart ui
   else
     echo -e "Disabling Studio Mic..."
     sleep 1
