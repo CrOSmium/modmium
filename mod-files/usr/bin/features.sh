@@ -28,7 +28,7 @@ quit() {
 checkStatus() {
   [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
   [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
-  grep -q '--disable-features=DisableSystemBlur' /etc/chrome_dev.conf && systemblur=1 || systemblur=0
+  grep -q -- '--disable-features=DisableSystemBlur' /etc/chrome_dev.conf && systemblur=1 || systemblur=0
 }
 
 chromebookPlus(){
