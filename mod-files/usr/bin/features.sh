@@ -29,10 +29,10 @@ checkStatus() {
   [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
   [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
 
-  if grep -q -- '--enable-low-end-device-mode' /etc/chrome_dev.conf; then
-    systemblur=0
-  else
+  if [[ -f /usr/lib64/libfakephysmem.so ]] && grep -q 'libfakephysmem.so' /etc/chrome_dev.conf 2>/dev/null; then
     systemblur=1
+  else
+    systemblur=0
   fi
 }
 
@@ -268,7 +268,6 @@ EOF
     
       mv /etc/lsb-release.bak /etc/lsb-release
     
-    ##############################################################
   else
     echo -e "Disabling Studio Mic..."
     sleep 1
@@ -279,13 +278,283 @@ EOF
 systemBlur(){
   if [[ $systemblur == 0 ]]; then
     echo -e "Enabling System Blur..."
+    echo -e "Credits to pilot bell for making this toggle!"
     sleep 1
-    sed -i '/--enable-low-end-device-mode/d' /etc/chrome_dev.conf
+
+    RED=$(tput setaf 1)
+    GREEN=$(tput setaf 2)
+    YELLOW=$(tput setaf 3)
+    BLUE=$(tput setaf 4)
+    MAGENTA=$(tput setaf 5)
+    CYAN=$(tput setaf 6)
+    BOLD=$(tput bold)
+    RESET=$(tput sgr0)
+
+    LSB_RELEASE="/etc/lsb-release"
+    BACKUP="${LSB_RELEASE}.bak.systemblur"
+    BACKUP2="${LSB_RELEASE}.$(date +%Y%m%d-%H%M%S).bak.systemblur"
+    DEVBOARD="https://commondatastorage.googleapis.com/chromeos-dev-installer/board"
+
+    cp "$LSB_RELEASE" "$BACKUP"
+    cp "$LSB_RELEASE" "$BACKUP2"
+
+    echo "${GREEN}Backed up as ${BOLD}$BACKUP ${RESET}${GREEN}and${BOLD} $BACKUP2${RESET}"
+
+    ARCH=$(uname -m)
+
+    if [[ "$ARCH" == "x86_64" ]]; then
+      TARGET="x86_64-cros-linux-gnu"
+      NEW_BOARD="octopus"
+    elif [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+      TARGET="aarch64-cros-linux-gnu"
+      NEW_BOARD="jacuzzi"
+    else
+      echo "${RED}Unsupported arch: ${BOLD}$ARCH ${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    echo "${BLUE}Arch: $ARCH -> spoofing board to: $NEW_BOARD${RESET}"
+
+    BUILD=$(grep "^CHROMEOS_RELEASE_BUILD_NUMBER=" "$LSB_RELEASE" | cut -d= -f2)
+    MILESTONE=$(grep "^CHROMEOS_RELEASE_CHROME_MILESTONE=" "$LSB_RELEASE" | cut -d= -f2)
+
+    echo "${CYAN}Searching for valid versions for $NEW_BOARD -> $BUILD${RESET}"
+
+    NEW_VERSION=""
+    for PATCH in $(seq 0 99); do
+      CANDIDATE="${BUILD}.${PATCH}.0"
+      URL="${DEVBOARD}/${NEW_BOARD}/${CANDIDATE}/packages/Packages"
+      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+      if [[ "$HTTP_CODE" == "200" ]]; then
+        NEW_VERSION="$CANDIDATE"
+        echo "${GREEN}Found valid version: $NEW_VERSION${RESET}"
+        break
+      fi
+    done
+
+    if [[ -z "$NEW_VERSION" ]]; then
+      cp "$BACKUP" "$LSB_RELEASE"
+      echo "${RED}ERROR: No valid version found for board '$NEW_BOARD' -> $BUILD ${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    sed -i \
+      -e "s/^CHROMEOS_RELEASE_BOARD=.*/CHROMEOS_RELEASE_BOARD=${NEW_BOARD}/" \
+      -e "s/^CHROMEOS_RELEASE_BUILDER_PATH=.*/CHROMEOS_RELEASE_BUILDER_PATH=${NEW_BOARD}-release\/R${MILESTONE}-${NEW_VERSION}/" \
+      -e "s/^CHROMEOS_RELEASE_DESCRIPTION=.*/CHROMEOS_RELEASE_DESCRIPTION=${NEW_VERSION} (Official Build) stable-channel ${NEW_BOARD} /" \
+      "$LSB_RELEASE"
+
+    echo "${MAGENTA}"
+    grep -E "BOARD|BUILDER_PATH|DESCRIPTION" "$LSB_RELEASE"
+    echo "${RESET}"
+
+    printf 'n\n' | dev_install
+
+    BOARD=$(grep ^CHROMEOS_RELEASE_BOARD /etc/lsb-release | cut -d= -f2 | sed 's/-signed//')
+    VERSION=$(grep ^CHROMEOS_RELEASE_VERSION /etc/lsb-release | cut -d= -f2)
+    PORTAGE_BINHOST="https://commondatastorage.googleapis.com/chromeos-dev-installer/board/${BOARD}/${VERSION}/packages"
+
+    echo "PORTAGE_BINHOST=$PORTAGE_BINHOST"
+
+    ldconfig
+
+    PORTAGE_CONFIGROOT=/usr/local \
+    PORTAGE_BINHOST=$PORTAGE_BINHOST \
+    emerge --getbinpkg --usepkgonly --nodeps -v sys-devel/binutils
+
+    EMERGE_STATUS=$?
+
+    cp "$BACKUP" "$LSB_RELEASE"
+
+    if [[ "$EMERGE_STATUS" != "0" ]]; then
+      echo "${RED}ERROR: Failed to install binutils${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    BINUTILS_VERSION=$(
+      find "/usr/local/${TARGET}/binutils-bin" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+      | sed 's#.*/##' \
+      | sort -V \
+      | tail -n1
+    )
+
+    if [[ -z "$BINUTILS_VERSION" ]]; then
+      echo "${RED}ERROR: Unable to determine binutils version for $TARGET${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    B="/usr/local/${TARGET}/binutils-bin/${BINUTILS_VERSION}"
+
+    if [[ "$ARCH" == "x86_64" ]]; then
+      BLIB="/usr/local/lib64/binutils/${TARGET}/${BINUTILS_VERSION}"
+    else
+      BLIB="/usr/local/lib/binutils/${TARGET}/${BINUTILS_VERSION}"
+    fi
+
+    if [[ ! -d "$BLIB" ]]; then
+      BLIB=$(
+        find /usr/local/lib64 /usr/local/lib \
+          -path '*/debug*' -prune -o \
+          -path "*/binutils/${TARGET}/${BINUTILS_VERSION}" \
+          -type d -print 2>/dev/null \
+        | head -1
+      )
+    fi
+
+    if [[ ! -x "$B/as" || ! -x "$B/ld" || ! -d "$BLIB" ]]; then
+      echo "${RED}ERROR: Binutils install is incomplete for $TARGET/$BINUTILS_VERSION${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    echo "${CYAN}Using binutils: $B${RESET}"
+    echo "${CYAN}Using binutils libs: $BLIB${RESET}"
+
+    unset LD_LIBRARY_PATH LD_PRELOAD
+
+    sed -i '/libfakephysmem.so/d' /etc/chrome_dev.conf 2>/dev/null || true
+
+    rm -f \
+      /usr/local/fakephysmem.S \
+      /usr/local/fakephysmem.o \
+      /usr/local/libfakephysmem.so \
+      /usr/lib64/libfakephysmem.so
+
+    if [[ "$ARCH" == "x86_64" ]]; then
+      cat >/usr/local/fakephysmem.S <<'EOF'
+.text
+.globl sysconf
+.type sysconf, @function
+sysconf:
+    push %rbp
+    mov %rsp, %rbp
+    sub $16, %rsp
+    mov %rdi, -8(%rbp)
+    cmp $85, %edi
+    jne real_sysconf
+    mov $2097152, %rax
+    leave
+    ret
+
+real_sysconf:
+    mov real_sysconf_ptr(%rip), %rax
+    test %rax, %rax
+    jne call_real
+    mov $-1, %rdi
+    lea sysconf_name(%rip), %rsi
+    call dlsym@PLT
+    mov %rax, real_sysconf_ptr(%rip)
+
+call_real:
+    mov -8(%rbp), %rdi
+    call *%rax
+    leave
+    ret
+
+.section .rodata
+sysconf_name:
+    .string "sysconf"
+
+.bss
+.align 8
+real_sysconf_ptr:
+    .quad 0
+EOF
+
+      LD_LIBRARY_PATH="$BLIB" "$B/as" --64 \
+        -o /usr/local/fakephysmem.o \
+        /usr/local/fakephysmem.S
+    else
+      cat >/usr/local/fakephysmem.S <<'EOF'
+.text
+.globl sysconf
+.type sysconf, %function
+sysconf:
+    stp x29, x30, [sp, #-32]!
+    mov x29, sp
+    str x0, [sp, #16]
+    cmp x0, #85
+    b.ne real_sysconf
+    movz x0, #0x20, lsl #16
+    ldp x29, x30, [sp], #32
+    ret
+
+real_sysconf:
+    adrp x1, real_sysconf_ptr
+    ldr x2, [x1, #:lo12:real_sysconf_ptr]
+    cbnz x2, call_real
+    mov x0, #-1
+    adrp x1, sysconf_name
+    add x1, x1, #:lo12:sysconf_name
+    bl dlsym
+    adrp x1, real_sysconf_ptr
+    str x0, [x1, #:lo12:real_sysconf_ptr]
+    mov x2, x0
+
+call_real:
+    ldr x0, [sp, #16]
+    blr x2
+    ldp x29, x30, [sp], #32
+    ret
+
+.section .rodata
+sysconf_name:
+    .string "sysconf"
+
+.bss
+.align 8
+real_sysconf_ptr:
+    .quad 0
+EOF
+
+      LD_LIBRARY_PATH="$BLIB" "$B/as" \
+        -o /usr/local/fakephysmem.o \
+        /usr/local/fakephysmem.S
+    fi
+
+    if [[ "$?" != "0" ]]; then
+      echo "${RED}ERROR: Failed to create System Blur faker${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    LD_LIBRARY_PATH="$BLIB" "$B/ld" -shared \
+      -o /usr/local/libfakephysmem.so \
+      /usr/local/fakephysmem.o
+
+    if [[ "$?" != "0" ]]; then
+      echo "${RED}ERROR: Failed to enable System Blur${RESET}"
+      sleep 3
+      return 1
+    fi
+
+    cp -f /usr/local/libfakephysmem.so /usr/lib64/libfakephysmem.so
+    chown root:root /usr/lib64/libfakephysmem.so
+    chmod 4755 /usr/lib64/libfakephysmem.so
+
+    touch /etc/chrome_dev.conf
+    cp -a /etc/chrome_dev.conf /etc/chrome_dev.conf.bak.systemblur 2>/dev/null || true
+    sed -i '/libfakephysmem.so/d; /--enable-low-end-device-mode/d; /--disable-low-end-device-mode/d; /DisableSystemBlur/d' /etc/chrome_dev.conf
+    printf '%s\n' 'LD_PRELOAD=libfakephysmem.so' >> /etc/chrome_dev.conf
+
+    echo "${GREEN}System Blur enabled${RESET}"
+    echo "${YELLOW}Restarting UI...${RESET}"
   else
     echo -e "Disabling System Blur..."
     sleep 1
-    echo "--enable-low-end-device-mode" >> /etc/chrome_dev.conf
+    sed -i '/libfakephysmem.so/d' /etc/chrome_dev.conf 2>/dev/null || true
+    rm -f \
+      /usr/local/fakephysmem.S \
+      /usr/local/fakephysmem.o \
+      /usr/local/libfakephysmem.so \
+      /usr/lib64/libfakephysmem.so
   fi
+
   restart ui
 }
 
