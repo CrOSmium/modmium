@@ -28,7 +28,12 @@ quit() {
 checkStatus() {
   [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
   [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
-  grep -q -- '--disable-features=DisableSystemBlur' /etc/chrome_dev.conf && systemblur=1 || systemblur=0
+
+  if grep -q -- '--enable-low-end-device-mode' /etc/chrome_dev.conf; then
+    systemblur=0
+  else
+    systemblur=1
+  fi
 }
 
 chromebookPlus(){
@@ -274,13 +279,12 @@ EOF
 systemBlur(){
   if [[ $systemblur == 0 ]]; then
     echo -e "Enabling System Blur..."
-    echo -e "Credits to Pilot Bell for making this toggle"
     sleep 1
-    echo "--disable-features=DisableSystemBlur" >> /etc/chrome_dev.conf
+    sed -i '/--enable-low-end-device-mode/d' /etc/chrome_dev.conf
   else
     echo -e "Disabling System Blur..."
     sleep 1
-    sed -i '/--disable-features=DisableSystemBlur/d' /etc/chrome_dev.conf
+    echo "--enable-low-end-device-mode" >> /etc/chrome_dev.conf
   fi
   restart ui
 }
