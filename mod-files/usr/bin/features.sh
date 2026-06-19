@@ -33,16 +33,20 @@ checkStatus() {
 
 chromebookPlus(){
   if [[ $chromebookplus == 0 ]]; then
-  echo -e "Enabling ChromebookPlus features..."
+  echo -e "Enabling Chromebook Plus features..."
+  echo -e "Credits to Pilot Bell for making this toggle"
+  sleep 1
   F='FeatureManagement16Desks,FeatureManagementBorealis,FeatureManagementConchGenAi,FeatureManagementCrosSodaConchLanguages,FeatureManagementDriveFsBulkPinning,FeatureManagementFeatureAwareDeviceDemoMode,FeatureManagementGameDashboardRecordGame,FeatureManagementGeminiAppPreinstall,FeatureManagementGrowthFramework,FeatureManagementHistoryEmbedding,FeatureManagementLiveTranslateCrOS,FeatureManagementLobster,FeatureManagementLocalImageSearch,FeatureManagementMahi,FeatureManagementMarkupPod,FeatureManagementOobeAiIntro,FeatureManagementOobeGeminiIntro,FeatureManagementOobeSimon,FeatureManagementOrca,FeatureManagementRoundedWindows,FeatureManagementSeaPen,FeatureManagementShouldExcludeFromSysUiHoldback,FeatureManagementShowoff,FeatureManagementSystemLiveCaption,FeatureManagementTimeOfDayScreenSaver,FeatureManagementTimeOfDayWallpaper,FeatureManagementVideoConference'; printf 'description "Force Chromebook Plus feature management"\nstart on startup\ntask\nscript\n  mkdir -p /run/libsegmentation\n  printf %%s CAMQAg== >/run/libsegmentation/feature_device_info\nend script\n' >/etc/init/feature-plus.conf; chmod 644 /etc/init/feature-plus.conf; mkdir -p /run/libsegmentation; printf %s CAMQAg== >/run/libsegmentation/feature_device_info; sed -i '/^!?--feature-management-level=/d;/^!?--feature-management-max-level=/d;/^!?--feature-management-scope=/d;/FeatureManagement/d;/disable-extensions-except/d;/load-extension/d;/allowlisted-extension-id/d' /etc/chrome_dev.conf 2>/dev/null; printf '%s\n' '!--feature-management-level=' '!--feature-management-max-level=' '!--feature-management-scope=' '--feature-management-level=2' '--feature-management-max-level=2' '--feature-management-scope=1' "--enable-features=$F" >>/etc/chrome_dev.conf; restart ui
   else
-    echo "Disabling ChromebookPlus features..."
+    echo "Disabling Chromebook Plus features..."
+    sleep 1
     rm /etc/init/feature-plus.conf; rm -f /run/libsegmentation/feature_device_info; sed -i '/^!?--feature-management-level=/d;/^!?--feature-management-max-level=/d;/^!?--feature-management-scope=/d;/FeatureManagement/d' /etc/chrome_dev.conf 2>/dev/null; restart ui
   fi
 }
 studioMic(){
   if [[ $studiomic == 0 ]]; then
     echo -e "Enabling Studio Mic..."
+    echo -e "Credits to Pilot Bell for making this toggle"
     sleep 1
     unset LD_LIBRARY_PATH LD_PRELOAD
     sed -i '/libforcefm.so/d' /usr/share/cros/init/cras-env.sh 2>/dev/null || true
@@ -121,6 +125,7 @@ studioMic(){
 systemBlur(){
   if [[ $systemblur == 0 ]]; then
     echo -e "Enabling System Blur..."
+    echo -e "Credits to Pilot Bell for making this toggle"
     sleep 1
     echo "--disable-features=DisableSystemBlur" >> /etc/chrome_dev.conf
   else
