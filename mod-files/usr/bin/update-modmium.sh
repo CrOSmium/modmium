@@ -398,14 +398,18 @@ localAcc() {
   runscriptnoroot /usr/bin/localacc.sh
 }
 
+features() {
+  runscript /usr/bin/features.sh
+}
+
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
 
 menu_reset() {
   menuText="\nModmium Manager\n"
-  options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Exit")
-  functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "quit")
+  options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
+  functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
 }
 
