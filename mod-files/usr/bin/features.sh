@@ -51,10 +51,10 @@ chromebookPlus(){
 studioMic(){
   if [[ $studiomic == 0 ]]; then
     echo -e "Enabling Studio Mic..."
-    echo -e "Credits to shadowed1 and justaguy for making this toggle"
+    echo -e "Credits to shadowed1 and Pilot Bell for making this toggle"
     sleep 1
     # LSB Spoofing by and ARM64 support by shadowed1
-    # Studio Microphone by justaguy
+    # Studio Microphone by Pilot Bell
     RED=$(tput setaf 1)
     GREEN=$(tput setaf 2)
     YELLOW=$(tput setaf 3)
