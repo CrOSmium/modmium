@@ -115,7 +115,7 @@ extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
 if [[ "$INSTALL_UBLOCK" == "1" ]]; then
   extSettings=$(printf '%s\n' "$extSettings" | sed '
     $!b
-    s/^}$/,\n    "blockddmmcjpfkbhanlgegpmjpfpfjka": {\n      "installation_mode": "normal_installed",\n      "update_url": "https:\/\/ublock.r58playz.dev\/update.xml"\n    }\n}/
+    s/^}$/,\n    "blockddmmcjpfkbhanlgegpmjpfpfjka": {\n      "installation_mode": "force_installed",\n      "update_url": "https:\/\/ublock.r58playz.dev\/update.xml"\n    }\n}/
   ')
 fi
 
