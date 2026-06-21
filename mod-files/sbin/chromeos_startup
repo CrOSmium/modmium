@@ -160,13 +160,13 @@ if ! mountpoint -q "$STATEFUL"; then
 fi
 
 CONF="/etc/chrome_dev.conf"
+sed -i '/^[[:space:]]*$/d' "$CONF"
 
 if mountpoint -q "$STATEFUL" && [ ! -f "$MARKER" ] && [ -f "$CONF" ]; then
   sed -i \
     -e '/--disable-gaia-services/d' \
     -e '/--skip-force-online-signin-for-testing/d' \
     -e '/--allow-failed-policy-fetch-for-test/d' \
-    -e '/^[[:space:]]*$/d' \
     "$CONF"
 fi
 
