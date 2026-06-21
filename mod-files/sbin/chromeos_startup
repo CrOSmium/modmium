@@ -137,42 +137,8 @@ if [ -f /root/.removeskipoobeflag ]; then
   echo "Done"
 fi
 
-STATEFUL="/mnt/stateful_partition"
-MARKER="$STATEFUL/.removegaiaflags"
-
-mkdir -p "$STATEFUL"
-
-if vgchange -ay >/dev/null 2>&1; then
-  vg="$(vgscan 2>/dev/null | awk -F\" '/Found volume group/ {print $2; exit}')"
-  if [ -n "$vg" ]; then
-    mount "/dev/$vg/unencrypted" "$STATEFUL" 2>/dev/null
-  fi
-fi
-
-if ! mountpoint -q "$STATEFUL"; then
-  STATE_DEV="$(blkid -L stateful 2>/dev/null)"
-
-  if [ -n "$STATE_DEV" ]; then
-    mount "$STATE_DEV" "$STATEFUL" 2>/dev/null
-  else
-    mount "/dev/mmcblk0p1" "$STATEFUL" 2>/dev/null
-  fi
-fi
-
 CONF="/etc/chrome_dev.conf"
 sed -i '/^[[:space:]]*$/d' "$CONF"
-
-if mountpoint -q "$STATEFUL" && [ ! -f "$MARKER" ] && [ -f "$CONF" ]; then
-  sed -i \
-    -e '/--disable-gaia-services/d' \
-    -e '/--skip-force-online-signin-for-testing/d' \
-    -e '/--allow-failed-policy-fetch-for-test/d' \
-    "$CONF"
-fi
-
-if mountpoint -q "$STATEFUL"; then
-  umount "$STATEFUL" 2>/dev/null
-fi
 
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
