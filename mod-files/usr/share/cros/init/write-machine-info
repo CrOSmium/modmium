@@ -86,6 +86,8 @@ if [ -n "${MACHINE_INFO_ERR}" ]; then
   logger -t write-machine-info "${MACHINE_INFO_ERR}"
 fi
 
+# The section below is unique to Modmium
+
 STATEFUL="/mnt/stateful_partition"
 MARKER="$STATEFUL/.removegaiaflags"
 CONF="/etc/chrome_dev.conf"
