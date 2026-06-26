@@ -102,19 +102,20 @@ EOF
 }
 
 checkFlagValidity(){
-  if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
+if [[ -n $FLAGS_image ]]; then
+  if [[ ! -f "$FLAGS_image" ]]; then
     fail "${R}File not found, please provide a path to an actual recovery image.${N}"
-  else
-    local loopDev=$(losetup -Pf --show $FLAGS_image)
-    mount -o ro ${loopDev}p3 mnt --mkdir
-    local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
-    for candidate in $minios_boards; do
-      [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
-    done
-    umount mnt
-    rm -rf mnt
-    losetup -d ${loopDev}
   fi
+  local loopDev=$(losetup -Pf --show $FLAGS_image)
+  mount -o ro ${loopDev}p3 mnt --mkdir
+  local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
+  for candidate in $minios_boards; do
+    [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
+  done
+  umount mnt
+  rm -rf mnt
+  losetup -d ${loopDev}
+fi
 
   [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]] && fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   if [[ ( -n $FLAGS_version ) && ( $FLAGS_version -lt 131 ) ]]; then
