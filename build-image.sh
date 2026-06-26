@@ -5,7 +5,7 @@ DEPENDENCIES=$(echo "bsdtar" "file" "futility" "jq" "pv" "wget")
 # pre-flight checklist
 source ./build-utils/common_minimal.sh
 source ./build-utils/common_modmium.sh
-branch=$(git rev-parse --abbrev-ref HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
 asUser(){
   silence su $USER -c "$1" # we do this to make sure permisisons aren't janky
@@ -25,10 +25,10 @@ checkDependencies(){
 
 cleanup(){ # to be used in case of failure, not for successful building
   silence umount mnt
-  silence losetup -d $loopDev
+  [[ -n $loopDev ]] && silence losetup -d $loopDev
   silence rm -rf mnt .realuser
   for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
-    silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+    silence rm -rf ${tempbin%/*}
   done
 }
 trap cleanup EXIT
