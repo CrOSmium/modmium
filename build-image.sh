@@ -5,7 +5,7 @@ DEPENDENCIES=$(echo "bsdtar" "file" "futility" "jq" "pv" "wget")
 # pre-flight checklist
 source ./build-utils/common_minimal.sh
 source ./build-utils/common_modmium.sh
-branch=$(git rev-parse --abbrev-ref HEAD)
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
 asUser(){
   silence su $USER -c "$1" # we do this to make sure permisisons aren't janky
@@ -25,10 +25,10 @@ checkDependencies(){
 
 cleanup(){ # to be used in case of failure, not for successful building
   silence umount mnt
-  silence losetup -d $loopDev
+  [[ -n $loopDev ]] && silence losetup -d $loopDev
   silence rm -rf mnt .realuser
   for tempbin in $(find /tmp/tmp.*/ -mindepth 1 -name 'modmium*.bin' 2>/dev/null); do
-    silence rm -rf ${tempbin%/*} # deletes the tempdir that contains the modmium bin and not others
+    silence rm -rf ${tempbin%/*}
   done
 }
 trap cleanup EXIT
@@ -103,19 +103,20 @@ EOF
 }
 
 checkFlagValidity(){
-  if [[  -n $FLAGS_image && ! ( -f "$FLAGS_image" ) ]]; then
+if [[ -n $FLAGS_image ]]; then
+  if [[ ! -f "$FLAGS_image" ]]; then
     fail "${R}File not found, please provide a path to an actual recovery image.${N}"
-  else
-    local loopDev=$(losetup -Pf --show $FLAGS_image)
-    mount -o ro ${loopDev}p3 mnt --mkdir
-    local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
-    for candidate in $minios_boards; do
-      [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
-    done
-    umount mnt
-    rm -rf mnt
-    losetup -d ${loopDev}
   fi
+  local loopDev=$(losetup -Pf --show $FLAGS_image)
+  mount -o ro ${loopDev}p3 mnt --mkdir
+  local board=$(grep CHROMEOS_RELEASE_DESCRIPTION mnt/etc/lsb-release | awk '{print $NF}')
+  for candidate in $minios_boards; do
+    [[ $board == $candidate ]] && FLAGS_minios=$FLAGS_TRUE && break || FLAGS_minios=$FLAGS_FALSE
+  done
+  umount mnt
+  rm -rf mnt
+  losetup -d ${loopDev}
+fi
 
   [[ -n $FLAGS_version && ! ( $FLAGS_version =~ ^[0-9]+$ ) ]] && fail "${R}Version not a natural number${N}, please provide chromeOS ${B}MILESTONE${N} you want to build."
   if [[ ( -n $FLAGS_version ) && ( $FLAGS_version -lt 131 ) ]]; then
