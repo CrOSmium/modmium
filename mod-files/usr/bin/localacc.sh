@@ -205,7 +205,7 @@ dbus-send \
   boolean:true \
   array:string:"--login-user=$U","--login-profile=$H","--oobe-skip-postlogin","--disable-gaia-services","--skip-force-online-signin-for-testing","--allow-failed-policy-fetch-for-test" \
   array:string:
-touch /mnt/stateful_partition/.removegaiaflags
+
 sync
 GR=$'\033[38;5;46m'
 [[ $TERM == "xterm-256color" ]] || initctl restart ui # this fixes a bug where it refuses to let you sign in if this is ran on the lock screen
