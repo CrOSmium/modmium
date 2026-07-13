@@ -542,7 +542,7 @@ EOF
     touch /etc/chrome_dev.conf
     cp -a /etc/chrome_dev.conf /etc/chrome_dev.conf.bak.systemblur 2>/dev/null || true
     sed -i '/libfakephysmem.so/d; /--enable-low-end-device-mode/d; /--disable-low-end-device-mode/d; /DisableSystemBlur/d' /etc/chrome_dev.conf
-    printf '%s\n' 'LD_PRELOAD=/usr/lib64/libfakephysmem.so' >> /etc/chrome_dev.conf
+    printf '%s\n' 'LD_PRELOAD=libfakephysmem.so' >> /etc/chrome_dev.conf
 
     echo "${GREEN}System Blur enabled${RESET}"
     echo "${YELLOW}Restarting UI...${RESET}"
