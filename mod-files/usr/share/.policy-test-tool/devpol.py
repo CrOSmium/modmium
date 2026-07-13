@@ -158,13 +158,17 @@ def convert_scalar(field, val):
     return val
 
 
+def _strip_prefix(s, prefix):
+    return s[len(prefix):] if s.startswith(prefix) else s
+
+
 def convert_scalar_for_dump(field, val):
     if field.type == field.TYPE_ENUM and field.name in STRING_ENUM_PREFIXES:
         pfx = STRING_ENUM_PREFIXES[field.name]
         if isinstance(val, list):
-            return [item.upper().removeprefix(pfx).lower() if isinstance(item, str) else item for item in val]
+            return [_strip_prefix(item.upper(), pfx).lower() if isinstance(item, str) else item for item in val]
         elif isinstance(val, str):
-            return val.upper().removeprefix(pfx).lower()
+            return _strip_prefix(val.upper(), pfx).lower()
     return convert_scalar(field, val)
 
 

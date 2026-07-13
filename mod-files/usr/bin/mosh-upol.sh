@@ -69,8 +69,21 @@ ${D}(Hit Ctrl+C to exit)${N}
 ${G}Enter target email: ${N}
 EOF
 )"
-  read -rep "" email
-  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
+read -rep "" email
+
+echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
+read -r install_ublock
+
+case "${install_ublock,,}" in
+  ""|y|yes)
+    INSTALL_UBLOCK=1
+    ;;
+  *)
+    INSTALL_UBLOCK=0
+    ;;
+esac
+
+cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
@@ -97,8 +110,16 @@ print(lines[0])
 for line in lines[1:]:
   print("    " + line)
 PYEOF
-  extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
-  rm -f /tmp/_pol_conv.py
+extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
+
+if [[ "$INSTALL_UBLOCK" == "1" ]]; then
+  extSettings=$(printf '%s\n' "$extSettings" | sed '
+    $!b
+    s/^}$/,\n    "blockddmmcjpfkbhanlgegpmjpfpfjka": {\n      "installation_mode": "force_installed",\n      "update_url": "https:\/\/ublock.r58playz.dev\/update.xml"\n    }\n}/
+  ')
+fi
+
+rm -f /tmp/_pol_conv.py
 
   for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
     val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)

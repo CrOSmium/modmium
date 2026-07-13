@@ -5,7 +5,7 @@ Thanks to the GBB flags set by `modmium.sh`, shims can be booted with **[Ctrl+U]
 * Download the shim for your board from [crosbreaker's DL site](https://dl.crosbreaker.com/).
 * Flash it to a usb, see the [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) if you don't know how.
 * Plug in the usb, then **[Ctrl+U]** boot it. 
-1. With devkeys, you are neither keyrolled nor unkeyrolled, since you are using completely different keys)
+1. (With devkeys, you are neither keyrolled nor unkeyrolled, since you are using completely different keys)
 ## Clearing FWMP
 Once you have code execution, open a shell and run the following commands:
 ```bash
