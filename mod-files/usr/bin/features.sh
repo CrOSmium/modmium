@@ -282,7 +282,12 @@ systemBlur(){
     echo -e "Enabling System Blur..."
     echo -e "Credits to pilot bell for making this toggle!"
     sleep 1
+    echo -e "${R}this toggle is broken :( \nit will be fixed when it is not broken.${N}"
+    sleep 2
+    exit 1 # generational fix
 
+    # hey, don't look below this ok? it is my flawless fix for this.
+    cat << MEOW > /dev/null
     RED=$(tput setaf 1)
     GREEN=$(tput setaf 2)
     YELLOW=$(tput setaf 3)
@@ -546,6 +551,7 @@ EOF
 
     echo "${GREEN}System Blur enabled${RESET}"
     echo "${YELLOW}Restarting UI...${RESET}"
+MEOW
   else
     echo -e "Disabling System Blur..."
     sleep 1
@@ -564,7 +570,7 @@ EOF
 # -- MAIN SCRIPT --
 tput civis # :whale:
 menu_reset() {
-  menuText="\nFeature Toggles (THIS ENABLES FEATURES THAT MAY NOT WORK ON YOUR DEVICE, USE AT YOUR OWN RISK)\n"
+  menuText="\nFeature Toggles (THIS ENABLES FEATURES THAT CAN AND WILL BRICK YOUR INSTALL, USE AT YOUR OWN RISK)\n"
   options=()
   checkStatus
   if [[ $chromebookplus == 1 ]]; then
