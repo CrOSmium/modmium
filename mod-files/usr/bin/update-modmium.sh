@@ -386,9 +386,10 @@ toggleBootPriority(){
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
-read -r
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+echo -e "${Y}Would you like to remove developer packages for compatibility with other ChromeOS versions?${N}"
+echo -ne "[y/N]: "
+read -r devp
+if [[ "$devp" =~ ^[Yy]$ ]]; then
   echo -e "${G}Uninstalling packages...${N}"
   printf 'y\n' | dev_install --uninstall
   rm -f /mnt/stateful_partition/.devinstall_complete
