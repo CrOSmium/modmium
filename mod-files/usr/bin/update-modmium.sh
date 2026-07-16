@@ -117,7 +117,7 @@ updateModmium() {
   echo -e "${G}Done! Cleaning up...${N}"
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
-  sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
+  sync && sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
   sleep 3
   stty -echo
   exit
@@ -345,23 +345,38 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
-if [[ -f /etc/chrome_dev.conf ]]; then
-  mkdir -p /tmp/opposite
-
-  newRoot=$((newKern + 1))
-  mount ${intdis_prefix}${newRoot} /tmp/opposite 2>/dev/null
-
-  mkdir -p /tmp/opposite/etc
-  cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
-
-  sync
-  umount /tmp/opposite 2>/dev/null
-  rmdir /tmp/opposite 2>/dev/null
+  
+  echo -e "Are you sure you want to switch your boot kernel to '${intdis_prefix}${newKern}'?"
+  echo -ne "[y/N]: "
+  read -r iamverysure
+  if [[ "$iamverysure" =~ ^[Yy]$ ]]; then
+    sync # for good luck
+    echo -e "Exiting..."
+    sleep 0.2
+    exit 0
+  else
+    echo -e "Continuing... \n"
+    sleep 0.3
   fi
+  
+  if [[ -f /etc/chrome_dev.conf ]]; then
+    mkdir -p /tmp/opposite
+  
+    newRoot=$((newKern + 1))
+    mount ${intdis_prefix}${newRoot} /tmp/opposite 2>/dev/null
+  
+    mkdir -p /tmp/opposite/etc
+    cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
+  
+    sync
+    umount /tmp/opposite 2>/dev/null
+    rmdir /tmp/opposite 2>/dev/null
+  fi
+
   sync
   echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
   echo -ne "[y/N]: "
-  read pwr
+  read -r pwr
   if [[ "$pwr" =~ ^[Yy]$ ]]; then
     echo -e "Your device ${R}will${N} powerwash on next boot."
     echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
