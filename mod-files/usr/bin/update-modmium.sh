@@ -386,6 +386,7 @@ toggleBootPriority(){
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
+echo ""
 echo -e "${Y}Would you like to remove developer packages for compatibility with other ChromeOS versions?${N}"
 echo -ne "[y/N]: "
 read -r devp
