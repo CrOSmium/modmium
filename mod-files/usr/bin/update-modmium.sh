@@ -345,7 +345,7 @@ toggleBootPriority(){
     currentKern=4
     newKern=2
   fi
-  
+  stty echo
   echo -e "Are you sure you want to switch your boot kernel to '${intdis_prefix}${newKern}'?"
   echo -ne "[y/N]: "
   read -r iamverysure
