@@ -350,13 +350,13 @@ toggleBootPriority(){
   echo -ne "[y/N]: "
   read -r iamverysure
   if [[ "$iamverysure" =~ ^[Yy]$ ]]; then
+    echo -e "Continuing... \n"
+    sleep 0.3
+  else
     sync # for good luck
     echo -e "Exiting..."
     sleep 0.2
     exit 0
-  else
-    echo -e "Continuing... \n"
-    sleep 0.3
   fi
   
   if [[ -f /etc/chrome_dev.conf ]]; then
