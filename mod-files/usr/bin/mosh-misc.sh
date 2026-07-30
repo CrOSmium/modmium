@@ -27,6 +27,7 @@ ${Y}lxrd: Discovered policy-test-tool and created device policy editing script, 
 \033[38;5;93mxz8f: Helped with custom bootsplashes.${N}
 \033[38;5;94mcon: emotional support (also helped with minor bugs in image downloader)${N}
 \033[38;5;51mCasper1051, \033[38;5;93mMoonstone, \033[38;5;57mpilgorr${N}: creating the default bootsplashes.
+\033[38;5;201mpers5124, \033[38;5;214mdinonuget_, \033[38;5;49mspacenerd1235, \033[38;5;118mxmb9${N}: private beta testers, found and reported lots of bugs.
 
 ${D}[ Removing this menu from Modmium is not permitted ]${N}
 -- Press any key to return --

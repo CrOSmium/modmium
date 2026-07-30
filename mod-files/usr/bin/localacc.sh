@@ -205,14 +205,13 @@ dbus-send \
   boolean:true \
   array:string:"--login-user=$U","--login-profile=$H","--oobe-skip-postlogin","--disable-gaia-services","--skip-force-online-signin-for-testing","--allow-failed-policy-fetch-for-test" \
   array:string:
-
+touch /mnt/stateful_partition/.removegaiaflags
 sync
 GR=$'\033[38;5;46m'
 [[ $TERM == "xterm-256color" ]] || initctl restart ui # this fixes a bug where it refuses to let you sign in if this is ran on the lock screen
 echo -e "\n${GR}Done! '$U' has been added as a local account${RE} \nIf logging in doesn't work, remove the account (or powerwash) and try again."
 if [[ "$SKIP_OOBE" -eq 1 ]]; then
   initctl restart ui
-
   echo "UI restarted. Exit out of VT to continue..."
 
   while true; do
@@ -220,7 +219,8 @@ if [[ "$SKIP_OOBE" -eq 1 ]]; then
 
     if [[ "$cur" != "vt1" && "$cur" != "vt2" && "$cur" != "vt3" ]]; then
       echo "Detected $cur, restarting UI again..."
-      sleep 3
+      echo -e "If you are still in the oobe once this menu closes, open a root shell and type 'initctl restart ui'"
+      sleep 4
       initctl restart ui
       break
     fi

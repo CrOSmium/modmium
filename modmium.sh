@@ -475,12 +475,12 @@ flashDevFW(){
       /usr/share/vboot/bin/make_dev_ssd.sh --force -r
       /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid $BACKUP --to /tmp/devfw.bin
       futility gbb -s /tmp/devfw.bin --flags=0xa0b1
-      flashrom -w /tmp/devfw.bin
+      flashrom -w /tmp/devfw.bin || fail "DevFW failed to flash!"
     else
       /usr/share/vboot/bin/make_dev_ssd.sh --force -r --keys ${BACKUP}/userkeys
       /usr/share/vboot/bin/make_dev_firmware.sh --nomod_gbb_flags --nomod_hwid $BACKUP --keys ${BACKUP}/userkeys --to /tmp/devfw.bin
       futility gbb -s /tmp/devfw.bin --flags=0xa0b1
-      flashrom -w /tmp/devfw.bin
+      flashrom -w /tmp/devfw.bin || fail "DevFW failed to flash!"
     sync # sync because I dont trust ChromeOS
     fi
     vpd -i RO_VPD -s dev_firmware=1

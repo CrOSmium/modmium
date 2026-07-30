@@ -74,7 +74,11 @@ show_assets_message_image() {
     locale_list="$locale_list $locale"
   done
   locale_list="$locale_list en-US en"
-  display_boot_message "$message" "$locale_list" || return "$?"
+  if display_boot_message "$message" "$locale_list"; then
+    setup_tty 
+  else
+    return 1
+  fi
 }
 # Prints the two byte hex code of the matched char or
 # exists non-zero on timeout.  It reads from the current tty.
@@ -83,16 +87,18 @@ show_assets_message_image() {
 #
 # Arguments: time_in_seconds two_byte_hex_match_1 two_byte_hex_match_2 ...
 match_char_timeout() {
-  local delay_secs="$1"
+  local tty="$1"
+  local delay_secs="$2"
+  shift
   shift
   local input=''
   local match=''
   local start_time=$(date +%s)
   local stop_time=$((start_time + delay_secs))
-  local tty_config=$(stty -g)
-  stty raw -echo
+  local tty_config=$(stty -g -F "$tty")
+  stty raw -echo -F "$tty"
   while [ $delay_secs -gt 0 ]; do
-    input=$(timeout -s KILL ${delay_secs}s head -c 1)
+    input=$(timeout -s KILL ${delay_secs}s head -c 1 "$tty")
     [ $? -eq 137 ] && break  # Timed out.
     input=$(printf "%02x" "'$input")
     for char in "$@"; do
@@ -105,11 +111,12 @@ match_char_timeout() {
     delay_secs=$((stop_time - $(date +%s) ))
   done
   # Restores the tty's settings.
-  stty $tty_config
+  stty $tty_config -F "$tty"
   [ -z "$match" ] && return 1
   printf "$match"
   return 0
 }
+
 # Returns if current device is using virtual developer switch.
 has_virtual_dev_switch() {
   local VBSD_HONOR_VIRT_DEV_SWITCH="0x400"
@@ -167,7 +174,7 @@ mode_warn_dev() {
 # Prints message when entering developer mode
 # Argument: time to countdown (in seconds)
 mode_enter_dev() {
-  local delay_secs="${1:-30}"
+  local delay_secs="${1:-10}"
   # The text below is only fallback of localized assets message.
   # Please sync with text there if you want to change the message.
   local enter_dev1_text="
@@ -216,7 +223,7 @@ mode_enter_dev() {
 
 mode_leave_dev() {
   show_assets_message_image "leave_dev"
-  sleep 30
+  sleep 10
 }
 
 # Prints messages before starting firmware update
@@ -322,14 +329,14 @@ mode_dev_fwcheck() {
 # THIS FUNCTION HAS BEEN MODIFIED FOR MODMIUM TO PREVENT BOOTING FROM FAILING
 mode_block_devmode() {
   show_assets_message_image "anti_block_devmode_virtual"
-  echo "Modmium is repairing your device" >>"${TTY}"
-  echo "Deprovisioning..." >>"${TTY}"
+  echo "Modmium is repairing your device" >>"${STDOUT}"
+  echo "Deprovisioning..." >>"${STDOUT}"
   # from SH1mmer
-  vpd -i RW_VPD -s check_enrollment=0 >>"${TTY}"
-  echo "Unblocking devmode..." >>"${TTY}"
+  vpd -i RW_VPD -s check_enrollment=0 >>"${STDOUT}"
+  echo "Unblocking devmode..." >>"${STDOUT}"
   local res
-  vpd -i RW_VPD -s block_devmode=0 >>"${TTY}"
-  crossystem block_devmode=0 >>"${TTY}"
+  vpd -i RW_VPD -s block_devmode=0 >>"${STDOUT}"
+  crossystem block_devmode=0 >>"${STDOUT}"
    if [ -e /etc/init/tcsd.conf ]; then
     initctl stop tcsd || :
     if tpmc getp 0x100a >/dev/null 2>&1; then
@@ -340,8 +347,8 @@ mode_block_devmode() {
   else
     res=$(cryptohome --action=get_firmware_management_parameters 2>&1)
     if [ $? -eq 0 ] && ! echo "$res" | grep -q "Unknown action"; then
-      tpm_manager_client take_ownership >>"${TTY}"
-      cryptohome --action=remove_firmware_management_parameters >>"${TTY}"
+      tpm_manager_client take_ownership >>"${STDOUT}"
+      cryptohome --action=remove_firmware_management_parameters >>"${STDOUT}"
     fi
   fi
 }
@@ -352,9 +359,11 @@ main() {
     usage_help
     exit 1
   fi
+  setup_tty
   local mode="$1"
   # global
   STDOUT="$2"
+  [ -e "$STDOUT" ] || STDOUT="$TTY"
   shift
   shift
   # Wait until the boot-alert-ready abstract job has started, indicating that
