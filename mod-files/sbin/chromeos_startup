@@ -137,8 +137,5 @@ if [ -f /root/.removeskipoobeflag ]; then
   echo "Done"
 fi
 
-CONF="/etc/chrome_dev.conf"
-sed -i '/^[[:space:]]*$/d' "$CONF"
-
 echo -e "${G}-------------------------- Handing startup back to ChromeOS :D --------------------------${N}"
 exec /sbin/chromeos_startup.old
