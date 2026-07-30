@@ -74,7 +74,11 @@ show_assets_message_image() {
     locale_list="$locale_list $locale"
   done
   locale_list="$locale_list en-US en"
-  display_boot_message "$message" "$locale_list" || return "$?"
+  if display_boot_message "$message" "$locale_list"; then
+    setup_tty 
+  else
+    return 1
+  fi
 }
 # Prints the two byte hex code of the matched char or
 # exists non-zero on timeout.  It reads from the current tty.
