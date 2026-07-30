@@ -1,6 +1,5 @@
 #!/bin/sh
-# credit to rainestorme for 80% of this
-# i have tried to reimplement this, but if it ain't broke don't fix it ig - dmd
+# rewritten by DMD
 
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -54,7 +53,7 @@ find_current_locale() {
   fi
 }
 
-setup_tty() {
+setup_tty() { # credit to rainestorme for this ig
   [ -x /sbin/frecon ] && TTY=/run/frecon/vt0 || TTY=/dev/tty1
   [ -e "${TTY}" ] || TTY=/dev/null
 }
@@ -64,126 +63,281 @@ setup_tty() {
 show_assets_message_image() {
   local message="$1"
   local locale locale_list
-
   # Build locale list
   locale="$(find_current_locale)" || locale=""
   # Starting from R34, the initial_locale from VPD may have multiple values,
   # separated by ',' -- and we only want to try the primary one.
   locale="${locale%%,*}"
-  locale_list="${locale}"
-  while [ "${locale%[-_]*}" != "${locale}" ]; do
+  locale_list="$locale"
+  while [ "${locale%[-_]*}" != "$locale" ]; do
     locale="${locale%[-_]*}"
-    locale_list="${locale_list} ${locale}"
+    locale_list="$locale_list $locale"
   done
-  locale_list="${locale_list} en-US en"
-
-  if display_boot_message "${message}" "${locale_list}"; then
-    setup_tty
+  locale_list="$locale_list en-US en"
+  if display_boot_message "$message" "$locale_list"; then
+    setup_tty 
   else
-    # Display the message code itself as fallback.
-    echo "${message}" >>"${TTY}"
+    return 1
   fi
 }
-
 # Prints the two byte hex code of the matched char or
-# exists non-zero on timeout.  It reads from the tty in arguments.
-# Arguments: tty time_in_seconds two_byte_hex_match_1 two_byte_hex_match_2 ...
+# exists non-zero on timeout.  It reads from the current tty.
+# To override, call it as follows,
+#   match_char_timeout args < "$STDOUT"
+#
+# Arguments: time_in_seconds two_byte_hex_match_1 two_byte_hex_match_2 ...
 match_char_timeout() {
   local tty="$1"
   local delay_secs="$2"
   shift
   shift
-
   local input=''
   local match=''
-  local start_time
-  local stop_time
-  local tty_config
-
-  start_time="$(date +%s)"
-  stop_time="$((start_time + delay_secs))"
-  tty_config="$(stty -g -F "${tty}")"
-
-  stty raw -echo cread -F "${tty}"
-  while [ "${delay_secs}" -gt 0 ]; do
-    input="$(timeout -s KILL "${delay_secs}s" head -c 1 "${tty}")"
+  local start_time=$(date +%s)
+  local stop_time=$((start_time + delay_secs))
+  local tty_config=$(stty -g -F "$tty")
+  stty raw -echo -F "$tty"
+  while [ $delay_secs -gt 0 ]; do
+    input=$(timeout -s KILL ${delay_secs}s head -c 1 "$tty")
     [ $? -eq 137 ] && break  # Timed out.
-    input="$(printf "%02x" "'${input}")"
+    input=$(printf "%02x" "'$input")
     for char in "$@"; do
-      if [ "${input}" = "${char}" ]; then
-        match="${input}"
+      if [ "$input" = "$char" ]; then
+        match="$input"
         break
       fi
     done
-    [ -n "${match}" ] && break
-    delay_secs="$((stop_time - $(date +%s) ))"
+    [ -n "$match" ] && break
+    delay_secs=$((stop_time - $(date +%s) ))
   done
   # Restores the tty's settings.
-  stty "${tty_config}" -F "${tty}"
-
-  [ -z "${match}" ] && return 1
-  printf "%s" "${match}"
+  stty $tty_config -F "$tty"
+  [ -z "$match" ] && return 1
+  printf "$match"
   return 0
 }
 
+# Returns if current device is using virtual developer switch.
+has_virtual_dev_switch() {
+  local VBSD_HONOR_VIRT_DEV_SWITCH="0x400"
+  local vdat_flags="$(crossystem vdat_flags || echo 0)"
+  [ "$((vdat_flags & VBSD_HONOR_VIRT_DEV_SWITCH))" != "0" ]
+}
+# Prints message when in developer mode
+# Argument: time to countdown (in seconds)
+mode_warn_dev() {
+  local delay_secs="${1:-30}"
+  # Don't show a broken/partial background image.
+  tput clear > "$STDOUT"
+  echo '
+                        __________________________
+                       |.------------------------.|
+                       ||                        ||
+                       ||    (_)          (_)    ||
+                       ||                        ||
+                       ||       __________       ||
+                       ||     /            \     ||
+                       ||________________________||
+                      / __/___/_____________\__\__ \
+                     /               _              \
+                    /        /_______\ \_____\       \
+                   /__________________\ \_____________\
+                   \___________________\ \____________/
+                                        \ \_-_-_-.
+                                      /|         |
+                                     |  |        |
+                                       \         |
+                                        \_______/
+                   Fanxql is touching your chromebook.
+                     Press space to begin recovery.
+  ' >"$STDOUT"
+  # TODO(wad) Use the developer mode firmware image
+  # Read a space bar or Ctrl+D or timeout.
+  local input=$(match_char_timeout "$delay_secs" 04 20 < "$STDOUT")
+  local exit_code=$?
+  tput clear > "$STDOUT"
+  # If we timed out, we're done.
+  [ $exit_code -ne 0 ] && return 0
+  case "$input" in
+    "04")  # Ctrl+D
+      # Done.
+      ;;
+    "20")  # Spacebar
+      crossystem recovery_request=1
+      reboot
+      # To prevent the system from continuing to boot.
+      sleep infinity
+      ;;
+  esac
+  return 0
+}
 # Prints message when entering developer mode
 # Argument: time to countdown (in seconds)
 mode_enter_dev() {
   local delay_secs="${1:-10}"
-
-  show_assets_message_image "enter_dev1_virtual"
-
-  for dev_count_down in $(seq "${delay_secs}" -1 1); do
+  # The text below is only fallback of localized assets message.
+  # Please sync with text there if you want to change the message.
+  local enter_dev1_text="
+    Local data will be cleared.
+    Modifications you make to the system are not supported by Google, may cause
+    hardware issues and may void warranty.
+    To cancel, turn your computer off now and toggle the Developer Switch back
+    to Verified Mode.
+  "
+  local enter_dev1_virtual_text="
+    Your system is transitioning to Developer Mode.
+    Local data has been cleared.
+    Modifications you make to the system are not supported by Google, may cause
+    hardware issues and may void warranty.
+    To cancel, turn your computer off now.
+  "
+  if has_virtual_dev_switch; then
+    show_assets_message_image "enter_dev1_virtual" ||
+      echo "$enter_dev1_virtual_text" >"$STDOUT"
+  else
+    show_assets_message_image "enter_dev1" ||
+      echo "$enter_dev1_text" >"$STDOUT"
+  fi
+  local format='\r  %-30s'
+  for dev_count_down in $(seq $delay_secs -1 1); do
     # Trailing spaces must exist to clear previous message when the printed
     # counter width changed (ex, 100->99).
     # TODO(hungte) merge this with assets messages so it can be localized.
-    printf '\r  %-30s' "Starting in ${dev_count_down} second(s)..." >>"${TTY}"
+    printf "$format" "Starting in $dev_count_down second(s)..." >"$STDOUT"
     sleep 1
   done
-
   # Count-down
-  tput clear >>"${TTY}"
-  show_assets_message_image "enter_dev2"
+  tput clear >"$STDOUT" &&
+  show_assets_message_image "enter_dev2" ||
+  # The text by echo below is only fallback of localized assets message.
+  # Please sync with text there if you want to change the message.
+  echo "
+    Preparing system for Developer Mode (may take 5 - 10 minutes).
+    Do not turn your computer off until it has restarted.
+    On reboot, press Ctrl+Alt+[->] (F2) for information about Developer Mode.
+  " >"$STDOUT"
+  # TODO(wad,wfrichar) Request a root password here.
+  # TODO(wad,reinauer) Inform the user of chromeos-firmwareupdate --mode=todev
 }
-
 # Prints message when leaving developer mode
+
 mode_leave_dev() {
   show_assets_message_image "leave_dev"
-  echo "Modmium automatically brings you into verified mode so you don't accidentally enroll in devmode" >>"${TTY}"
-  echo "You will reboot into verified in 10 seconds" >>"${TTY}"
   sleep 10
 }
 
 # Prints messages before starting firmware update
 mode_update_firmware() {
-  show_assets_message_image "update_firmware"
+  show_assets_message_image "update_firmware" ||
+  # The text by echo below is only fallback of localized assets message.
+  # Please sync with text there if you want to change the message.
+  echo "
+    Your system is applying a critical update.
+    Please do not turn it off.
+  " >"$STDOUT"
 }
 
+
+mode_wipe() {
+  local splash_file="$1"
+  if [ -s "$splash_file" ] && type ply-image >/dev/null 2>&1; then
+    # Do not use background execution because this file is going to be wiped.
+    ply-image "$splash_file"
+  else
+    echo "    Erasing stateful partition..." >"$STDOUT"
+  fi
+}
 # Prints messages before starting user-initiated wipe.
 mode_power_wash() {
-  show_assets_message_image "power_wash"
+  show_assets_message_image "power_wash" ||
+  # The text by echo below is only fallback of localized assets message.
+  # Please sync with text there if you want to change the message.
+  echo "
+    Powerwash in progress. Do not switch off your device.
+    Powerwashes happen when critical errors are detected, or when you choose
+    to reset your device. This will reset Chrome OS to be just like new, and
+    you'll be back in operation in just a minute.
+  " >"$STDOUT"
 }
-
 # Prints message before starting to rebuild a corrupted stateful partition.
 mode_self_repair() {
-  show_assets_message_image "self_repair"
+  show_assets_message_image "self_repair" ||
+  # The text by echo below is only fallback of localized assets message.
+  # Please sync with text there if you want to change the message.
+  echo "
+    Your system is repairing itself.  Please wait.
+  " >"$STDOUT"
 }
-
+# Prints message when starting with developer firmware, to check if there's
+# available updates for firmware.
+mode_dev_fwcheck() {
+  # TODO(hungte) Find some better way to store firmware value, like using
+  # /etc/lsb-release.  Currently the firmware updater may contain fields like
+  # TARGET_* in the beginning of updater script.
+  local TARGET_FWID=""
+  local TARGET_ECID=""
+  # The magic value 40 is verified on current updaters (using line 23-24)
+  eval "$(head -40 /usr/sbin/chromeos-firmwareupdate |
+          grep '^ *TARGET_..ID=')"
+  if [ -z "$TARGET_FWID" -a -z "$TARGET_ECID" ]; then
+    return
+  fi
+  local fwid="$(crossystem fwid)"
+  local ec_info
+  ec_info="$(mosys -k ec info 2>/dev/null)" || ec_info=""
+  local ecid="$(fw_version="Unknown"; eval "$ec_info"; echo "$fw_version")"
+  # Ignore known firmware images carried by updaters with multiple images
+  # TODO(hungte) Replace this by a "compatible list" in updater if such request
+  # becomes a common feature.
+  case "$(mosys platform name 2>/dev/null):$ecid" in
+    "ZGB:0.14" | "Alex:00VFA616" )
+      TARGET_ECID="$ecid"
+      ;;
+  esac
+  local notify_update=0
+  if [ "$TARGET_FWID" != "$fwid" ] &&
+     [ "$TARGET_FWID" != "IGNORE" ]; then
+    notify_update=1
+    echo "
+      System firmware update available: [$TARGET_FWID]
+      Currently installed system firmware: [$fwid]
+    " >"$STDOUT"
+  fi
+  if [ "$TARGET_ECID" != "$ecid" ] &&
+     [ "$TARGET_ECID" != "IGNORE" ]; then
+    notify_update=1
+    echo "
+      EC firmware update available: [$TARGET_ECID]
+      Currently installed EC firmware: [$ecid]
+    " >"$STDOUT"
+  fi
+  if [ $notify_update -ne 0 ]; then
+    echo "
+      Firmware auto updating is disabled for developer mode. If you want to
+      manually update your firmware, please run the following command from a
+      root shell:
+      sudo chromeos-firmwareupdate --force --mode=recovery
+    " >"$STDOUT"
+  fi
+}
 # Prints a message telling the user that developer mode has been disabled for
-# the device upon request by the device owner.  After a timeout, or after the
-# user confirms by pressing space, the system then switches back to verified
-# boot mode automatically, and reboots.
+# the device upon request by the device owner. Depending on hardware support,
+# the system switches back to verified boot mode automatically or prompts the
+# user to do so. The system reboots after the user confirms by pressing space or
+# after timeout.
+
+# THIS FUNCTION HAS BEEN MODIFIED FOR MODMIUM TO PREVENT BOOTING FROM FAILING
 mode_block_devmode() {
   show_assets_message_image "anti_block_devmode_virtual"
-  echo "Modmium is repairing your device..." >>"${TTY}"
-  echo "Deprovisioning..." >>"${TTY}"
+  echo "Modmium is repairing your device" >>"${STDOUT}"
+  echo "Deprovisioning..." >>"${STDOUT}"
   # from SH1mmer
-  vpd -i RW_VPD -s check_enrollment=0 >>"${TTY}"
-  echo "Unblocking devmode..." >>"${TTY}"
+  vpd -i RW_VPD -s check_enrollment=0 >>"${STDOUT}"
+  echo "Unblocking devmode..." >>"${STDOUT}"
   local res
-  vpd -i RW_VPD -s block_devmode=0 >>"${TTY}"
-  crossystem block_devmode=0 >>"${TTY}"
-  if [ -e /etc/init/tcsd.conf ]; then
+  vpd -i RW_VPD -s block_devmode=0 >>"${STDOUT}"
+  crossystem block_devmode=0 >>"${STDOUT}"
+   if [ -e /etc/init/tcsd.conf ]; then
     initctl stop tcsd || :
     if tpmc getp 0x100a >/dev/null 2>&1; then
       tpmc clear
@@ -193,146 +347,45 @@ mode_block_devmode() {
   else
     res=$(cryptohome --action=get_firmware_management_parameters 2>&1)
     if [ $? -eq 0 ] && ! echo "$res" | grep -q "Unknown action"; then
-      tpm_manager_client take_ownership >>"${TTY}"
-      cryptohome --action=remove_firmware_management_parameters >>"${TTY}"
+      tpm_manager_client take_ownership >>"${STDOUT}"
+      cryptohome --action=remove_firmware_management_parameters >>"${STDOUT}"
     fi
   fi
-  echo "Done! Rebooting..." >>"${TTY}"
-  sleep 2
 }
-
-# Updates the progress bar to reflect the provided percentage.
-mode_update_progress() {
-  local progress="$1"
-  if ! display_boot_message update_progress "${progress}"; then
-    # Display the progress on the terminal as a fallback.
-    printf "${progress}%%\r" >>"${TTY}"
-  fi
-}
-
-# Show a message indicating that we're doing a TPM firmware update.
-mode_update_tpm_firmware() {
-  show_assets_message_image "update_tpm_firmware"
-}
-
-# Show a message indicating that we're doing a detachable base firmware update.
-mode_update_detachable_base_firmware() {
-  show_assets_message_image "update_detachable_base_firmware"
-}
-
-# Show a message indicating that we're doing a "several minutes" long
-# unspecified firmware update, with risk to the system if interrupted.
-mode_update_tcon_firmware() {
-  show_assets_message_image "update_firmware_slow_extra_warning"
-}
-
-# Show a message indicating that we're doing a touchpad firmware update.
-mode_update_touchpad_firmware() {
-  show_assets_message_image "update_touchpad_firmware"
-}
-
-# Show a message indicating that we're doing a trackpoint firmware update.
-mode_update_trackpoint_firmware() {
-  show_assets_message_image "update_trackpoint_firmware"
-}
-
-# Show a message indicating that we're doing a touchscreen firmware update.
-mode_update_touchscreen_firmware() {
-  show_assets_message_image "update_touchscreen_firmware"
-}
-
-# Show a message explaining to the user that the battery isn't sufficiently
-# charged to a apply a firmware update and ask for the charger to be plugged.
-mode_update_tpm_firmware_low_battery() {
-  show_assets_message_image "update_tpm_firmware_low_battery"
-}
-
-# Show a message explaining to the user that the battery isn't sufficiently
-# charged to a apply a firmware update and tell them that they need to wait
-# while the battery is charging.
-mode_update_tpm_firmware_low_battery_charging() {
-  show_assets_message_image "update_tpm_firmware_low_battery_charging"
-}
-
-# Show a message telling the user that the TPM firmware update failed and that
-# they need to go through recovery to retry the update.
-mode_update_tpm_firmware_failure() {
-  show_assets_message_image "update_tpm_firmware_failure"
-
-  # Read a space bar. Timeout after 10 years (i.e. practically no timeout).
-  local input
-  input="$(match_char_timeout "${TTY}" 315360000 20)"
-  tput clear >>"${TTY}"
-}
-
-# Show a message indicating that we're doing a "several minutes" long
-# unspecified firmware update, with risk to the system if interrupted.
-mode_update_csme_firmware() {
-  show_assets_message_image "update_firmware_slow_extra_warning"
-}
-
-# Show a message indicating that we're doing fwupd firmware updates.
-mode_update_fwupd_firmware() {
-  show_assets_message_image "update_fwupd_firmware"
-}
-
-# Show a message indicating that we're doing an unspecificed update that can
-# take upto a few minutes.
-mode_stateful_thinpool_migration() {
-  show_assets_message_image "update_firmware_slow_extra_warning"
-}
-
-# Show a generic update message indicating that we're migrating to
-# dm-default-key, which can take upto a few minutes.
-mode_default_key_stateful_migration() {
-  show_assets_message_image "update_firmware_slow_extra_warning"
-}
-
 # Main initialization and dispatcher
 main() {
   # process args
-  if [ $# -lt 1 ]; then
+  if [ $# -lt 2 ]; then
     usage_help
     exit 1
   fi
-  local mode
-  mode="$(echo "$1" | tr -dc "[:alnum:]_")"
-  shift
-
-  # For headless devices, we want to provide some messages so people can know
-  # what goes wrong.
-  local output
-  for output in /dev/kmsg /dev/console; do
-    (echo "chromeos-boot-alert: ${mode}" >>"${output}") 2>/dev/null || true
-  done
-
   setup_tty
-
-  if [ -x /usr/sbin/board_boot_alert ]; then
-    # Allow overriding boot-alert behavior (usually for headless devices).
-    /usr/sbin/board_boot_alert "${mode}" "$@" && exit
-  fi
-
+  local mode="$1"
+  # global
+  STDOUT="$2"
+  [ -e "$STDOUT" ] || STDOUT="$TTY"
+  shift
+  shift
   # Wait until the boot-alert-ready abstract job has started, indicating that
   # it's safe to display an alert onscreen.
   if ! initctl status boot-alert-ready | grep -q running; then
     initctl emit boot-alert-request
   fi
-
   # Light up the screen if possible.
-  backlight_tool --set_brightness_percent=100 || true
-
+  backlight_tool --set_brightness_percent 100 || true
   # Hides cursor and prevents console from blanking after long inactivity.
-  setterm -cursor off -blank 0 -powersave off -powerdown 0 >>"${TTY}" || true
-
-  local handler="mode_${mode}"
-  if type "${handler}" 2>/dev/null | head -1 | grep -q "function"; then
-    "${handler}" "$@"
-  else
-    usage_help
-    exit 1
-  fi
+  setterm -cursor off -blank 0 -powersave off -powerdown 0 >"$STDOUT" || true
+  case "$mode" in
+    "warn_dev" | "enter_dev" | "leave_dev" | "dev_fwcheck" | \
+      "update_firmware" | "wipe" | "power_wash" | "self_repair" | \
+      "block_devmode" )
+      mode_"$mode" "$@"
+      ;;
+    * )
+      usage_help
+      exit 1
+      ;;
+  esac
 }
-
 # Main Entry
 main "$@"
