@@ -3,7 +3,6 @@
 > The "Emergency Revert" option in MOSH means keeping a firmware backup isn't *strictly necessary*, however, it is still best practice to keep one in case your VPD gets messed up somehow.
 > WP (and APROV if on Ti50) **must** be disabled before installation, the script will refuse to run if it is on.
 
-
 ## Pros and Cons
 * VT2 Installation:
   * +: Doesn't require a linux environment to build
@@ -16,11 +15,11 @@
   * +: Allows custom modifications to Modmium
   * -: Requires a linux environment to build (you can use WSL if you're building on Windows. the dependencies will be the same as Ubuntu)
   * -: More complicated to install
-
-## VT2 Installation
-> [!NOTE]
+  
+> [!IMPORTANT]
 > Minimum supported version is 131, issues/PRs about 130- will be ignored and closed
 
+## VT2 Installation
 > [!TIP]
 > F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
 >
@@ -36,6 +35,9 @@
 > If you're using modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
 
 ## Recovery Image
+> [!CAUTION]
+> Do not use prebuilt modmium images, as they may be outdated or contain malicious scripts, if you do not want to build a recovery image, use the [VT-2 installer](#vt2-installation)
+
 1. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary).
 2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
