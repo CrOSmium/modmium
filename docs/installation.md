@@ -5,12 +5,12 @@
 
 ## Pros and Cons
 > [!NOTE]
-> If you don't understand any of this, [VT-2 installation](#vt2-installation) is significantly easier, especially the quick installer.
+> If you don't understand any of this, [VT-2 installation](#vt2-installation) is significantly easier, especially quickinstall.
 * VT2 Installation:
   * +: Doesn't require a linux environment to build
   * +: More convenient to install
   * -: Requires internet connection every time you install
-  * -: Quick installer, while easier, does not back up your firmware.
+  * -: Quickinstall, while easier, does not back up your firmware.
   * -: Doesn't come with bootsplashes or policy.json pre-installed
 * Recovery Image:
   * +: Once the image is created, no internet connection is required to install
@@ -30,7 +30,7 @@
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
 2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
 3. Open VT2 **[Ctrl+Alt+F2]** and login as `root`, and run your chosen installer:
-    * **Quick**: Run `bash <(curl -SLk modmium.dev/quick-modmium.sh)`
+    * **Quickinstall**: Run `bash <(curl -SLk modmium.dev/quick-modmium.sh)`
     > *(this won't backup your firmware to a USB, but works in one run and does almost everything for you.)*
     * **Standard**: Run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>`
 4. (**Standard ONLY**) After devfw is installed, reboot, then run the command again to install Modmium to disk (this is necessary to make the rootfs read-writable).
