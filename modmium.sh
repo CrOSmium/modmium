@@ -540,7 +540,7 @@ EOF
     cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 Starting Modmium install...
-EOF 
+EOF
     sync # for good luck
     sleep 2
     modmiumInstall # we don't need to reboot because when QUICKINSTALL=1, rootfs verification on the currently booted chromeOS doesn't matter because there isn't a chance a reco image will be used, and stream.py is put in /usr/local/ instead of /root/ regardless.
