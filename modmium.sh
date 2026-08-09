@@ -40,6 +40,7 @@ D=$'\033[1;90m'
 UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
 MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
+[[ "$QUICKINSTALL" -eq 1 ]] && menu_text="Modmium Install Script! (Quickinstall)"
 
 # -- skidded from modmium-update.sh --
 BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
