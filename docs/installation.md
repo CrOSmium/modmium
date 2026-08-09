@@ -4,10 +4,13 @@
 > WP (and APROV if on Ti50) **must** be disabled before installation, the script will refuse to run if it is on.
 
 ## Pros and Cons
+> [!NOTE]
+> If you don't understand any of this, [VT-2 installation](#vt2-installation) is significantly easier, especially the quick installer.
 * VT2 Installation:
   * +: Doesn't require a linux environment to build
   * +: More convenient to install
   * -: Requires internet connection every time you install
+  * -: Quick installer, while easier, does not back up your firmware.
   * -: Doesn't come with bootsplashes or policy.json pre-installed
 * Recovery Image:
   * +: Once the image is created, no internet connection is required to install
@@ -21,18 +24,20 @@
 
 ## VT2 Installation
 > [!TIP]
-> F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
+> F2 is usually the key ***to the right of*** the (←)Backward/Left arrow key, usually being either (→)Forward/Right arrow or (↻)Refresh key.
 >
 > *This varies across devices.*
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
 2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
-3. Open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>`
-4. After devfw is installed, reboot, then run the command again to install Modmium to disk (this is necessary to make the rootfs read-writable).
-5. Return to secure mode.
-6. After it reboots, go through OOBE as normal and you'll be enrolled.
+3. Open VT2 **[Ctrl+Alt+F2]** and login as `root`, and run your chosen installer:
+    * **Quick**: Run `bash <(curl -SLk modmium.dev/quick-modmium.sh)`
+    > *(this won't backup your firmware to a USB, but works in one run and does almost everything for you.)*
+    * **Standard**: Run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>`
+4. (**Standard ONLY**) After devfw is installed, reboot, then run the command again to install Modmium to disk (this is necessary to make the rootfs read-writable).
+6. Reboot (It'll probably do this for you), and it should return you to verified mode. go through OOBE as normal and you'll be enrolled with Modmium!
 
 > [!WARNING]
-> If you're using modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
+> If you're using the regular modmium.sh while signed in, please make sure to eject the drive you are backing up to before running it, otherwise you may have issues.
 
 ## Recovery Image
 > [!CAUTION]
