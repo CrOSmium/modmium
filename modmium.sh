@@ -2,8 +2,16 @@
 # written by DMD and mariah carey
 # compatibility fixes by codenerd87
 source /usr/share/misc/shflags
+
+# The flag below sets the backup flag to false by default when set to '1',
+# backing up isn't *as* important as it used to be, since we can revert devkeys inside modmium, but it's staying true by default for the main installer.
+# You can set this flag if you're giving this to someone who doesn't have a USB and you don't want the installer to confuse them or something.
+QUICKINSTALL=0
+
+default_backup=$FLAGS_TRUE
+[[ "$QUICKINSTALL" -eq 1 ]] && default_backup=$FLAGS_FALSE
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
-DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to backup firmware from flashing devkeys." "b"
+DEFINE_boolean backup "$default_backup" "Whether or not to backup firmware from flashing devkeys." "b"
 FLAGS $@
 
 fail(){
@@ -200,7 +208,7 @@ installCros() {
   echo $branch > mnt/.branch
 
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
-  sync
+  sync;sync;sync;sync # do not touch this.
   umount mnt
   cd .. && rm -rf modmium
   sync
