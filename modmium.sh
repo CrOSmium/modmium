@@ -107,6 +107,7 @@ opposite_num() {
 installCros() {
   stop powerd &>/dev/null
   ldconfig
+  clear
   echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
