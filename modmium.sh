@@ -3,9 +3,10 @@
 # compatibility fixes by codenerd87
 source /usr/share/misc/shflags
 
-# The flag below sets the backup flag to false by default when set to '1',
-# backing up isn't *as* important as it used to be, since we can revert devkeys inside modmium, but it's staying true by default for the main installer.
-# You can set this flag if you're giving this to someone who doesn't have a USB and you don't want the installer to confuse them or something.
+# The flag below sets the backup flag to false* by default when set to '1', and just continues after disabling rootFS verification instead of prompting for a reboot.
+# *Backing up isn't *as* important as it used to be, since we can revert devkeys inside modmium, but it's staying true by default for the main installer.
+
+# You can set this flag if you want modmium to install with the bare minimum amount of user prompts
 QUICKINSTALL=0
 
 default_backup=$FLAGS_TRUE
@@ -135,11 +136,12 @@ installCros() {
   python -m venv .venv
   source .venv/bin/activate
   pip install requests &>/dev/null
-  curl -Lo /root/stream.py "https://modmium.dev/tools/stream.py"
-  python /root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
+  streamdir=/root/ # might as well if rootfs verification is already off ig, im keeping this as default just because i don't want to break anything - dmd
+  [[ "$QUICKINSTALL" -eq 1 ]] && streamdir=/usr/local/
+  curl -Lo ${streamdir}stream.py "https://modmium.dev/tools/stream.py"
+  python ${streamdir}stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
   rm -rf .venv
   # thanks lxrd for that python script btw
-
   echo -e "${G}Removing verity from ChromeOS...${N}"
   # keydir gets defined in installModmium()
   /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(opposite_num $(get_booted_kernnum)) --keys ${keydir} &>/dev/null
@@ -354,9 +356,9 @@ selUserBackup(){
   read -ep "Drive: " driveloc
   driveloc="${driveloc%/}"
   if [[ $driveloc == *"/dev/"* ]]; then
-    if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
   else
-    if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
   fi
 }
 
@@ -372,9 +374,9 @@ modmiumInstall(){
      read -ep "Drive: " driveloc
      driveloc="${driveloc%/}"
      if [[ $driveloc == *"/dev/"* ]]; then
-      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
      else
-       if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+       if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
      fi
     keydir=${BACKUP}/userkeys
   else
@@ -392,6 +394,16 @@ modmiumInstall(){
     cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
+  if [[ "$QUICKINSTALL" -eq 1 ]]; then
+  echo -e "Verifying firmware..."
+  DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+    if [[ $DEVFW != "1" ]]; then
+      fail "${R}Something went wrong! DevFW is not active, please join the discord and ask for help! (${Y}discord.crosbreaker.com${R})${D} \nIf you manually flashed DevFW, and Modmium cannot detect it, run 'vpd -i RO_VPD -s dev_firmware=1' to tell Modmium you are using DevFW.${N}" keepflag
+    else
+      echo -e "DevFW is enabled! Continuing..."
+      sleep 1
+    fi
+  fi
   installCros # :whale:
 }
 selectBackup(){
@@ -517,13 +529,22 @@ EOF
 
   echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
-
-  touch /tmp/.rebootpls
+  if [[ "$QUICKINSTALL -ne 1 ]]; then
   cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
 ${B}Please reboot your chromebook${N}. After you reboot, either recover with a Modmium image OR run this script again to INSTALL Modmium. (If you used userkeys, make sure you also use that flag when trying to Install Modmium with this script)
 EOF
+  else
+    touch /tmp/.rebootpls
+    cat <<EOF | xargs -0 echo -ne
+If everything succeeded, you are now running DevFW!
+Starting Modmium install...
+EOF 
+    sync # for good luck
+    sleep 2
+    modmiumInstall # we don't need to reboot because when QUICKINSTALL=1, rootfs verification on the currently booted chromeOS doesn't matter because there isn't a chance a reco image will be used, and stream.py is put in /usr/local/ instead of /root/ regardless.
+  fi
   echo -e "Exiting..."
   sleep 0.5
   exit 0
