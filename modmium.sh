@@ -521,7 +521,7 @@ EOF
   checkWP
   checkAPROV # Kinda useless now, no harm in keeping though!
 
-  echo -e "Are you sure you want to flash DevFW firmware?"
+  echo -e "${G}Are you sure you want to flash DevFW firmware?${N}"
   askConfirmation
 
   echo -e "Getting backup selection..."
