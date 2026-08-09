@@ -122,7 +122,7 @@ installCros() {
   fi
   askBranch
   getImageLink
-  intdis=$(rootdev -d)
+  intdis=$(rootdev -s -d)
   if echo "$intdis" | grep -q '[0-9]$'; then
     intdis_prefix="$intdis"p
   else
