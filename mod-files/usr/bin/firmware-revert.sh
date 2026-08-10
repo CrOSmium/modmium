@@ -10,8 +10,8 @@ echo "Modmium stock firmware restore script by codenerd87"
 echo "Script date: 5/27/26"
 workdir=$(mktemp -d) || fail "Failed to make tmp dir"
 cd ${workdir}
-model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
-chromeos-firmwareupdate -m output --output_dir ${workdir} --model ${model} || fail "Failed to extract firmware shellball"
+# model=$(cat /tmp/machine-info | grep customization_id | sed 's/customization_id=//; s/"//g' | tr '[:upper:]' '[:lower:]') # Extends support to include super old chromeos versions where the --model argument is required
+chromeos-firmwareupdate -m output --output_dir ${workdir} || fail "Failed to extract firmware shellball"
 rm ec.bin image.bin #we must save 16mb ram :whale:
 echo "Reading old bios"
 flashrom -r oldbios.bin || fail "Failed to read current bios."
