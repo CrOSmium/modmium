@@ -233,15 +233,8 @@ dropModFiles(){
   mount "$loopDev"p3 mnt --mkdir
   if [[ ! -f mod-files/root/policy.json ]]; then
     if [[ -z $FLAGS_json ]]; then
-      echo -e "${B}Policy json not found, running policy editor will NOT install enterprise extensions... Continue anyway? (y/N)${N}"
-      read -n 1 -r
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo
-        fail "${R}Cleaning up and exiting...${N}"
-      else
-        echo
-        echo -e "${G}Continuing...${N}"
-      fi
+      echo -e "${B}'policy.json' not found, you will have to use the built in TUI to grab it from downloads after first login...${N}"
+      sleep 2.5
     else
       echo -e "${B}Moving policy json to mod-files/root/policy.json...${N}"
       mv "$FLAGS_json" mod-files/root/policy.json
