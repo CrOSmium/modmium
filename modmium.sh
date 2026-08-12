@@ -528,7 +528,7 @@ EOF
   checkWP
   checkAPROV # Kinda useless now, no harm in keeping though!
 
-  [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "${G}Are you sure you want to flash DevFW firmware?${N}"
+  echo -e "${G}Are you sure you want to flash DevFW firmware?${N}"
   askConfirmation
 
   [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "Getting backup selection..."
