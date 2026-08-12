@@ -6,7 +6,7 @@ source /usr/share/misc/shflags
 # The flag below sets the backup flag to false* by default when set to '1', and just continues after disabling rootFS verification instead of prompting for a reboot.
 # *Backing up isn't *as* important as it used to be, since we can revert devkeys inside modmium, but it's staying true by default for the main installer.
 
-# You can set this flag if you want modmium to install with the bare minimum amount of user prompts
+# You can set this flag to '$FLAGS_TRUE' if you want modmium to install with the bare minimum amount of user prompts
 QUICKINSTALL=$FLAGS_FALSE
 
 default_backup=$FLAGS_TRUE
@@ -294,13 +294,13 @@ checkWP(){
             Always)
               gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
               crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
-              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
+              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. Modmium can still install because HWWP is disabled, but you may encounter issues later." && read -p "Press enter to continue, or Ctrl+C to abort."
               ;;
             Never)
               gsctool -a -I AllowUnverifiedRo:Always || fail "Failed to disable AP RO verification. Please open CCD and try again"
               gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
               crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
-              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
+              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. Modmium can still install because HWWP is disabled, but you may encounter issues later." && read -p "Press enter to continue, or Ctrl+C to abort."
               ;;
             *) fail "How did we get here..?" ;;
           esac
