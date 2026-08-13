@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by DMD and mariah carey
+# written by Lxrd, DMD and mariah carey
 
 # -- Pre TUI init --
 stty -echo
