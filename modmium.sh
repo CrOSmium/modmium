@@ -248,7 +248,7 @@ installCros() {
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
-  sync # this one is for good luck
+  sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
   [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
