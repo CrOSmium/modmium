@@ -416,6 +416,18 @@ modmiumInstall(){
 selectBackup(){
   BACKUP=/tmp/backupdir
   mkdir -p $BACKUP
+  if [[ $FLAGS_backup == $FLAGS_FALSE && "$(vpd -i RO_VPD -g dev_firmware 2>/dev/null)" == ""]]; then
+    moment=$(date +"%Y%m%d")
+    intdis=$(rootdev -s -d)
+    echo -e "Creating emergency backup (${intdis}p12/firmware/backup_${moment}.rom)"
+    echo -e "${D}This backup will be erased if you use a recovery image, it is only for if something goes wrong during devFW flashing.${N}"
+    mkdir -p /tmp/p12
+    mount ${intdis}p12 /tmp/p12
+    [[ $(ls /tmp/p12/firmware | grep backup) ]] || flashrom -r /tmp/p12/firmware/backup_${moment}.rom
+    sync;sync;sync # don't count how many syncs are in this script 
+    umount /tmp/p12
+    rmdir /tmp/p12
+  fi
   [[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
   if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
     cat <<EOF | xargs -0 echo -ne
