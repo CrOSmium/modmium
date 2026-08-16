@@ -87,7 +87,7 @@ cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
-  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
+  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1 | fail "${R}Failed to extract policies, do you have a policy.json?${N}"
   cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
 with open(sys.argv[1]) as f:
