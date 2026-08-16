@@ -213,6 +213,7 @@ grabpolicy(){
   policy=$(find /home/user/*/MyFiles/Downloads/ -name "policies_*" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d" " -f2-)
   [[ -z "$policy" ]] && echo -e "No policy file found, are you sure it's in Downloads?" >&2
   sudo cp -- "$policy" /root/policy.json > /dev/null 2>&1
+  sync # someone's policy.json didn't write
   sleep 1
   echo -e "Refreshing menu..."
   sleep 0.5
