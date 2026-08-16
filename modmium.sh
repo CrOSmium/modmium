@@ -416,7 +416,7 @@ modmiumInstall(){
 selectBackup(){
   BACKUP=/tmp/backupdir
   mkdir -p $BACKUP
-  if [[ $FLAGS_backup == $FLAGS_FALSE && "$(vpd -i RO_VPD -g dev_firmware 2>/dev/null)" == ""]]; then
+  if [[ $FLAGS_backup == $FLAGS_FALSE && "$(vpd -i RO_VPD -g dev_firmware 2>/dev/null)" == "" ]]; then
     moment=$(date +"%Y%m%d")
     intdis=$(rootdev -s -d)
     echo -e "Creating emergency backup (${intdis}p12/firmware/backup_${moment}.rom)"
