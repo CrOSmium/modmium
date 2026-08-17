@@ -176,7 +176,8 @@ rm -f /tmp/_pol_conv.py
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
-    "VpnConfigAllowed": true
+    "VpnConfigAllowed": true,
+    "CrostiniAllowed": true
   },
   "extensions": ${extBlock},
   "device": {}
