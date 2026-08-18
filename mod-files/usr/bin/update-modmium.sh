@@ -129,7 +129,16 @@ updateModmium() {
   stty -echo
   exit
 }
-
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}" 
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}" 
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
 get_booted_kernnum() {
   if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
     echo -n 2
@@ -227,7 +236,7 @@ installCros() {
     --version $kernver \
     --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
   rm -rf config.txt
-
+  convertToExt4
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
   mkdir -p /mnt/stateful_partition/git
