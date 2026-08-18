@@ -445,7 +445,7 @@ else
 fi
 menu_reset() {
   menuText="\nModmium Manager\n"
-  [[ $unconverted_fs -eq 1 ]] || menuText="\nModmium Manager\n -- ${Y}You are running Modmium on ${R}ext2${Y}, the next time you version switch, you will be upgraded to ${G}ext4${N} --"
+  [[ $unconverted_fs -eq 1 ]] && menuText="\nModmium Manager\n -- ${Y}You are running Modmium on ${R}ext2${Y}, the next time you version switch, you will be upgraded to ${G}ext4${N} --"
   options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
   functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
