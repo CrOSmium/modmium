@@ -159,6 +159,16 @@ fi
 # end flag functions
 
 # begin build functions
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${loopDev}p3
+  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
 removeVerity(){
   if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
     keydir=build-utils/keys/userkeys
@@ -223,7 +233,7 @@ removeVerity(){
         --oldblob ${loopDev}p$part
     done
   fi
-
+  convertToExt4
   echo -e "${G}Cleaning up kernel backups and configs...${N}"
   rm -rf cros_sign_backups config*
 }
