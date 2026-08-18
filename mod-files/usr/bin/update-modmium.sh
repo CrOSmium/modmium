@@ -438,9 +438,14 @@ features() {
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
-
+if [ "$(findmnt -no FSTYPE /)" != "ext4" ]; then
+  unconverted_fs=1
+else
+  unconverted_fs=0
+fi
 menu_reset() {
   menuText="\nModmium Manager\n"
+  [[ $unconverted_fs -eq 1 ]] || menuText="\nModmium Manager\n -- ${Y}You are running Modmium on ${R}ext2${Y}, the next time you version switch, you will be upgraded to ${G}ext4${N} --"
   options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
   functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
