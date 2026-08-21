@@ -159,6 +159,16 @@ fi
 # end flag functions
 
 # begin build functions
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${loopDev}p3
+  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
 removeVerity(){
   if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
     keydir=build-utils/keys/userkeys
@@ -223,7 +233,7 @@ removeVerity(){
         --oldblob ${loopDev}p$part
     done
   fi
-
+  convertToExt4
   echo -e "${G}Cleaning up kernel backups and configs...${N}"
   rm -rf cros_sign_backups config*
 }
@@ -233,15 +243,8 @@ dropModFiles(){
   mount "$loopDev"p3 mnt --mkdir
   if [[ ! -f mod-files/root/policy.json ]]; then
     if [[ -z $FLAGS_json ]]; then
-      echo -e "${B}Policy json not found, running policy editor will NOT install enterprise extensions... Continue anyway? (y/N)${N}"
-      read -n 1 -r
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo
-        fail "${R}Cleaning up and exiting...${N}"
-      else
-        echo
-        echo -e "${G}Continuing...${N}"
-      fi
+      echo -e "${B}'policy.json' not found, you will have to use the built in TUI to grab it from downloads after first login...${N}"
+      sleep 2.5
     else
       echo -e "${B}Moving policy json to mod-files/root/policy.json...${N}"
       mv "$FLAGS_json" mod-files/root/policy.json

@@ -114,15 +114,31 @@ updateModmium() {
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
-  echo -e "${G}Done! Cleaning up...${N}"
+  echo -e "${G}Cleaning up... (DO NOT RESTART YOUR DEVICE)${N}"
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
   sync;sync;sync;sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
+  sleep 2
+  sync;sync # for good luck
+  sleep 1
+  echo -e "${Y}Syncing... (DO NOT RESTART YOUR DEVICE)${N}"
+  sync # maybe one more time helps 
   sleep 3
+  echo -e "${G}Done!${N}"
+  sleep 1.67
   stty -echo
   exit
 }
-
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}" 
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}" 
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
 get_booted_kernnum() {
   if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
     echo -n 2
@@ -220,7 +236,7 @@ installCros() {
     --version $kernver \
     --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}"
   rm -rf config.txt
-
+  convertToExt4
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
   mkdir -p /mnt/stateful_partition/git
@@ -422,9 +438,14 @@ features() {
 # -- MAIN SCRIPT --
 
 tput civis # :whale:
-
+if [ "$(findmnt -no FSTYPE /)" != "ext4" ]; then
+  unconverted_fs=1
+else
+  unconverted_fs=0
+fi
 menu_reset() {
   menuText="\nModmium Manager\n"
+  [[ $unconverted_fs -eq 1 ]] && menuText="\nModmium Manager\n\nNOTICE: ${Y}You are running Modmium on ${R}ext2${Y}, the next time you change your ChromeOS version, you will be upgraded to ${G}ext4${Y}.${N}\n"
   options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
   functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}

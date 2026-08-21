@@ -105,6 +105,17 @@ opposite_num() {
   esac
 }
 
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}" keepflag
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" keepflag
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}" keepflag
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" keepflag
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
+
 installCros() {
   stop powerd &>/dev/null
   ldconfig
@@ -175,7 +186,7 @@ installCros() {
     --version $kernver \
     --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}" keepflag
   rm -rf config.txt
-
+  convertToExt4
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
   mkdir -p /mnt/stateful_partition/git
@@ -248,7 +259,7 @@ installCros() {
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
-  sync # this one is for good luck
+  sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
   [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
@@ -416,6 +427,18 @@ modmiumInstall(){
 selectBackup(){
   BACKUP=/tmp/backupdir
   mkdir -p $BACKUP
+  if [[ $FLAGS_backup == $FLAGS_FALSE && "$(vpd -i RO_VPD -g dev_firmware 2>/dev/null)" == "" ]]; then
+    moment=$(date +"%Y%m%d")
+    intdis=$(rootdev -s -d)
+    echo -e "Creating emergency backup (${intdis}p12/firmware/backup_${moment}.rom)"
+    echo -e "${D}This backup will be erased if you use a recovery image, it is only for if something goes wrong during devFW flashing.${N}"
+    mkdir -p /tmp/p12
+    mount ${intdis}p12 /tmp/p12
+    [[ $(ls /tmp/p12/firmware | grep backup) ]] || flashrom -r /tmp/p12/firmware/backup_${moment}.rom
+    sync;sync;sync # don't count how many syncs are in this script 
+    umount /tmp/p12
+    rmdir /tmp/p12
+  fi
   [[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
   if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
     cat <<EOF | xargs -0 echo -ne

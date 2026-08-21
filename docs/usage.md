@@ -22,7 +22,7 @@ MOSH is a terminal UI (TUI) very similar to [Cr3nroll](https://github.com/crosmi
 
 ## VT-MOSH
 > [!NOTE]
-> *F2 is usually the key ***to the right of*** the (←)Backwards/Left arrow key, usually being either (→)Forwards/Right arrow or (↻)Refresh key.
+> *F2 is usually the key ***to the right of*** the (←)Backward/Left arrow key, usually being either (→)Forward/Right arrow or (↻)Refresh key.
 >
 > *This varies across devices.*
 

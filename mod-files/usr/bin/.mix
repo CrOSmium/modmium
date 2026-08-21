@@ -2,6 +2,12 @@
 # created by dmd
 # this is a tiny wrapper for skids (and myself) to use nix easier
 
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    SOURCED=true
+else
+    SOURCED=false
+fi
+
 source /usr/lib/libmosh.sh
 if [[ ! $NIX_PROFILES ]]; then
   if [[ -d /usr/local/nix/store ]]; then
@@ -17,7 +23,7 @@ if [[ ! $NIX_PROFILES ]]; then
     unset LD_LIBRARY_PATH
   fi
 fi
-
+[[ "$SOURCED" == "true" ]] && return 0
 case "$1" in
   install)
       if [ -z "$2" ]; then
