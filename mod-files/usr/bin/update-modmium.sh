@@ -118,17 +118,22 @@ updateModmium() {
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
   sync;sync;sync;sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
-  sleep 2
-  sync;sync # for good luck
-  sleep 1
-  echo -e "${Y}Syncing... (DO NOT RESTART YOUR DEVICE)${N}"
-  sync # maybe one more time helps
-  sleep 3
+  if [[ $unconverted_fs == 0 ]]; then # extra syncing is only needed if you are using ext2 :3
+    sleep 2
+  else
+    sleep 2
+    sync;sync # for good luck
+    sleep 1
+    echo -e "${Y}Syncing... (DO NOT RESTART YOUR DEVICE)${N}"
+    sync # maybe one more time helps
+    sleep 3
+  fi
   echo -e "${G}Done!${N}"
   sleep 1.67
   stty -echo
   exit
 }
+
 convertToExt4(){
   echo -e "${Y}Converting new RootFS to ext4...${N}"
   installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
@@ -204,7 +209,7 @@ installCros() {
   rm -rf .venv
   # thanks lxrd for that python script btw
 
-  echo -e "${G}Removing verity from ChromeOS...${N}"
+  echo -e "${G}Removing verity from ChromeOS...${N}" # hey, it's me, it's skiddity. skid me anything!
   if [[ -d /usr/share/vboot/userkeys ]]; then
     keydir=/usr/share/vboot/userkeys
   else
