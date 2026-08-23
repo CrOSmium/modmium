@@ -122,7 +122,7 @@ updateModmium() {
   sync;sync # for good luck
   sleep 1
   echo -e "${Y}Syncing... (DO NOT RESTART YOUR DEVICE)${N}"
-  sync # maybe one more time helps 
+  sync # maybe one more time helps
   sleep 3
   echo -e "${G}Done!${N}"
   sleep 1.67
@@ -132,10 +132,12 @@ updateModmium() {
 convertToExt4(){
   echo -e "${Y}Converting new RootFS to ext4...${N}"
   installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
-  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}" 
-  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
-  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}" 
-  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}" 
+  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
   echo -e "${G}Conversion succeeded!${N}"
   sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
 }
@@ -374,16 +376,16 @@ toggleBootPriority(){
     sleep 0.2
     exit 0
   fi
-  
+
   if [[ -f /etc/chrome_dev.conf ]]; then
     mkdir -p /tmp/opposite
-  
+
     newRoot=$((newKern + 1))
     mount ${intdis_prefix}${newRoot} /tmp/opposite 2>/dev/null
-  
+
     mkdir -p /tmp/opposite/etc
     cp -a /etc/chrome_dev.conf /tmp/opposite/etc/chrome_dev.conf
-  
+
     sync
     umount /tmp/opposite 2>/dev/null
     rmdir /tmp/opposite 2>/dev/null
