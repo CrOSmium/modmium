@@ -126,8 +126,10 @@ if [[ $(crossystem devsw_boot) -eq 0 ]]; then
     sed -i '/--enterprise-enable-state-determination=never/d' /etc/chrome_dev.conf
   fi
 else
-  crossystem disable_dev_request=1
-  reboot
+  if [ ! -f /root/.dontdothis ]; then
+    crossystem disable_dev_request=1
+    reboot
+  fi
 fi
 
 if [ -f /root/.removeskipoobeflag ]; then

@@ -2,9 +2,19 @@
 # written by DMD and mariah carey
 # compatibility fixes by codenerd87
 source /usr/share/misc/shflags
+
+# The flag below sets the backup flag to false* by default when set to '1', and just continues after disabling rootFS verification instead of prompting for a reboot.
+# *Backing up isn't *as* important as it used to be, since we can revert devkeys inside modmium, but it's staying true by default for the main installer.
+
+# You can set this flag to '$FLAGS_TRUE' if you want modmium to install with the bare minimum amount of user prompts
+QUICKINSTALL=$FLAGS_FALSE
+
+default_backup=$FLAGS_TRUE
+[[ $QUICKINSTALL == $FLAGS_TRUE ]] && default_backup=$FLAGS_FALSE
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
-DEFINE_boolean backup "$FLAGS_TRUE" "Whether or not to backup firmware from flashing devkeys." "b"
+DEFINE_boolean backup "$default_backup" "Whether or not to backup firmware from flashing devkeys." "b"
 FLAGS $@
+[[ $QUICKINSTALL == $FLAGS_TRUE ]] && export FLAG_userkeys=$FLAGS_FALSE
 
 fail(){
   echo -e "$1"
@@ -31,6 +41,7 @@ D=$'\033[1;90m'
 UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
 MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
+[[ $QUICKINSTALL == $FLAGS_TRUE ]] && menu_text="Modmium Install Script! (Quickinstall)"
 
 # -- skidded from modmium-update.sh --
 BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
@@ -94,9 +105,25 @@ opposite_num() {
   esac
 }
 
+convertToExt4(){
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fy ${installRoot} || fail "${R}Conversion failed!${N}"
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
+}
+
 installCros() {
   stop powerd &>/dev/null
   ldconfig
+  clear
   echo -e "${D}Note: this script grabs the current kernver and signs the new version with it, so there's no issues with upgrading or downgrading.${N}"
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
@@ -113,7 +140,7 @@ installCros() {
   fi
   askBranch
   getImageLink
-  intdis=$(rootdev -d)
+  intdis=$(rootdev -s -d)
   if echo "$intdis" | grep -q '[0-9]$'; then
     intdis_prefix="$intdis"p
   else
@@ -127,11 +154,12 @@ installCros() {
   python -m venv .venv
   source .venv/bin/activate
   pip install requests &>/dev/null
-  curl -Lo /root/stream.py "https://modmium.dev/tools/stream.py"
-  python /root/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
+  streamdir=/root/ # might as well if rootfs verification is already off ig, im keeping this as default just because i don't want to break anything - dmd
+  [[ $QUICKINSTALL == $FLAGS_TRUE ]] && streamdir=/usr/local/
+  curl -Lo ${streamdir}stream.py "https://modmium.dev/tools/stream.py"
+  python ${streamdir}stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
   rm -rf .venv
   # thanks lxrd for that python script btw
-
   echo -e "${G}Removing verity from ChromeOS...${N}"
   # keydir gets defined in installModmium()
   /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(opposite_num $(get_booted_kernnum)) --keys ${keydir} &>/dev/null
@@ -162,7 +190,7 @@ installCros() {
     --version $kernver \
     --oldblob ${installKern} || fail "${R}Failed to remove verity, exiting...${N}" keepflag
   rm -rf config.txt
-
+  convertToExt4
   echo -e "${G}Installing Modmium ($branch) to ChromeOS...${N}"
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
   mkdir -p /mnt/stateful_partition/git
@@ -200,44 +228,55 @@ installCros() {
   echo $branch > mnt/.branch
 
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
-  sync
+  sync;sync;sync;sync # do not touch this.
   umount mnt
   cd .. && rm -rf modmium
   sync
-  echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
-  echo -ne "[y/N]: "
-  read pwr
-  if [[ "$pwr" =~ ^[Yy]$ ]]; then
-    echo -e "Your device ${R}will${N} powerwash on next boot."
-    echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
-    sleep 0.3
+  if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
+    echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
+    echo -ne "[y/N]: "
+    read pwr
+    if [[ "$pwr" =~ ^[Yy]$ ]]; then
+      echo -e "Your device ${R}will${N} powerwash on next boot."
+      echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+      sleep 0.3
+    else
+      echo -e "Your device will ${R}NOT${N} powerwash on next boot."
+      sleep 0.3
+    fi
+    # this is for compatability with other chromeos versions
+    echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+    read -r
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+      echo -e "${G}Uninstalling packages...${N}"
+      printf 'y\n' | dev_install --uninstall
+      rm -f /mnt/stateful_partition/.devinstall_complete
+    else
+      echo -e "${B}Keeping packages installed.${N}"
+    fi
   else
-    echo -e "Your device will ${R}NOT${N} powerwash on next boot."
-    sleep 0.3
+    printf 'y\n' | dev_install --uninstall
+    rm -f /mnt/stateful_partition/.devinstall_complete
   fi
-  # this is for compatability with other chromeos versions
-echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
-read -r
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-  echo -e "${G}Uninstalling packages...${N}"
-  printf 'y\n' | dev_install --uninstall
-  rm -f /mnt/stateful_partition/.devinstall_complete
-else
-  echo -e "${B}Keeping packages installed.${N}"
-fi
+
   echo -e "Switching active kernel..."
-  
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
-  sync # this one is for good luck
+  sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
-  [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
-  echo -e "${B}Rebooting!${N}"
-  reboot
-  sleep infinity
+  if [[ $REPLY =~ ^[Nn]$ ]]; then 
+    echo -e "${B}Reboot when ready! Exiting...${N}"
+    sleep 2
+    start powerd &>/dev/null
+    exit 0
+  else
+    echo -e "${B}Rebooting!${N}"
+    reboot
+    sleep infinity
+  fi
 }
 
 
@@ -267,29 +306,29 @@ checkWP(){
       echo -e "WP range allows for flashing, continuing."
     else
       echo -e "WP range non-zero, checking for HWWP."
-        if [[ $(crossystem wpsw_cur) == "0" ]]; then
+      if [[ $(crossystem wpsw_cur) == "0" ]]; then
         echo -e "HWWP off, attempting to disable SWWP."
         flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
-        else
-            if isti50=$(gsctool -a -I | grep AllowUnverifiedRo); then
-                setting=$(echo $isti50 | awk '{print $3}')
-                case $setting in
-                    Always)
-                        gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
-                        crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
-                        flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
-                        ;;
-                    Never)
-                        gsctool -a -I AllowUnverifiedRo:Always || fail "Failed to disable AP RO verification. Please open CCD and try again"
-                        gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
-                        crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
-                        flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. As HWWP is off, Modmium can still install, however WP must be disabled again once you wish to revert" && read -p "Press enter to continue, or Ctrl+C to abort."
-                        ;;
-                    *) fail "How did we get here..?" ;;
-                esac
-            fi
-        fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
+      else
+        if isti50=$(gsctool -a -I | grep AllowUnverifiedRo); then
+          setting=$(echo $isti50 | awk '{print $3}')
+          case $setting in
+            Always)
+              gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
+              crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
+              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. Modmium can still install because HWWP is disabled, but you may encounter issues later." && read -p "Press enter to continue, or Ctrl+C to abort."
+              ;;
+            Never)
+              gsctool -a -I AllowUnverifiedRo:Always || fail "Failed to disable AP RO verification. Please open CCD and try again"
+              gsctool -a -w disable || fail "Failed to disable HWWP. Please open CCD and try again"
+              crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
+              flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. Modmium can still install because HWWP is disabled, but you may encounter issues later." && read -p "Press enter to continue, or Ctrl+C to abort."
+              ;;
+            *) fail "How did we get here..?" ;;
+          esac
         fi
+        fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
+      fi
     fi
   fi
 }
@@ -346,9 +385,9 @@ selUserBackup(){
   read -ep "Drive: " driveloc
   driveloc="${driveloc%/}"
   if [[ $driveloc == *"/dev/"* ]]; then
-    if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
   else
-    if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+    if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
   fi
 }
 
@@ -364,9 +403,9 @@ modmiumInstall(){
      read -ep "Drive: " driveloc
      driveloc="${driveloc%/}"
      if [[ $driveloc == *"/dev/"* ]]; then
-      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+      if ! mount $driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
      else
-       if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}"; fi
+       if ! mount /dev/$driveloc $BACKUP; then fail "${R}Unable to mount device...${N}" keepflag; fi
      fi
     keydir=${BACKUP}/userkeys
   else
@@ -384,11 +423,33 @@ modmiumInstall(){
     cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
+  if [[ $QUICKINSTALL == $FLAGS_TRUE ]]; then
+    echo -e "Verifying firmware..."
+    DEVFW=$(vpd -i RO_VPD -g "dev_firmware")
+    if [[ $DEVFW != "1" ]]; then
+      fail "${R}Something went wrong! DevFW is not active, please join the discord and ask for help! (${Y}discord.crosbreaker.com${R})${D} \nIf you manually flashed DevFW, and Modmium cannot detect it, run 'vpd -i RO_VPD -s dev_firmware=1' to tell Modmium you are using DevFW.${N}" keepflag
+    else
+      echo -e "DevFW is enabled! Continuing..."
+      sleep 1
+    fi
+  fi
   installCros # :whale:
 }
 selectBackup(){
   BACKUP=/tmp/backupdir
   mkdir -p $BACKUP
+  if [[ $FLAGS_backup == $FLAGS_FALSE && "$(vpd -i RO_VPD -g dev_firmware 2>/dev/null)" == "" ]]; then
+    moment=$(date +"%Y%m%d")
+    intdis=$(rootdev -s -d)
+    echo -e "Creating emergency backup (${intdis}p12/firmware/backup_${moment}.rom)"
+    echo -e "${D}This backup will be erased if you use a recovery image, it is only for if something goes wrong during devFW flashing.${N}"
+    mkdir -p /tmp/p12
+    mount ${intdis}p12 /tmp/p12
+    [[ $(ls /tmp/p12/firmware | grep backup) ]] || flashrom -r /tmp/p12/firmware/backup_${moment}.rom
+    sync;sync;sync # don't count how many syncs are in this script 
+    umount /tmp/p12
+    rmdir /tmp/p12
+  fi
   [[ $FLAGS_backup == $FLAGS_FALSE && $FLAGS_userkeys == $FLAGS_FALSE ]] && return
   if [[ $FLAGS_userkeys == $FLAGS_FALSE ]]; then
     cat <<EOF | xargs -0 echo -ne
@@ -501,21 +562,30 @@ EOF
   checkWP
   checkAPROV # Kinda useless now, no harm in keeping though!
 
-  echo -e "Are you sure you want to flash DevFW firmware?"
+  echo -e "${G}Are you sure you want to flash DevFW firmware?${N}"
   askConfirmation
 
-  echo -e "Getting backup selection..."
+  [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "Getting backup selection..."
   selectBackup
 
-  echo -e "Backup selection complete, flashing DevFW..."
+  [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
-
-  touch /tmp/.rebootpls
-  cat <<EOF | xargs -0 echo -ne
+  if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
+    touch /tmp/.rebootpls
+    cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
 It is highly recommended to go backup the firmware that is now in your selected drive (or directory) to the cloud, or another safe place.
 ${B}Please reboot your chromebook${N}. After you reboot, either recover with a Modmium image OR run this script again to INSTALL Modmium. (If you used userkeys, make sure you also use that flag when trying to Install Modmium with this script)
 EOF
+  else
+    cat <<EOF | xargs -0 echo -ne
+If everything succeeded, you are now running DevFW!
+Starting Modmium install...
+EOF
+    sync # for good luck
+    sleep 2
+    modmiumInstall # we don't need to reboot because when QUICKINSTALL=1, rootfs verification on the currently booted chromeOS doesn't matter because there isn't a chance a reco image will be used, and stream.py is put in /usr/local/ instead of /root/ regardless.
+  fi
   echo -e "Exiting..."
   sleep 0.5
   exit 0

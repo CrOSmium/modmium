@@ -1,5 +1,5 @@
 #!/bin/bash
-# written by DMD and mariah carey
+# written by Lxrd, DMD and mariah carey
 
 # -- Pre TUI init --
 stty -echo
@@ -87,7 +87,7 @@ cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
-  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1
+  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1 | fail "${R}Failed to extract policies, do you have a policy.json?${N}"
   cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
 with open(sys.argv[1]) as f:
@@ -176,7 +176,8 @@ rm -f /tmp/_pol_conv.py
     "ArcEnabled": true,
     "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
     "UserBorealisAllowed": true,
-    "VpnConfigAllowed": true
+    "VpnConfigAllowed": true,
+    "CrostiniAllowed": true
   },
   "extensions": ${extBlock},
   "device": {}
@@ -213,6 +214,7 @@ grabpolicy(){
   policy=$(find /home/user/*/MyFiles/Downloads/ -name "policies_*" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d" " -f2-)
   [[ -z "$policy" ]] && echo -e "No policy file found, are you sure it's in Downloads?" >&2
   sudo cp -- "$policy" /root/policy.json > /dev/null 2>&1
+  sync # someone's policy.json didn't write
   sleep 1
   echo -e "Refreshing menu..."
   sleep 0.5

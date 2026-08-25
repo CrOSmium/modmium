@@ -16,7 +16,11 @@ Modmium is a chromeOS modification built to allow the freedom of an unrestricted
   * Thanks to Casper1051, Moonstone, and pilgorr for creating the default ones :D
 * Nix installer for developers to easily install packages (You can use `mix` for APT-like syntax!)
 
+
+
 ## Getting started
+> [!TIP]
+> **No linux machine?** Use the [VT-2 installer](docs/installation.md#vt2-installation) to install it directly on device!
 * To build modmium, see [docs/building.md](docs/building.md)
   * Note, see [docs/dependencies.md](docs/dependencies.md) before building to ensure you have the necessary dependencies
   * Feel free to submit a PR adding the dependency list for other distros!
