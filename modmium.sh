@@ -264,10 +264,16 @@ installCros() {
   sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
-  [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
-  echo -e "${B}Rebooting!${N}"
-  reboot
-  sleep infinity
+  if [[ $REPLY =~ ^[Nn]$ ]]; then 
+    echo -e "${B}Reboot when ready! Exiting...${N}"
+    sleep 2
+    start powerd &>/dev/null
+    exit 0
+  else
+    echo -e "${B}Rebooting!${N}"
+    reboot
+    sleep infinity
+  fi
 }
 
 
