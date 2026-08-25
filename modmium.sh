@@ -570,7 +570,7 @@ EOF
 
   [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "Backup selection complete, flashing DevFW..."
   flashDevFW
-  if [[ $QUICKINSTALL == $FLAGS_TRUE ]]; then
+  if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
     touch /tmp/.rebootpls
     cat <<EOF | xargs -0 echo -ne
 If everything succeeded, you are now running DevFW!
