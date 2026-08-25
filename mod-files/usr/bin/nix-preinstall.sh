@@ -34,11 +34,12 @@ menu_reset(){
   functions=("installNix" "quit")
   fi
   num_options=${#options[@]}
-  [[ $MILESTONE -gt 140 ]] && WARNING="${R}Nix installation is known to be unstable on versions above 140.${N} Proceed at your own risk."
+  [[ $MILESTONE -gt 140 ]] && WARNING="${R}Nix is known to be unstable on versions above 140.${N} Proceed at your own risk."
   menuText=$(cat <<EOF
 $WARNING
 This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}
 You can use '${B}mix${N} [arg]' (a command wrapper) in a root shell to use Nix like a regular package manager like apt if you're lazy.\n
+(if you are having problems getting installed packages to run, try running 'source mix'.)
 EOF
   )
   num_options=${#options[@]}
