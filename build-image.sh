@@ -164,9 +164,11 @@ convertToExt4(){
   installRoot=${loopDev}p3
   tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
   e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
   resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
   e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum ${installRoot} || fail "${R}Conversion failed!${N}"
   e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
   echo -e "${G}Conversion succeeded!${N}"
   sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
