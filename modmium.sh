@@ -256,6 +256,7 @@ installCros() {
     fi
   else
     printf 'y\n' | dev_install --uninstall
+    rm -f /mnt/stateful_partition/.devinstall_complete
   fi
 
   echo -e "Switching active kernel..."
