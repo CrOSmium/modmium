@@ -162,7 +162,9 @@ fi
 convertToExt4(){
   echo -e "${Y}Converting new RootFS to ext4...${N}"
   installRoot=${loopDev}p3
-  tune2fs -O has_journal -J size=48 ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
   e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
   tune2fs -O metadata_csum,extents ${installRoot} || fail "${R}Conversion failed!${N}"
   e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
