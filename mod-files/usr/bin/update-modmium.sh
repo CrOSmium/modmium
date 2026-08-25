@@ -61,9 +61,9 @@ askBranch(){
   [[ $branchfile ]] || branchfile="stable"
   echo -e "[If you don't know what this means, just press enter]"
   if [[ $branchfile == "stable" ]]; then
-    echo -ne "Branch of Modmium to install (${UN}stable${RUN}, nightly): "
+    echo -ne "Branch of Modmium to install (${B}stable${N}, nightly): "
   else
-    echo -ne "Branch of Modmium to install (stable, ${UN}nightly${RUN}): "
+    echo -ne "Branch of Modmium to install (stable, ${B}nightly${N}): "
   fi
   read -rep "" branchreq
   case $branchreq in
