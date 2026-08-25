@@ -23,6 +23,9 @@ if [[ ! $NIX_PROFILES ]]; then
     unset LD_LIBRARY_PATH
   fi
 fi
+if [[ $MILESTONE -ge 140 ]]; then
+    [[ $TERM != "xterm" ]] && echo -e "Nix is known to be very unstable on all versions above ${R}v140${N} when using MOSH (you are using MOSH, and on ${R}v${MILESTONE}${N})\nIf you need to use Nix, use it in ${G}VT-MOSH${N} instead."
+fi
 [[ "$SOURCED" == "true" ]] && return 0
 case "$1" in
   install)
