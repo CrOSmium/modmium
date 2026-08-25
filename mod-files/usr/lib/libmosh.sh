@@ -137,7 +137,7 @@ display_menu() {
   elif [[ "$MILESTONE" -le 131 ]]; then
     echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${modver} ${branch}), which is not officially supported by Modmium."
   elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${modver} ${branch})"
+    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${modver} ${branch}) --"
   else
     echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${modver} ${branch}) -- [This ChromeOS version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
