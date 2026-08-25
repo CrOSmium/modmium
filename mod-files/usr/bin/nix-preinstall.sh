@@ -38,8 +38,8 @@ menu_reset(){
   menuText=$(cat <<EOF
 $WARNING
 This will install 'Nix', A package manager usable on Modmium, ${R}Not recommended unless you know what you're doing.${N}
-You can use '${B}mix${N} [arg]' (a command wrapper) in a root shell to use Nix like a regular package manager like apt if you're lazy.\n
-(if you are having problems getting installed packages to run, try running 'source mix'.)
+You can use '${B}mix${N} [arg]' (a command wrapper) in a root shell to use Nix like a regular package manager like apt if you're lazy.
+(if you are having problems getting installed packages to run, try running 'source mix'.)\n
 EOF
   )
   num_options=${#options[@]}
