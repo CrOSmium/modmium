@@ -28,6 +28,24 @@ UN=$'\033[4m' #underline
 RUN=$'\033[24m' #reset underline
 MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
 
+# -- Preinstalled dependency cache (see the installer's --preinstall flag) --
+# Dependencies normally live on the stateful partition and get wiped by a
+# powerwash. If the installer was run with --preinstall, a cache of them was
+# baked into the RootFS (which powerwashes don't touch), so restore from it
+# here instead of redownloading every time a script needs git/file/etc.
+DEPS_CACHE="/usr/share/modmium/deps-cache.tar.gz"
+DEVINSTALL_MARKER="/mnt/stateful_partition/.devinstall_complete"
+restore_deps_cache() {
+  if [[ -f $DEPS_CACHE && ! -f $DEVINSTALL_MARKER ]]; then
+    echo -e "${G}Restoring preinstalled dependencies from cache (this only happens after a powerwash)...${N}"
+    tar -xzf $DEPS_CACHE -C / || return 1
+    touch $DEVINSTALL_MARKER
+    ldconfig
+    [[ -d /usr/local/usr/share/git-core/templates ]] && cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core
+  fi
+}
+restore_deps_cache
+
 # STOLEN CODE FROM BR0KER TO GET MILESTONE :3
 get_largest_cros_blockdev() {
   local largest size dev_name tmp_size remo

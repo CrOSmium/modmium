@@ -13,6 +13,7 @@ default_backup=$FLAGS_TRUE
 [[ $QUICKINSTALL == $FLAGS_TRUE ]] && default_backup=$FLAGS_FALSE
 DEFINE_boolean userkeys "$FLAGS_FALSE" "Whether or not to use user-generated signing keys." "u"
 DEFINE_boolean backup "$default_backup" "Whether or not to backup firmware from flashing devkeys." "b"
+DEFINE_boolean preinstall "$FLAGS_FALSE" "Whether or not to preinstall all Modmium dependencies (git, file, and other tool deps used by VT-MOSH) so they're cached on the RootFS and persist across powerwashes." "p"
 FLAGS $@
 [[ $QUICKINSTALL == $FLAGS_TRUE ]] && export FLAG_userkeys=$FLAGS_FALSE
 
@@ -225,6 +226,12 @@ installCros() {
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d ${BACKUP}/userkeys ]] && cp -r ${BACKUP}/userkeys mnt/usr/share/vboot
+  if [[ $FLAGS_preinstall == $FLAGS_TRUE && -n $DEPSCACHE && -f $DEPSCACHE ]]; then
+    echo -e "${G}Embedding preinstalled dependencies into new RootFS...${N}"
+    mkdir -p mnt/usr/share/modmium
+    cp $DEPSCACHE mnt/usr/share/modmium/deps-cache.tar.gz
+    rm -f $DEPSCACHE
+  fi
   echo $branch > mnt/.branch
 
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
@@ -391,6 +398,23 @@ selUserBackup(){
   fi
 }
 
+DEPSCACHE="" # populated by preinstallDeps() when --preinstall is used
+
+preinstallDeps(){
+  echo -e "${G}Preinstalling all Modmium dependencies so they survive future powerwashes...${N}"
+  source /etc/profile # required to get emerge working
+  if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
+    touch /mnt/stateful_partition/.devinstall_complete
+  fi
+  ldconfig # reload shared libraries to include python libs
+  emerge git file cryptography nano pyyaml protobuf-python || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
+  cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+  echo -e "${G}Caching dependencies so VT-MOSH won't need to redownload them after a powerwash...${N}"
+  DEPSCACHE=/tmp/modmium-deps-cache.tar.gz
+  tar -czf $DEPSCACHE -C / usr/local || fail "${R}Failed to cache dependencies.${N}" keepflag
+}
+
 modmiumInstall(){
   if [[ $FLAGS_userkeys == $FLAGS_TRUE ]]; then
     BACKUP=/tmp/backupdir
@@ -411,7 +435,9 @@ modmiumInstall(){
   else
     keydir=/usr/share/vboot/devkeys
   fi
-  if ! which git &>/dev/null || ! which file &>/dev/null; then
+  if [[ $FLAGS_preinstall == $FLAGS_TRUE ]]; then
+    preinstallDeps
+  elif ! which git &>/dev/null || ! which file &>/dev/null; then
     echo -e "${R}Dependencies not installed, installing...${N}"
     source /etc/profile # required to get emerge working
     if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
