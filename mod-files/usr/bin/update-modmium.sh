@@ -213,9 +213,11 @@ installCros() {
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
 
   # now to copy relevant files to new root
-  for file in /bootsplash /.branch; do
-    [[ -d $file || -f $file ]] && cp -r $file mnt
-  done
+  [[ -d /bootsplash || -f /bootsplash ]] && cp -r /bootsplash mnt
+  # write the branch just installed, not the old root's /.branch - otherwise
+  # switching branches via "Change ChromeOS Version" would silently keep
+  # reporting the previous branch after the reinstall.
+  echo "$branch" > mnt/.branch
   [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
   echo -e "${B}Copy root's files to new root? [Y/n]${N}"
   read -rep ""
