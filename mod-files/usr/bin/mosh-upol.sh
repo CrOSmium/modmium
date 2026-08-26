@@ -30,7 +30,7 @@ install(){
   clear
   stty echo
   if [[ -f $POLTEST_FILE ]]; then
-    echo -e "${G}Setup already completel. Running orchestrator...${N}"
+    echo -e "${G}Setup already completed. Running orchestrator...${N}"
     cd /usr/local/share/policy-test-tool
     /usr/bin/.unhang.sh &
     python orchestrator.py policies.json
@@ -63,31 +63,28 @@ ${G}+##############################################+
 | Allows policy changes above 131              |
 +##############################################+
 ${B}Run this *before* signing into the target email. ${N}
-If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}\"Remove account\"${N} or powerwashing if your enterprise has a custom signin screen with no delete account option.
+If it's already logged in, remove the account, you can do this by rebooting, then clicking the drop-down by its pfp and pressing ${R}"Remove account"${N} or powerwashing if your enterprise has a custom signin screen with no delete account option.
 also, make sure you're connected to the internet before running this.
 ${D}(Hit Ctrl+C to exit)${N}
 ${G}Enter target email: ${N}
 EOF
 )"
-read -rep "" email
+  read -rep "" email
 
-echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
-read -r install_ublock
+  echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
+  read -r install_ublock
 
-case "${install_ublock,,}" in
-  ""|y|yes)
-    INSTALL_UBLOCK=1
-    ;;
-  *)
+  if [[ $install_ublock =~ ^[Nn]$ ]]; then
     INSTALL_UBLOCK=0
-    ;;
-esac
+  else
+    INSTALL_UBLOCK=1
+  fi
 
-cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
-  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1 | fail "${R}Failed to extract policies, do you have a policy.json?${N}"
+  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1 || fail "${R}Failed to extract policies, do you have a policy.json?${N}"
   cat > /tmp/_pol_conv.py << 'PYEOF'
 import json, sys
 with open(sys.argv[1]) as f:
@@ -110,16 +107,13 @@ print(lines[0])
 for line in lines[1:]:
   print("    " + line)
 PYEOF
-extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
+  extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
 
-if [[ "$INSTALL_UBLOCK" == "1" ]]; then
-  extSettings=$(printf '%s\n' "$extSettings" | sed '
-    $!b
-    s/^}$/,\n    "blockddmmcjpfkbhanlgegpmjpfpfjka": {\n      "installation_mode": "force_installed",\n      "update_url": "https:\/\/ublock.r58playz.dev\/update.xml"\n    }\n}/
-  ')
-fi
+  if [[ "$INSTALL_UBLOCK" == "1" ]]; then
+    ExtensionInstallForcelist="\"ExtensionInstallForcelist\": [\"blockddmmcjpfkbhanlgegpmjpfpfjka;https://ublock.r58playz.dev/update.xml\"],"
+  fi
 
-rm -f /tmp/_pol_conv.py
+  rm -f /tmp/_pol_conv.py
 
   for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
     val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
@@ -141,7 +135,8 @@ rm -f /tmp/_pol_conv.py
   "user": {
     ${ManagedBookmarks}
     ${OpenNetworkConfiguration}
-    ${WebAppInstallForceList}
+    ${WebAppInstallForcelist}
+    ${ExtensionInstallForcelist}
     "ExtensionSettings": ${extSettings},
     "URLBlocklist": [],
     "EditBookmarksEnabled": true,
