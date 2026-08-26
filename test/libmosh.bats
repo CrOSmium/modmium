@@ -9,6 +9,14 @@
 
 setup() {
   ROOT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
+  # The full_menu/selector dispatch tests below exercise real vt-mosh.sh-style
+  # scripts, which end with `tput cnorm`. Many non-interactive shells default
+  # $TERM to "dumb", which has no cursor-control capabilities, so tput fails
+  # there; since these tests don't wrap the call in bats' `run`, that failure
+  # gets misread as the dispatch itself failing. Force a real terminfo entry
+  # so the tests reflect dispatch behavior only, regardless of what $TERM the
+  # shell running bats happened to inherit.
+  export TERM=xterm
   # libmosh.sh reads a few device-only files at the top (stateful, /.branch,
   # /usr/share/misc/shflags, ...) that don't exist off-device; those failures
   # are harmless (the corresponding variables just end up empty) but bats
