@@ -101,9 +101,9 @@ display_menu() {
   elif [[ "$MILESTONE" -le 131 ]]; then
     echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
   elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium-${branch}) --"
+    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium ${modver} ${branch}) --"
   else
-    echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium-${branch}-${R}untested${N}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
+    echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium ${modver} ${branch}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
   fi
   if [[ $nopt == 1 ]];then
     echo -e "\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
