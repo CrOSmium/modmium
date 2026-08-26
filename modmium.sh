@@ -59,7 +59,7 @@ log_action() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] [modmium.sh] $1" >> "$MODMIUM_LOG" 2>/dev/null
 }
 
-# confirm_destructive "warning" — plain y/N prompt (default: no).
+# confirm_destructive "warning": plain y/N prompt, default no.
 confirm_destructive() {
   echo -e "${Y}$1${N}"
   echo -ne "[y/N]: "
@@ -73,9 +73,7 @@ confirm_destructive() {
   fi
 }
 
-# confirm_irreversible "warning" — for big, hard/impossible-to-undo steps.
-# Requires a double press of 'y' in quick succession (same idea as
-# askConfirmation() below) so it can't be triggered by leaning on Enter.
+# confirm_irreversible "warning": double tap y so leaning on Enter can't trigger it.
 confirm_irreversible() {
   echo -e "${R}$1${N}"
   read -r -n 2 -s -p "Double tap y to continue, or press any other key to cancel: " confirmation
@@ -89,8 +87,7 @@ confirm_irreversible() {
   fi
 }
 
-# run_with_feedback "message" cmd [args...] — never run a long/silent step
-# without telling the user it's happening first.
+# run_with_feedback "message" cmd [args...]: no more silent long-running steps.
 run_with_feedback() {
   local msg="$1"
   shift
@@ -108,13 +105,12 @@ run_with_feedback() {
   return $status
 }
 
-# ensure_deps <package> [package...] — installs the ChromeOS dev packages
-# needed to clone/build Modmium, downloading the base dev image only once
-# (tracked by $DEVINSTALL_MARKER) and always reporting progress.
+# ensure_deps <package> [package...]: installs the ChromeOS dev packages
+# needed to clone/build Modmium, only bootstrapping dev_install once.
 ensure_deps() {
   source /etc/profile # required to get emerge working
   if [[ ! -f $DEVINSTALL_MARKER ]]; then
-    run_with_feedback "Setting up ChromeOS developer packages for the first time — this can take a few minutes, please be patient..." \
+    run_with_feedback "Setting up ChromeOS developer packages for the first time, this can take a few minutes, please be patient..." \
       bash -c "printf 'y\n\nn' | dev_install --reinstall" \
       || fail "${R}Could not install dependencies. Connect to the internet and try again.${N}" keepflag
     touch $DEVINSTALL_MARKER

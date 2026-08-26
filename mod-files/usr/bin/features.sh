@@ -38,7 +38,6 @@ checkStatus() {
 
 chromebookPlus(){
   if [[ $chromebookplus == 0 ]]; then
-  confirm_destructive "This forces Chromebook Plus feature management on, which can behave unpredictably on unsupported hardware. Continue?" || { menu_reset; full_menu; return; }
   echo -e "Enabling Chromebook Plus features..."
   echo -e "Credits to Pilot Bell for making this toggle"
   sleep 1
@@ -51,7 +50,6 @@ chromebookPlus(){
 }
 studioMic(){
   if [[ $studiomic == 0 ]]; then
-    confirm_destructive "This temporarily spoofs your board identity to install cross-board packages, and can leave your system in a broken state if interrupted. Continue?" || { menu_reset; full_menu; return; }
     echo -e "Enabling Studio Mic..."
     echo -e "Credits to shadowed1 and Pilot Bell for making this toggle"
     sleep 1

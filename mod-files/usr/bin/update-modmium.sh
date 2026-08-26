@@ -50,36 +50,19 @@ askBranch(){
   echo # weird UI glitch if this isn't here, idk man
 }
 
-askRepo(){
-  repofile="$(cat /.repo 2>/dev/null)"
-  [[ $repofile ]] || repofile="official"
-  echo -e "[If you don't know what this means, just press enter]"
-  if [[ $repofile == "official" ]]; then
-    echo -ne "Repo to update from (${B}official${N}, or a custom owner/repo e.g. someuser/modmium): "
-  else
-    echo -ne "Repo to update from (official, or a custom owner/repo) [current: ${B}$repofile${N}]: "
-  fi
-  read -rep "" reporeq
-  case $reporeq in
-    official)
-      repo="official"
-      ;;
-    "")
-      repo="$repofile"
-      ;;
-    *)
-      repo="$reporeq"
-      ;;
-  esac
-  if [[ "$repo" == "official" ]]; then
-    repoSSH="$MODMIUM_REPO_SSH"
-    repoHTTPS="$MODMIUM_REPO_HTTPS"
-  else
-    repoSSH="git@github.com:${repo}.git"
-    repoHTTPS="https://github.com/${repo}.git"
-  fi
-  echo "$repo" > /.repo
-  echo # weird UI glitch if this isn't here, idk man
+convertToExt4() {
+  echo -e "${Y}Converting new RootFS to ext4...${N}"
+  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
+  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O extents ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  tune2fs -O metadata_csum ${installRoot} || fail "${R}Conversion failed!${N}"
+  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
+  echo -e "${G}Conversion succeeded!${N}"
+  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
 }
 
 dropModFiles() {
@@ -105,15 +88,14 @@ updateModmium() {
   stty echo
   export PATH="${PATH}:/usr/local/libexec/git-core" # just in case, so we know git https will work
   askBranch
-  askRepo
   mkdir -p /mnt/stateful_partition/git
   cd /mnt/stateful_partition/git
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch $repoSSH || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_SSH || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch $repoHTTPS || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_HTTPS || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
@@ -157,7 +139,6 @@ installCros() {
   confirm_irreversible "This will reinstall ChromeOS $VERSION and overwrite the inactive partition. This cannot be undone once it starts." \
     || fail "${R}Exiting...${N}"
   askBranch
-  askRepo
   getImageLink
 
   installKern=${intdis_prefix}$(opposite_num $(get_booted_kernnum))
@@ -213,9 +194,9 @@ installCros() {
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch $repoSSH || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_SSH || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch $repoHTTPS || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_HTTPS || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -248,11 +229,10 @@ installCros() {
 
   # now to copy relevant files to new root
   [[ -d /bootsplash || -f /bootsplash ]] && cp -r /bootsplash mnt
-  # write the branch/repo just installed, not the old root's /.branch and
-  # /.repo - otherwise switching branches or repos via "Change ChromeOS
-  # Version" would silently keep reporting the previous ones afterward.
+  # write the branch just installed, not the old root's /.branch - otherwise
+  # switching branches via "Change ChromeOS Version" would silently keep
+  # reporting the previous branch afterward.
   echo "$branch" > mnt/.branch
-  echo "$repo" > mnt/.repo
   [[ -d /nix ]] && mkdir mnt/nix # we don't copy contents because the actual contents are in stateful
   echo -e "${B}Copy root's files to new root? [Y/n]${N}"
   read -rep ""

@@ -38,9 +38,7 @@ RECOVERY_JSON_URL="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-dat
 DEVINSTALL_MARKER="/mnt/stateful_partition/.devinstall_complete"
 MODMIUM_LOG="/mnt/stateful_partition/modmium.log"
 
-# log_action <message> — appends a timestamped line to the shared Modmium
-# log (survives powerwash-adjacent debugging since it's a plain file people
-# can be asked to attach to a support request). Never fails the caller.
+# log_action <message>: appends a timestamped line to the shared Modmium log.
 log_action() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$(basename -- "$0")] $1" >> "$MODMIUM_LOG" 2>/dev/null
 }
@@ -130,21 +128,6 @@ opposite_num() {
   esac
 }
 
-convertToExt4() {
-  echo -e "${Y}Converting new RootFS to ext4...${N}"
-  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
-  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  tune2fs -O extents ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  tune2fs -O metadata_csum ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  echo -e "${G}Conversion succeeded!${N}"
-  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
-}
-
 # Looks up a matching stable-channel recovery image URL for $BOARD/$VERSION.
 # Sets $recoveryUrl on success, fails (with an actionable message) otherwise.
 getImageLink() {
@@ -167,8 +150,7 @@ getImageLink() {
   fi
 }
 
-# confirm_destructive "warning" — shows a warning, then a plain y/N prompt
-# (default: no). Returns success only if the user typed y/Y.
+# confirm_destructive "warning": plain y/N prompt, default no.
 confirm_destructive() {
   echo -e "${Y}$1${N}"
   echo -ne "[y/N]: "
@@ -182,10 +164,7 @@ confirm_destructive() {
   fi
 }
 
-# confirm_irreversible "warning" — for big, hard/impossible-to-undo steps
-# (flashing firmware, wiping a partition, reinstalling the OS). Requires a
-# double press of 'y' in quick succession, same as modmium.sh's install
-# confirmation, so it can't be triggered by someone leaning on Enter.
+# confirm_irreversible "warning": double tap y, same as modmium.sh's install.
 confirm_irreversible() {
   echo -e "${R}$1${N}"
   read -r -n 2 -s -p "Double tap y to continue, or press any other key to cancel: " confirmation
@@ -199,10 +178,7 @@ confirm_irreversible() {
   fi
 }
 
-# run_with_feedback "message" cmd [args...] — prints a message before running
-# a command so nothing happens silently, then reports whether it succeeded.
-# The command's own output (and stdin, if piped in by the caller) still
-# passes straight through.
+# run_with_feedback "message" cmd [args...]: no more silent long-running steps.
 run_with_feedback() {
   local msg="$1"
   shift
@@ -220,14 +196,12 @@ run_with_feedback() {
   return $status
 }
 
-# ensure_deps <package> [package...] — installs the ChromeOS dev packages
-# needed by MOSH scripts (git, file, protobuf-python, etc), downloading the
-# base dev image only once (tracked by $DEVINSTALL_MARKER) and always
-# reporting progress instead of running silently.
+# ensure_deps <package> [package...]: installs ChromeOS dev packages, only
+# bootstrapping dev_install once ($DEVINSTALL_MARKER tracks it).
 ensure_deps() {
   source /etc/profile # required to get emerge working in mosh
   if [[ ! -f $DEVINSTALL_MARKER ]]; then
-    run_with_feedback "Setting up ChromeOS developer packages for the first time — this can take a few minutes, please be patient..." \
+    run_with_feedback "Setting up ChromeOS developer packages for the first time, this can take a few minutes, please be patient..." \
       bash -c "printf 'y\n\nn' | dev_install --reinstall" \
       || fail "${R}Could not install dependencies. Connect to the internet and try again.${N}"
     touch $DEVINSTALL_MARKER
@@ -244,7 +218,6 @@ runscript() {
   stty echo
   tput cnorm
   echo "$1"
-  log_action "RUN: $1"
   employ as_system "$1"
   menu_reset
   full_menu
@@ -281,7 +254,6 @@ runscriptnoroot() {
   stty echo
   tput cnorm
   echo "$1"
-  log_action "RUN (noroot): $1"
   employ "$1"
   menu_reset
   full_menu
