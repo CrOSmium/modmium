@@ -3,14 +3,7 @@
 
 source /root/.bashrc # to get $EDITOR
 jsonFile="/usr/local/share/policy-test-tool/dump.json"
-DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 DEVPOL_FILE="/mnt/stateful_partition/.devpol_setup"
-
-fail(){
-  echo -e "$1"
-  sleep 3
-  exit 1
-}
 
 stty -echo
 tput civis
@@ -22,16 +15,7 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   mkdir -p /usr/local/share
   rm -rf /usr/local/share/policy-test-tool
 
-  source /etc/profile # emerge breaks without this
-  echo -e "${B}Installing required dependencies...${N}"
-
-  if [[ ! -f $DEVINSTALL_FILE ]]; then
-    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
-    touch $DEVINSTALL_FILE
-  fi
-
-  ldconfig # emerge breaks without this too
-  emerge cryptography nano pyyaml protobuf-python
+  ensure_deps cryptography nano pyyaml protobuf-python
 
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   touch $DEVPOL_FILE
@@ -390,18 +374,26 @@ full_menu(){
         3) submenu "Misc Settings" "${MISC[@]}" ;;
         4)
           allowInput
-          echo -e "${G}Applying device policies!${N}"
-          python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; } ;;
+          if confirm_destructive "This will apply your edited policies to this device's live configuration. Continue?"; then
+            echo -e "${G}Applying device policies!${N}"
+            python devpol.py $jsonFile && exit 0 || { sleep 2; disallowInput; }
+          else
+            disallowInput
+          fi ;;
         5)
           allowInput
-          echo -e "${Y}Reverting changes!${N}"
-          pushd /var/lib/devicesettings &> /dev/null
-          mv owner.key.bak.enterprise owner.key &> /dev/null
-          local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
-          [[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
-          popd &> /dev/null
-          rm -rf $jsonFile
-          echo -e "${G}Done!${N}"; sleep 2; restart ui; exit 0 ;;
+          if confirm_destructive "This will discard every change you've made in this editor and restore the previous device policy. Continue?"; then
+            echo -e "${Y}Reverting changes!${N}"
+            pushd /var/lib/devicesettings &> /dev/null
+            mv owner.key.bak.enterprise owner.key &> /dev/null
+            local policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
+            [[ -n "$policyBackup" ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &> /dev/null
+            popd &> /dev/null
+            rm -rf $jsonFile
+            echo -e "${G}Done!${N}"; sleep 2; restart ui; exit 0
+          else
+            disallowInput
+          fi ;;
         6)
           exit 0 ;;
       esac

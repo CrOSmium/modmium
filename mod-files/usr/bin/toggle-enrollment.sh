@@ -21,9 +21,7 @@ fail() {
 }
 
 promptPowerwash(){
-  echo -e "${Y}Would you like to powerwash now? [y/N]${N}"
-  read -re
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_destructive "Would you like to powerwash now?"; then
     echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
     echo -e "${G}Done! Rebooting...${N}"
     sleep 1
@@ -34,9 +32,7 @@ promptPowerwash(){
 }
 
 allowen(){
-  echo -e "${B}You currently have enrollment disabled, would you like to [${G}allow${B}] enrollment? [y/N]${N}"
-  read -re
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_destructive "You currently have enrollment disabled, would you like to allow enrollment?"; then
     rm /.deprovision
     echo -e "${G}Done!${N}"
     promptPowerwash
@@ -44,11 +40,9 @@ allowen(){
     fail # :whale:
   fi
 }
-  
+
 preventen(){
-  echo -e "${B}You currently have enrollment enabled, would you like to [${R}prevent${B}] enrollment? [y/N]${N}"
-  read -re
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_destructive "You currently have enrollment enabled, would you like to prevent enrollment?"; then
     echo $(grep MILESTONE /etc/lsb-release | sed 's|^.*=||g') >/.deprovision
     echo -e "${G}Done!${N}"
     promptPowerwash
@@ -85,4 +79,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

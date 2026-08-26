@@ -23,14 +23,14 @@ index() {
     name=$(echo "$name" | xargs)
     [[ -z "$path" ]] && continue
     paths+=("$path")
-    display_num=$(( ${#paths[@]} ))
-    options+=("$display_num) $name")
+    options+=("$name")
   done < /usr/local/config/apps.conf
 
   num_options=${#options[@]}
   selected_index=0
+  menuText=""
   if [[ " ${options[*]} " == *" Edit apps.conf "* ]]; then
-    nopt=1
+    menuText="\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
   fi
   if [[ $num_options -gt 9 ]]; then
     clear
@@ -45,6 +45,12 @@ EOF
   fi
 }
 
+# menu_reset is the standard libmosh entry point (called by full_menu when it
+# needs to redraw), so define it in terms of index() instead of duplicating
+# libmosh's own full_menu/display_menu here.
+menu_reset() {
+  index
+}
 
 selector() {
   torun="${paths[$selected_index]}"
@@ -63,62 +69,7 @@ selector() {
   esac
 }
 
-full_menu() {
-  clear
-  stty -echo
-  tput civis
-  while true; do
-    display_menu
-    read -rsn1 key
-    if [[ "$key" == $'\x1b' ]]; then
-      read -rsn2 -t 1 keyseq
-      case "$keyseq" in
-        '[A')
-          selected_index=$(((selected_index - 1 + num_options) % num_options))
-          ;;
-        '[B')
-          selected_index=$(((selected_index + 1) % num_options))
-          ;;
-      esac
-    elif [[ "$key" =~ [1-9] ]]; then
-      target_index=$((key - 1))
-      if [ "$target_index" -lt "$num_options" ]; then
-        selected_index=$target_index
-      fi
-    elif [[ "$key" == "" ]]; then
-      break
-    fi
-    tput rc
-  done
-  selector
-}
-display_menu() {
-  tput sc
-  menu_logo
-
-  if [[ "$MILESTONE" == "" ]]; then
-    echo -e "${R}Uhh... how are you seeing this if ChromeOS isn't installed..?${N}"
-  elif [[ "$MILESTONE" -le 131 ]]; then
-    echo -e "(WARNING): you are currently on ChromeOS ${R}v$MILESTONE${N}, which is not officially supported by Modmium."
-  elif [[ "$STABLEVERSIONS" =~ (^|,)"$MILESTONE"(,|$) ]]; then
-    echo -e "-- You are currently on ChromeOS ${G}v$MILESTONE${N} (Modmium ${modver} ${branch}) --"
-  else
-    echo -e "-- You are currently on ChromeOS ${R}v$MILESTONE${N} (Modmium ${modver} ${branch}) -- [This version hasn't been tested by the Modmium devs, but it will likely still work fine.]"
-  fi
-  if [[ $nopt == 1 ]];then
-    echo -e "\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
-  fi
-  echo ""
-  for i in "${!options[@]}"; do
-    if [[ $i -eq $selected_index ]]; then
-      printf "\e[7m > ${options[$i]} \e[0m\n"
-    else
-      printf "   ${options[$i]}      \n"
-    fi
-  done
-}
 clear
-index
+menu_reset
 full_menu
 tput cnorm
-selector

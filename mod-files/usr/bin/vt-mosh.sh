@@ -65,6 +65,9 @@ misc(){
 apps(){
   runscript /usr/bin/mosh-apps.sh
 }
+doctor(){
+  runscript /usr/bin/mosh-doctor.sh
+}
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
@@ -74,8 +77,8 @@ menu_logo() {
 
 menu_reset() {
     menuText="\n${D}If you'd like skip this menu by default, run 'touch /usr/local/.defaultvt'${N}\n"
-  options=("Root Shell" "Chronos Shell" "Manage Modmium" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
-  functions=("rootsh" "chronosh" "update" "devpol" "userpol" "apps" "misc" "quit")
+  options=("Root Shell" "Chronos Shell" "Manage Modmium" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Health Check" "Exit")
+  functions=("rootsh" "chronosh" "update" "devpol" "userpol" "apps" "misc" "doctor" "quit")
   num_options=${#options[@]}
 }
 
@@ -83,4 +86,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

@@ -17,6 +17,7 @@ FLAGS $@
 [[ $QUICKINSTALL == $FLAGS_TRUE ]] && export FLAG_userkeys=$FLAGS_FALSE
 
 fail(){
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [modmium.sh] FAILED: $1" >> "$MODMIUM_LOG" 2>/dev/null
   echo -e "$1"
   if [[ $2 != "keepflag" ]]; then
     vpd -d dev_firmware
@@ -43,12 +44,94 @@ RUN=$'\033[24m' #reset underline
 MILESTONE=$(grep MILESTONE /etc/lsb-release | cut -d= -f2 | tr -d '\r')
 [[ $QUICKINSTALL == $FLAGS_TRUE ]] && menu_text="Modmium Install Script! (Quickinstall)"
 
+# -- Constants --
+# These are hardcoded (instead of sourced from a shared lib like libmosh.sh)
+# because this script runs before Modmium's repo exists on disk at all -
+# it's the thing that clones the repo in the first place.
+MODMIUM_REPO_SSH="git@github.com:crosmium/modmium.git"
+MODMIUM_REPO_HTTPS="https://github.com/crosmium/modmium.git"
+RECOVERY_JSON_URL="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
+DEVINSTALL_MARKER="/mnt/stateful_partition/.devinstall_complete"
+STREAM_PY_URL="https://modmium.dev/tools/stream.py"
+MODMIUM_LOG="/mnt/stateful_partition/modmium.log" # same path libmosh.sh logs to post-install
+
+log_action() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [modmium.sh] $1" >> "$MODMIUM_LOG" 2>/dev/null
+}
+
+# confirm_destructive "warning" — plain y/N prompt (default: no).
+confirm_destructive() {
+  echo -e "${Y}$1${N}"
+  echo -ne "[y/N]: "
+  read -r reply
+  if [[ "$reply" =~ ^[Yy]$ ]]; then
+    log_action "CONFIRMED: $1"
+    return 0
+  else
+    log_action "DECLINED: $1"
+    return 1
+  fi
+}
+
+# confirm_irreversible "warning" — for big, hard/impossible-to-undo steps.
+# Requires a double press of 'y' in quick succession (same idea as
+# askConfirmation() below) so it can't be triggered by leaning on Enter.
+confirm_irreversible() {
+  echo -e "${R}$1${N}"
+  read -r -n 2 -s -p "Double tap y to continue, or press any other key to cancel: " confirmation
+  echo ""
+  if [[ "$confirmation" == "yy" ]]; then
+    log_action "CONFIRMED (irreversible): $1"
+    return 0
+  else
+    log_action "DECLINED (irreversible): $1"
+    return 1
+  fi
+}
+
+# run_with_feedback "message" cmd [args...] — never run a long/silent step
+# without telling the user it's happening first.
+run_with_feedback() {
+  local msg="$1"
+  shift
+  echo -e "${Y}${msg}${N}"
+  log_action "START: $msg"
+  "$@"
+  local status=$?
+  if [[ $status -eq 0 ]]; then
+    echo -e "${G}Done.${N}"
+    log_action "OK: $msg"
+  else
+    echo -e "${R}That step failed (exit code ${status}).${N}"
+    log_action "FAILED (exit ${status}): $msg"
+  fi
+  return $status
+}
+
+# ensure_deps <package> [package...] — installs the ChromeOS dev packages
+# needed to clone/build Modmium, downloading the base dev image only once
+# (tracked by $DEVINSTALL_MARKER) and always reporting progress.
+ensure_deps() {
+  source /etc/profile # required to get emerge working
+  if [[ ! -f $DEVINSTALL_MARKER ]]; then
+    run_with_feedback "Setting up ChromeOS developer packages for the first time — this can take a few minutes, please be patient..." \
+      bash -c "printf 'y\n\nn' | dev_install --reinstall" \
+      || fail "${R}Could not install dependencies. Connect to the internet and try again.${N}" keepflag
+    touch $DEVINSTALL_MARKER
+  fi
+  ldconfig # reload shared libraries to include python libs
+  run_with_feedback "Installing: $* ..." emerge "$@" \
+    || fail "${R}Could not install ($*). Connect to the internet and try again.${N}" keepflag
+  if [[ -d /usr/local/usr/share/git-core/templates ]]; then
+    cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+  fi
+}
+
 # -- skidded from modmium-update.sh --
 BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
 getImageLink(){
-  jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
   echo -e "${G}Checking crosbreaker/chromeos-releases-data for recovery image URL...${N}"
-  recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $BOARD --arg ver $VERSION '
+  recoveryUrl=$(curl -sL $RECOVERY_JSON_URL | jq -r --arg board $BOARD --arg ver $VERSION '
     .[$board].images // []
     | map(select(
     .channel == "stable-channel" and
@@ -62,7 +145,7 @@ getImageLink(){
     echo -e "${G}Recovery URL found!${N}"
     sleep 1
   else
-    fail "${R}Recovery URL not found or invalid :(${N}"
+    fail "${R}No recovery image found for ChromeOS ${VERSION} on this board. Double check the version number, or ask in the Discord (${Y}discord.crosbreaker.com${R}).${N}"
   fi
 }
 
@@ -129,14 +212,12 @@ installCros() {
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}" keepflag
   if [[ $VERSION -lt 131 ]]; then
-    echo -e "${R}WARNING. VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
-    echo -e "${B}Continue anyways? [y/N]${N}"
-    read -rep ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo -e "${B}Continuing...${N}"
-    else
-      fail "${R}Exiting...${N}" keepflag
-    fi
+    confirm_destructive "WARNING. VERSIONS BELOW 131 ARE NOT SUPPORTED.\nDo not make an issue report if you run into problems.\nContinue anyways?" \
+      || fail "${R}Exiting...${N}" keepflag
+  fi
+  if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
+    confirm_irreversible "This will install ChromeOS $VERSION onto the inactive partition. This cannot be undone once it starts." \
+      || fail "${R}Exiting...${N}" keepflag
   fi
   askBranch
   getImageLink
@@ -156,12 +237,14 @@ installCros() {
   pip install requests &>/dev/null
   streamdir=/root/ # might as well if rootfs verification is already off ig, im keeping this as default just because i don't want to break anything - dmd
   [[ $QUICKINSTALL == $FLAGS_TRUE ]] && streamdir=/usr/local/
-  curl -Lo ${streamdir}stream.py "https://modmium.dev/tools/stream.py"
-  python ${streamdir}stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
+  curl -fLo ${streamdir}stream.py "$STREAM_PY_URL" || fail "${R}Failed to download the ChromeOS streaming tool. Connect to the internet and try again.${N}" keepflag
+  run_with_feedback "Streaming ChromeOS $VERSION to disk, this can take several minutes..." \
+    python ${streamdir}stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" \
+    || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
   rm -rf .venv
   # thanks lxrd for that python script btw
   echo -e "${G}Removing verity from ChromeOS...${N}"
-  # keydir gets defined in installModmium()
+  # keydir gets defined in modmiumInstall()
   /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(opposite_num $(get_booted_kernnum)) --keys ${keydir} &>/dev/null
   futility dump_kernel_config ${installKern} > config.txt
   sed -i "s|cros_secure|cros_secure cros_debug|g" config.txt
@@ -197,9 +280,9 @@ installCros() {
   cd /mnt/stateful_partition/git
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_SSH || fail "${R}Failed to clone repository, exiting...${N}" keepflag
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_HTTPS || fail "${R}Failed to clone repository, exiting...${N}" keepflag
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -233,10 +316,7 @@ installCros() {
   cd .. && rm -rf modmium
   sync
   if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
-    echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
-    echo -ne "[y/N]: "
-    read pwr
-    if [[ "$pwr" =~ ^[Yy]$ ]]; then
+    if confirm_destructive "Would you like to powerwash? (Can prevent blackscreening on boot)"; then
       echo -e "Your device ${R}will${N} powerwash on next boot."
       echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
       sleep 0.3
@@ -248,15 +328,14 @@ installCros() {
     echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
     read -r
     if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-      echo -e "${G}Uninstalling packages...${N}"
-      printf 'y\n' | dev_install --uninstall
-      rm -f /mnt/stateful_partition/.devinstall_complete
+      run_with_feedback "Uninstalling packages..." bash -c "printf 'y\n' | dev_install --uninstall"
+      rm -f $DEVINSTALL_MARKER
     else
       echo -e "${B}Keeping packages installed.${N}"
     fi
   else
-    printf 'y\n' | dev_install --uninstall
-    rm -f /mnt/stateful_partition/.devinstall_complete
+    run_with_feedback "Uninstalling packages..." bash -c "printf 'y\n' | dev_install --uninstall"
+    rm -f $DEVINSTALL_MARKER
   fi
 
   echo -e "Switching active kernel..."
@@ -324,7 +403,7 @@ checkWP(){
               crossystem wpsw_cur || grep "0" || fail "Failed to disable HWWP."
               flashrom --wp-disable || echo -e "WARNING: SWWP FAILED TO DISABLE! This is a known issue on ARM boards such as corsola and geralt. Modmium can still install because HWWP is disabled, but you may encounter issues later." && read -p "Press enter to continue, or Ctrl+C to abort."
               ;;
-            *) fail "How did we get here..?" ;;
+            *) fail "Got an unexpected AllowUnverifiedRo value ('$setting') from gsctool. Please ask in the Discord (${Y}discord.crosbreaker.com${R}) with this exact message." ;;
           esac
         fi
         fail "HWWP and SWWP are enabled with WP range non-zero, please disable your WP by following this guide: ${G}https://crosmium.dev/HWWP${N}"
@@ -339,19 +418,10 @@ checkAPROV(){
     case $setting in
       Always) echo -e "APROV is currently ${G}DISABLED${N}, continuing..." ;;
       Never) fail "APROV is currently ${R}ENABLED${N}. If you're seeing this, WP is off but APROV is on and rebooting will ${R}${UN}BRICK YOUR DEVICE${RUN}${N}.\n Disable APROV immediately by running \`gsctool -a -I AllowUnverifiedRo:always\`" ;;
-      *) fail "How did we get here..?" ;;
+      *) fail "Got an unexpected AllowUnverifiedRo value ('$setting') from gsctool. Please ask in the Discord (${Y}discord.crosbreaker.com${R}) with this exact message." ;;
     esac
   else
     echo -e "Device is not Ti50, continuing..."
-  fi
-}
-
-askConfirmation(){
-  read -r -n 2 -s -p "Double click y to continue, or hold any other key to quit." confirmation # don't put Y if confirm wants y
-  echo ""
-  if [[ "$confirmation" != "yy" ]]; then
-    echo -e "Denied! exiting.."
-    exit 0
   fi
 }
 
@@ -412,15 +482,7 @@ modmiumInstall(){
     keydir=/usr/share/vboot/devkeys
   fi
   if ! which git &>/dev/null || ! which file &>/dev/null; then
-    echo -e "${R}Dependencies not installed, installing...${N}"
-    source /etc/profile # required to get emerge working
-    if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-      printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
-      touch /mnt/stateful_partition/.devinstall_complete
-    fi
-    ldconfig # reload shared libraries to include python libs
-    emerge git file || fail "${R}Could not install dependencies. Connect to the internet first.${N}" keepflag
-    cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+    ensure_deps git file
   fi
   [[ $FLAGS_userkeys == $FLAGS_TRUE ]] && selUserBackup
   if [[ $QUICKINSTALL == $FLAGS_TRUE ]]; then
@@ -466,15 +528,12 @@ What drive would you like write the backup onto? Type /dev/sdX or sdX not the US
 EOF
       read -ep "Drive: " driveloc
       driveloc="${driveloc%/}"
-      if [[ $driveloc == *"/dev/"* ]]; then
-        mkfs.vfat -I -F 32 $driveloc || fail "${R}Unable to wipe device, exiting...${N}"
-        mkdir -p $BACKUP
-        mount $driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
-      else
-        mkfs.vfat -I -F 32 /dev/$driveloc || fail "${R}Unable to wipe device, exiting...${N}"
-        mkdir -p /tmp/backupdir
-         mount /dev/$driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
-      fi
+      [[ $driveloc == *"/dev/"* ]] || driveloc="/dev/$driveloc"
+      confirm_destructive "This will ERASE EVERYTHING on ${driveloc}. Are you sure this is the right drive?" \
+        || fail "${R}Exiting...${N}" keepflag
+      mkfs.vfat -I -F 32 $driveloc || fail "${R}Unable to wipe device, exiting...${N}"
+      mkdir -p $BACKUP
+      mount $driveloc $BACKUP || fail "${R}Unable to mount device, exiting...${N}"
        if ! ( [ -d ${BACKUP} ] && touch ${BACKUP}/.test ); then
         fail "${R}Unable to write to backup, exiting...${N}"
       fi
@@ -562,8 +621,8 @@ EOF
   checkWP
   checkAPROV # Kinda useless now, no harm in keeping though!
 
-  echo -e "${G}Are you sure you want to flash DevFW firmware?${N}"
-  askConfirmation
+  confirm_irreversible "Are you sure you want to flash DevFW firmware? This changes your boot keys and cannot be undone without a factory firmware restore." \
+    || { echo -e "Denied! exiting.."; exit 0; }
 
   [[ $QUICKINSTALL == $FLAGS_FALSE ]] && echo -e "Getting backup selection..."
   selectBackup

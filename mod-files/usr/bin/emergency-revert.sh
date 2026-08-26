@@ -27,15 +27,7 @@ fail(){
 }
 
 if ! which git &>/dev/null || ! which file &>/dev/null; then
-  echo -e "${R}Dependencies not installed, installing...${N}"
-  source /etc/profile # required to get emerge working in mosh
-  if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
-    touch /mnt/stateful_partition/.devinstall_complete
-  fi
-  ldconfig # reload shared libraries to include python libs
-  emerge git file protobuf-python
-  cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+  ensure_deps git file protobuf-python
 fi
 
 checkWP(){
@@ -55,10 +47,7 @@ checkWP(){
 
 unkeyroll(){
   futility gbb -s --flash --recoverykey="/root/.recoverykeys/$board.vbpubk"
-  echo -e "Would you like to be unkeyrolled permanently? [y/N]"
-  echo -e "${R}This will prevent you from reflashing devkeys until you re-disable FWWP fully${N}"
-  read -re
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_destructive "Would you like to be unkeyrolled permanently? This will prevent you from reflashing devkeys until you re-disable FWWP fully."; then
     flashrom --wp-range 0,0 || flashrom --wp-range 0 0
     flashrom --wp-enable
   fi
@@ -68,9 +57,7 @@ revertMPkeys(){
   clear
   stty echo
   checkWP
-  echo -e "${R}This will update your firmware and revert your chromebook to stock keys (undoing developer firmware changes), are you ${UN}sure${RUN} you want to continue?${N} [y/N]"
-  read -re
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_irreversible "This will update your firmware and revert your chromebook to stock keys (undoing developer firmware changes). This cannot be undone without redoing the DevFW flash. Are you sure you want to continue?"; then
     echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
     sleep 2
     echo "Modmium stock firmware restore script by codenerd87"
@@ -105,11 +92,7 @@ revertMPkeys(){
     echo "Firmware flashed successfully!"
 
     if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
-      echo -e "${B}Do you want to unkeyroll? [y/N]"
-      read -re
-      if [[ $REPLY =~ ^[Yy]$ ]]; then
-        unkeyroll
-      fi
+      confirm_destructive "Do you want to unkeyroll?" && unkeyroll
     fi
     echo -e "Your device is now on MPkeys! Modmium will not boot after your device reboots, please make sure you restore factory ChromeOS or use a recovery image!"
     sleep 3
@@ -118,48 +101,6 @@ revertMPkeys(){
     fail "Exiting..."
   fi
   fail "Exiting..."
-}
-
-BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
-getImageLink(){
-  jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
-  echo -e "${G}Checking crosbreaker/chromeos-releases-data for recovery image URL...${N}"
-  recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $BOARD --arg ver $VERSION '
-    .[$board].images // []
-    | map(select(
-    .channel == "stable-channel" and
-    (.chrome_version | startswith($ver + "."))
-    ))
-    | sort_by(.last_modified)
-    | last
-    | .url // empty
-    ')
-  if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
-    echo -e "${G}Recovery URL found!${N}"
-    sleep 1
-  else
-    fail "${R}Recovery URL not found or invalid :(${N}"
-  fi
-}
-
-get_booted_kernnum() {
-  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
-    echo -n 2
-  else
-    echo -n 4
-  fi
-}
-get_booted_rootnum() {
-  echo $(( $(get_booted_kernnum) + 1 ))
-}
-opposite_num() {
-  case $1 in
-    2) echo -n 4 ;;
-    3) echo -n 5 ;;
-    4) echo -n 2 ;;
-    5) echo -n 3 ;;
-    *) echo -n "skid" ;;
-  esac
 }
 
 installCros() {
@@ -187,6 +128,8 @@ installCros() {
   echo -ne "Version of ChromeOS you want to install: "
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
+  confirm_irreversible "This will overwrite the inactive partition with ChromeOS $VERSION. This cannot be undone once it starts." \
+    || fail "Exiting..."
   getImageLink
   intdis=$(rootdev -d)
   if echo "$intdis" | grep -q '[0-9]$'; then
@@ -242,4 +185,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

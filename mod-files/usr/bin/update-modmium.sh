@@ -1,29 +1,21 @@
 #!/bin/bash
 # written by mariah carey and DMD
 
+# -- Pre TUI init --
+stty -echo
+source /usr/lib/libmosh.sh
+
 fail(){
-  start powerd &>/dev/null
   local ec=$?
+  start powerd &>/dev/null
   echo -e "$1"
   sleep 2
   [[ ! $ec -eq 0 ]] && exit $ec
   exit 1
 }
 
-# -- Pre TUI init --
-stty -echo
-source /usr/lib/libmosh.sh
-
 if ! which git &>/dev/null || ! which file &>/dev/null; then
-  echo -e "${R}Dependencies not installed, installing...${N}"
-  source /etc/profile # required to get emerge working in mosh
-  if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
-    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
-    touch /mnt/stateful_partition/.devinstall_complete
-  fi
-  ldconfig # reload shared libraries to include python libs
-  emerge git file
-  cp -r /usr/local/usr/share/git-core/templates /usr/share/git-core # fix the warning about git templates being missing
+  ensure_deps git file
 fi
 
 intdis=$(rootdev -d)
@@ -34,28 +26,6 @@ else
 fi
 
 # -- FUNCTIONS --
-BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $NF}')"
-getImageLink(){
-  jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
-  echo -e "${G}Checking crosbreaker/chromeos-releases-data for recovery image URL...${N}"
-  recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $BOARD --arg ver $VERSION '
-    .[$board].images // []
-    | map(select(
-    .channel == "stable-channel" and
-    (.chrome_version | startswith($ver + "."))
-    ))
-    | sort_by(.last_modified)
-    | last
-    | .url // empty
-    ')
-  if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
-    echo -e "${G}Recovery URL found!${N}"
-    sleep 1
-  else
-    fail "${R}Recovery URL not found or invalid :(${N}"
-  fi
-}
-
 askBranch(){
   branchfile="$(cat /.branch)"
   [[ $branchfile ]] || branchfile="stable"
@@ -108,9 +78,9 @@ updateModmium() {
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_SSH || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_HTTPS || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
@@ -134,40 +104,6 @@ updateModmium() {
   exit
 }
 
-convertToExt4(){
-  echo -e "${Y}Converting new RootFS to ext4...${N}"
-  installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
-  tune2fs -O has_journal -J size=16 ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  tune2fs -O extents ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  resize2fs -b ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  tune2fs -O metadata_csum ${installRoot} || fail "${R}Conversion failed!${N}"
-  e2fsck -fDy ${installRoot} || fail "${R}Conversion failed!${N}"
-  echo -e "${G}Conversion succeeded!${N}"
-  sync;sync;sync # oh how i love you sync, hopefully what is above this will make us less reliant on your help <3
-}
-get_booted_kernnum() {
-  if (( $(cgpt show -n "$intdis" -i 2 -P) > $(cgpt show -n "$intdis" -i 4 -P) )); then
-    echo -n 2
-  else
-    echo -n 4
-  fi
-}
-get_booted_rootnum() {
-  echo $(( $(get_booted_kernnum) + 1 ))
-}
-opposite_num() {
-  case $1 in
-    2) echo -n 4 ;;
-    3) echo -n 5 ;;
-    4) echo -n 2 ;;
-    5) echo -n 3 ;;
-    *) echo -n "skid" ;;
-  esac
-}
-
 installCros() {
   stop powerd &>/dev/null
   ldconfig
@@ -177,26 +113,16 @@ installCros() {
   read -rep "" VERSION
   [[ $VERSION =~ ^[0-9]+$ ]] || fail "${R}Version must be numeric, exiting...${N}"
   if [[ $VERSION -lt $MILESTONE ]]; then
-    echo -e "${R}WARNING: YOU ARE DOWNGRADING CHROMEOS ($MILESTONE -> $VERSION), THIS MAY CAUSE PROBLEMS OR WIPE USER DATA.${N}\nDo not make an issue report if you run into problems."
-  echo -e "${B}Continue anyways? [y/N]${N}"
-  read -rep ""
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo -e "${B}Continuing...\n${N}"
-    else
-      fail "${R}Exiting...${N}"
-    fi
+    confirm_destructive "WARNING: YOU ARE DOWNGRADING CHROMEOS ($MILESTONE -> $VERSION), THIS MAY CAUSE PROBLEMS OR WIPE USER DATA.\nDo not make an issue report if you run into problems.\nContinue anyways?" \
+      || fail "${R}Exiting...${N}"
   fi
   if [[ $VERSION -lt 131 ]]; then
-    echo -e "${R}WARNING: VERSIONS BELOW 131 ARE NOT SUPPORTED.${N}\nDo not make an issue report if you run into problems."
-    echo -e "${B}Continue anyways? [y/N]${N}"
-    read -rep ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo -e "${B}Continuing...${N}"
-    else
-      fail "${R}Exiting...${N}"
-    fi
+    confirm_destructive "WARNING: VERSIONS BELOW 131 ARE NOT SUPPORTED.\nDo not make an issue report if you run into problems.\nContinue anyways?" \
+      || fail "${R}Exiting...${N}"
   fi
   [[ ( $MILESTONE -gt $VERSION ) && ( $MILESTONE -gt 140 ) ]] && echo -e "${Y}You may have to remove and sign back into your account(s) after downgrading. Continuing anyways...${N}"
+  confirm_irreversible "This will reinstall ChromeOS $VERSION and overwrite the inactive partition. This cannot be undone once it starts." \
+    || fail "${R}Exiting...${N}"
   askBranch
   getImageLink
 
@@ -253,9 +179,9 @@ installCros() {
   [[ -d modmium ]] && rm -rf modmium
   if [[ -d /root/.ssh ]]; then
     [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_SSH || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch $MODMIUM_REPO_HTTPS || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -310,10 +236,7 @@ installCros() {
   umount mnt
   cd .. && rm -rf modmium
   sync
-  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
-  echo -ne "[y/N]: "
-  read pwr
-  if [[ "$pwr" =~ ^[Yy]$ ]]; then
+  if confirm_destructive "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"; then
     echo -e "Your device ${R}will${N} powerwash on next boot."
     echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
     sleep 0.3
@@ -322,15 +245,12 @@ installCros() {
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
-read -r
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-  echo -e "${G}Uninstalling packages...${N}"
-  printf 'y\n' | dev_install --uninstall
-  rm -f /mnt/stateful_partition/.devinstall_complete
-else
-  echo -e "${B}Keeping packages installed.${N}"
-fi
+  if confirm_destructive "Remove developer packages for compatibility with other ChromeOS versions?"; then
+    run_with_feedback "Uninstalling packages..." bash -c "printf 'y\n' | dev_install --uninstall"
+    rm -f $DEVINSTALL_MARKER
+  else
+    echo -e "${B}Keeping packages installed.${N}"
+  fi
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
@@ -371,10 +291,7 @@ toggleBootPriority(){
     newKern=2
   fi
   stty echo
-  echo -e "Are you sure you want to switch your boot kernel to '${intdis_prefix}${newKern}'?"
-  echo -ne "[y/N]: "
-  read -r iamverysure
-  if [[ "$iamverysure" =~ ^[Yy]$ ]]; then
+  if confirm_destructive "This will switch your active boot kernel to '${intdis_prefix}${newKern}' and reboot. Are you sure?"; then
     echo -e "Continuing... \n"
     sleep 0.3
   else
@@ -399,10 +316,7 @@ toggleBootPriority(){
   fi
 
   sync
-  echo -e "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"
-  echo -ne "[y/N]: "
-  read -r pwr
-  if [[ "$pwr" =~ ^[Yy]$ ]]; then
+  if confirm_destructive "Would you like to powerwash? (Can prevent Modmium from failing to boot the newly switched version)"; then
     echo -e "Your device ${R}will${N} powerwash on next boot."
     echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
     sleep 0.3
@@ -411,17 +325,12 @@ toggleBootPriority(){
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-echo ""
-echo -e "${Y}Would you like to remove developer packages for compatibility with other ChromeOS versions?${N}"
-echo -ne "[y/N]: "
-read -r devp
-if [[ "$devp" =~ ^[Yy]$ ]]; then
-  echo -e "${G}Uninstalling packages...${N}"
-  printf 'y\n' | dev_install --uninstall
-  rm -f /mnt/stateful_partition/.devinstall_complete
-else
-  echo -e "${B}Keeping packages installed.${N}"
-fi
+  if confirm_destructive "Would you like to remove developer packages for compatibility with other ChromeOS versions?"; then
+    run_with_feedback "Uninstalling packages..." bash -c "printf 'y\n' | dev_install --uninstall"
+    rm -f $DEVINSTALL_MARKER
+  else
+    echo -e "${B}Keeping packages installed.${N}"
+  fi
   echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
@@ -464,4 +373,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

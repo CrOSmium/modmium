@@ -121,10 +121,7 @@ download_backup() {
 }
 
 remove() {
-  echo -e "${Y}This will remove the bootsplash ENTIRELY. Use restore to fix it.${N}"
-  read -p "Contnue? (y/N) " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
+  if confirm_destructive "This will remove the bootsplash ENTIRELY. Use restore to fix it. Continue?"; then
     echo -e "${Y}Removing bootsplash...${N}"
     for assets in cros_assets cros_assets_2; do
       for file in $(find ${!assets} -name 'boot_splash_frame*.png'); do
@@ -161,4 +158,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

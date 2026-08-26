@@ -7,23 +7,21 @@ source /usr/lib/libmosh.sh
 source /etc/profile
 
 # -- policy flags --
-DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 POLICYFILE="/root/policy.json"
 
 # -- FUNCTIONS --
 
-fail(){
-  echo -e "$1"
-  sleep 3
-  exit 1
-}
-
 reinstall(){
-  rm -f "$DEVINSTALL_FILE" "$POLTEST_FILE"
-  echo -e "${G}Removed .devinstall_complete and .policytesttool_setup markers.${N}"
-  sleep 2
-  exit
+  if confirm_destructive "This will clear the policy test tool's setup markers, so the next run reinstalls everything from scratch. Continue?"; then
+    rm -f "$DEVINSTALL_MARKER" "$POLTEST_FILE"
+    echo -e "${G}Removed .devinstall_complete and .policytesttool_setup markers.${N}"
+    sleep 2
+    exit
+  else
+    menu_reset
+    full_menu
+  fi
 }
 
 install(){
@@ -40,13 +38,7 @@ install(){
     exit 0
   fi
 
-  if [[ ! -f $DEVINSTALL_FILE ]]; then
-    echo -e "${G}Installing required dependencies...${N}"
-    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
-    ldconfig
-    emerge protobuf-python
-    touch $DEVINSTALL_FILE
-  fi
+  ensure_deps protobuf-python
 
   cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
 
@@ -231,7 +223,7 @@ menu_logo() {
 
 menu_reset() {
   menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']${N}\n"
-  if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
+  if [[ -f $DEVINSTALL_MARKER || -f $POLTEST_FILE ]]; then
     options=("Run Policy Editor" "Update policy.json [from downloads]" "Reinstall" "Exit")
     functions=("install" "grabpolicy" "reinstall" "quit")
   else
@@ -250,4 +242,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector

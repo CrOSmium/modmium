@@ -64,4 +64,3 @@ menu_reset
 clear
 full_menu
 tput cnorm
-selector
