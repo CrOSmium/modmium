@@ -230,6 +230,7 @@ installCros() {
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
+  cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d ${BACKUP}/userkeys ]] && cp -r ${BACKUP}/userkeys mnt/usr/share/vboot
   echo $branch > mnt/.branch
@@ -274,7 +275,7 @@ installCros() {
   sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
-  if [[ $REPLY =~ ^[Nn]$ ]]; then 
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo -e "${B}Reboot when ready! Exiting...${N}"
     sleep 2
     start powerd &>/dev/null
@@ -453,7 +454,7 @@ selectBackup(){
     mkdir -p /tmp/p12
     mount ${intdis}p12 /tmp/p12
     [[ $(ls /tmp/p12/firmware | grep backup) ]] || flashrom -r /tmp/p12/firmware/backup_${moment}.rom
-    sync;sync;sync # don't count how many syncs are in this script 
+    sync;sync;sync # don't count how many syncs are in this script
     umount /tmp/p12
     rmdir /tmp/p12
   fi
