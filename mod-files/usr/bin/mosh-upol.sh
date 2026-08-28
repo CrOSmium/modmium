@@ -142,8 +142,10 @@ grabpol2(){
 
 grabpol2f(){
   echo -e "Grabbing policies..."
-  error=$(python /usr/share/.policy-test-tool/decode_policy.py 2>&1) \
-    || fail "${R}Unable to decode policies!\n${N}${error}"
+  if ! python /usr/share/.policy-test-tool/decode_policy.py; then
+    echo -e "${R}Unable to decode policies!${N}"
+    sleep 3
+  fi
 }
 
 # -- MAIN SCRIPT --
