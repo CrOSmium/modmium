@@ -133,7 +133,7 @@ updateModmium() {
     sleep 3
   fi
   echo -e "${G}Done!${N}"
-  sleep 3
+  sleep 2.67
   stty -echo
   exit
 }
