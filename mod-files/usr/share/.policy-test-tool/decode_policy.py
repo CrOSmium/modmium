@@ -1,4 +1,3 @@
-# written by lxrd
 import sys
 import os
 import json
@@ -252,8 +251,8 @@ def decode_policy_fetch_response(blob: bytes, scope="user", source="sourceCloud"
             "  policy_common_definitions_pb2.py\n"
             "  device_management_backend_pb2.py\n"
             "  cloud_policy_pb2.py\n\n"
-            "And that protobuf 4.x is installed:\n"
-            "  pip install 'protobuf>=4.23,<5'"
+            "And that protobuf is installed:\n"
+            "  emerge protobuf-python"
         )
 
     fetch_response = PolicyFetchResponse()
