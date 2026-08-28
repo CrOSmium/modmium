@@ -81,7 +81,7 @@ askBranch(){
 }
 
 dropModFiles() {
-  modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
+  modFiles=$(find modmium/mod-files -mindepth 1 -name "*")
   for file in $modFiles; do
     if [[ -d $file ]]; then
       :
@@ -94,8 +94,12 @@ dropModFiles() {
     fi
   done
   if [[ -d /usr/local/share/policy-test-tool ]]; then
-     cp -r /usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
+     cp -r modmium/mod-files/usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
   fi
+  arch=$(arch | sed 's/_/-/')
+  [[ $arch == *"ARM"* ]] && arch=aarch64
+  cp modmium/build-utils/lib/minioverride-${arch}.so /lib/minioverride.so
+  cp modmium/build-utils/bin/clearsecbits-${arch} /usr/bin/clearsecbits
 }
 
 has_ssh_key() {
@@ -120,10 +124,7 @@ updateModmium() {
   echo -e "${G}Cleaning up... (DO NOT RESTART YOUR DEVICE)${N}"
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
-  sync;sync;sync;sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
-  if [[ $unconverted_fs == 0 ]]; then # extra syncing is only needed if you are using ext2 :3
-    sleep 2
-  else
+  if [[ $unconverted_fs == $FLAGS_TRUE ]]; then # extra syncing is only needed if you are using ext2 :3
     sleep 2
     sync;sync # for good luck
     sleep 1
@@ -132,7 +133,7 @@ updateModmium() {
     sleep 3
   fi
   echo -e "${G}Done!${N}"
-  sleep 1.67
+  sleep 3
   stty -echo
   exit
 }
@@ -285,6 +286,7 @@ installCros() {
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
+  cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
 
@@ -324,15 +326,15 @@ installCros() {
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
-read -r
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-  echo -e "${G}Uninstalling packages...${N}"
-  printf 'y\n' | dev_install --uninstall
-  rm -f /mnt/stateful_partition/.devinstall_complete
-else
-  echo -e "${B}Keeping packages installed.${N}"
-fi
+  echo -e "${Y}Remove developer packages for compatibility with other ChromeOS versions? [Y/n]${N}"
+  read -r
+  if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+    echo -e "${G}Uninstalling packages...${N}"
+    printf 'y\n' | dev_install --uninstall
+    rm -f /mnt/stateful_partition/.devinstall_complete
+  else
+    echo -e "${B}Keeping packages installed.${N}"
+  fi
   echo -e "Switching active kernel..."
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
@@ -346,9 +348,6 @@ fi
   reboot
   sleep infinity
 }
-
-
-
 
 # -- NON UPDATER FUNCTIONS --
 
@@ -413,17 +412,17 @@ toggleBootPriority(){
     sleep 0.3
   fi
   # this is for compatability with other chromeos versions
-echo ""
-echo -e "${Y}Would you like to remove developer packages for compatibility with other ChromeOS versions?${N}"
-echo -ne "[y/N]: "
-read -r devp
-if [[ "$devp" =~ ^[Yy]$ ]]; then
-  echo -e "${G}Uninstalling packages...${N}"
-  printf 'y\n' | dev_install --uninstall
-  rm -f /mnt/stateful_partition/.devinstall_complete
-else
-  echo -e "${B}Keeping packages installed.${N}"
-fi
+  echo ""
+  echo -e "${Y}Would you like to remove developer packages for compatibility with other ChromeOS versions?${N}"
+  echo -ne "[y/N]: "
+  read -r devp
+  if [[ "$devp" =~ ^[Yy]$ ]]; then
+    echo -e "${G}Uninstalling packages...${N}"
+    printf 'y\n' | dev_install --uninstall
+    rm -f /mnt/stateful_partition/.devinstall_complete
+  else
+    echo -e "${B}Keeping packages installed.${N}"
+  fi
   echo -e "Switching active kernel..."
   cgpt add $intdis -i $currentKern -P 1 -S 1 -T 0
   cgpt add $intdis -i $newKern -P 15 -S 0 -T 15
@@ -450,13 +449,13 @@ features() {
 
 tput civis # :whale:
 if [ "$(findmnt -no FSTYPE /)" != "ext4" ]; then
-  unconverted_fs=1
+  unconverted_fs=$FLAGS_TRUE
 else
-  unconverted_fs=0
+  unconverted_fs=$FLAGS_FALSE
 fi
 menu_reset() {
   menuText="\nModmium Manager\n"
-  [[ $unconverted_fs -eq 1 ]] && menuText="\nModmium Manager\n\nNOTICE: ${Y}You are running Modmium on ${R}ext2${Y}, the next time you change your ChromeOS version, you will be upgraded to ${G}ext4${Y}.${N}\n"
+  [[ $unconverted_fs == $FLAGS_TRUE ]] && menuText="\nModmium Manager\n\nNOTICE: ${Y}You are running Modmium on ${R}ext2${Y}, the next time you change your ChromeOS version, you will be upgraded to ${G}ext4${Y}.${N}\n"
   options=("Update Modmium" "Change ChromeOS Version" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
   functions=("updateModmium" "installCros" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
