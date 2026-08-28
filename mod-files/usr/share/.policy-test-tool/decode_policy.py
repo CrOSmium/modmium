@@ -1,3 +1,4 @@
+# written by lxrd
 import sys
 import os
 import json
