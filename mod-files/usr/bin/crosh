@@ -72,7 +72,7 @@ fi
 # -- FUNCTIONS --
 
 rootsh(){
-  runscript "sudo -i -u root"
+  runscript "env --chdir=/root sudo bash"
 }
 chronosh(){
   runscript "sudo -i -u chronos"
