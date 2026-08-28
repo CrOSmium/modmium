@@ -81,7 +81,7 @@ askBranch(){
 }
 
 dropModFiles() {
-  modFiles=$(find /mnt/stateful_partition/git/modmium/mod-files -mindepth 1 -name "*")
+  modFiles=$(find modmium/mod-files -mindepth 1 -name "*")
   for file in $modFiles; do
     if [[ -d $file ]]; then
       :
@@ -96,6 +96,10 @@ dropModFiles() {
   if [[ -d /usr/local/share/policy-test-tool ]]; then
      cp -r /usr/share/.policy-test-tool/* /usr/local/share/policy-test-tool
   fi
+  arch=$(file /bin/bash | awk -F', ' '{print $2}')
+  [[ $arch == *"ARM"* ]] && arch=aarch64
+  cp modmium/build-utils/lib/minioverride-${arch}.so /lib/minioverride.so
+  cp modmium/build-utils/bin/clearsecbits-${arch} /usr/bin/clearsecbits
 }
 
 updateModmium() {
@@ -117,10 +121,7 @@ updateModmium() {
   echo -e "${G}Cleaning up... (DO NOT RESTART YOUR DEVICE)${N}"
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
-  sync;sync;sync;sync # this is for all the times i changed stuff locally and didn't sync and suddenly it didn't boot - dmd
-  if [[ $unconverted_fs == 0 ]]; then # extra syncing is only needed if you are using ext2 :3
-    sleep 2
-  else
+  if [[ $unconverted_fs == $FLAGS_TRUE ]]; then # extra syncing is only needed if you are using ext2 :3
     sleep 2
     sync;sync # for good luck
     sleep 1
@@ -129,7 +130,7 @@ updateModmium() {
     sleep 3
   fi
   echo -e "${G}Done!${N}"
-  sleep 1.67
+  sleep 3
   stty -echo
   exit
 }
@@ -283,6 +284,7 @@ installCros() {
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
+  cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
 
@@ -448,9 +450,9 @@ features() {
 
 tput civis # :whale:
 if [ "$(findmnt -no FSTYPE /)" != "ext4" ]; then
-  unconverted_fs=1
+  unconverted_fs=$FLAGS_TRUE
 else
-  unconverted_fs=0
+  unconverted_fs=$FLAGS_FALSE
 fi
 menu_reset() {
   menuText="\nModmium Manager\n"
