@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ARCH="$(uname -m)"
+
+case "$ARCH" in 
+  x86_64)
+    execarch="x86-64"
+    ;;
+  *arm* | aarch64)
+    execarch="aarch64"
+    ;;
+  *)
+    execarch="x86-64" # x86-64 is the most common, so it can be the default
+    ;;
+esac
+
+exec /usr/bin/.clearsecbits-$execarch "$@"
