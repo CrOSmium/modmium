@@ -80,109 +80,26 @@ EOF
     INSTALL_UBLOCK=1
   fi
 
+  rm -rf /usr/local/share/policy-test-tool
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
   cd /usr/local/share/policy-test-tool
 
   echo -e "${B}Extracting important values from policy.json...${N}"
-  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user $email >/dev/null 2>&1 || fail "${R}Failed to extract policies, do you have a policy.json?${N}"
-  cat > /tmp/_pol_conv.py << 'PYEOF'
-import json, sys
-with open(sys.argv[1]) as f:
-  data = json.load(f)
-forcelist = data.get("user", {}).get("ExtensionInstallForcelist", [])
-ext_settings = {}
-for entry in forcelist:
-  if ";" in entry:
-    ext_id, update_url = entry.split(";", 1)
-  else:
-    ext_id = entry
-    update_url = "https://clients2.google.com/service/update2/crx"
-  entry_dict = ext_settings.get(ext_id, {})
-  entry_dict["installation_mode"] = "normal_installed"
-  entry_dict["update_url"] = update_url
-  ext_settings[ext_id] = entry_dict
-raw = json.dumps(ext_settings, indent=2)
-lines = raw.splitlines()
-print(lines[0])
-for line in lines[1:]:
-  print("    " + line)
-PYEOF
-  extSettings=$(python3 /tmp/_pol_conv.py extracted.json)
+  python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user "$email" >/dev/null 2>&1 || fail "${R}Failed to extract policies, do you have a policy.json?${N}"
 
-  if [[ "$INSTALL_UBLOCK" == "1" ]]; then
-    ExtensionInstallForcelist="\"ExtensionInstallForcelist\": [\"blockddmmcjpfkbhanlgegpmjpfpfjka;https://ublock.r58playz.dev/update.xml\"],"
-  fi
+  UBLOCK_FLAG=""
+  [[ "$INSTALL_UBLOCK" == "1" ]] && UBLOCK_FLAG="--ublock"
 
-  rm -f /tmp/_pol_conv.py
+  echo -e "${B}Building policies.json...${N}"
+  python build_policies.py \
+    --extracted extracted.json \
+    --policy-source /root/policy.json \
+    --email "$email" \
+    $UBLOCK_FLAG \
+    --output /usr/local/share/policy-test-tool/policies.json \
+    || fail "${R}Failed to build policies.json${N}"
 
-  for policy in ManagedBookmarks OpenNetworkConfiguration WebAppInstallForceList; do
-    val=$(jq ".policyValues.chrome.policies.${policy}.value" /root/policy.json)
-    if [[ "$val" != "null" && -n "$val" ]]; then
-      export ${policy}="\"${policy}\": ${val},"
-    else
-      export ${policy}=""
-    fi
-  done
-
-  echo -e "${B}Extracting extension configs from extracted.json...${N}"
-  extBlock=$(python3 -c "import json, sys; d=json.load(open('extracted.json')); print(json.dumps(d.get('extensions', {}), indent=2))")
-
-  cat > /usr/local/share/policy-test-tool/policies.json << EOF
-{
-  "policy_user": "$email",
-  "managed_users": ["*"],
-  "use_universal_signing_keys": true,
-  "user": {
-    ${ManagedBookmarks}
-    ${OpenNetworkConfiguration}
-    ${WebAppInstallForcelist}
-    ${ExtensionInstallForcelist}
-    "ExtensionSettings": ${extSettings},
-    "URLBlocklist": [],
-    "EditBookmarksEnabled": true,
-    "ChromeOsMultiProfileUserBehavior": "unrestricted",
-    "DeveloperToolsAvailability": 1,
-    "DefaultPopupsSetting": 1,
-    "AllowDeletingBrowserHistory": true,
-    "AllowDinosaurEasterEgg": true,
-    "IncognitoModeAvailability": 0,
-    "AllowScreenLock": true,
-    "PasswordManagerEnabled": true,
-    "TaskManagerEndProcessEnabled": true,
-    "ForceGoogleSafeSearch": false,
-    "ForceYouTubeRestrict": 0,
-    "EasyUnlockAllowed": true,
-    "DisableSafeBrowsingProceedAnyway": false,
-    "DefaultCookiesSetting": 1,
-    "VmManagementCliAllowed": true,
-    "WifiSyncAndroidAllowed": true,
-    "DeveloperToolsDisabled": false,
-    "InstantTetheringAllowed": true,
-    "NearbyShareAllowed": true,
-    "PrintingEnabled": true,
-    "SmartLockSigninAllowed": true,
-    "PhoneHubAllowed": true,
-    "DnsOverHttpsMode": "automatic",
-    "BrowserLabsEnabled": true,
-    "SafeSitesFilterBehavior": 0,
-    "SafeBrowsingProtectionLevel": 0,
-    "DownloadRestrictions": 0,
-    "NetworkPredictionOptions": 0,
-    "ArcEnabled": true,
-    "ArcPolicy": "{\"applications\":[],\"playStoreMode\":\"BLACKLIST\"}",
-    "UserBorealisAllowed": true,
-    "VpnConfigAllowed": true,
-    "CrostiniAllowed": true
-  },
-  "extensions": ${extBlock},
-  "device": {}
-}
-EOF
-  cat <<EOF | xargs -0 echo -ne
-${G}Policy file successfully written!
-Location: /usr/local/share/policy-test-tool/policies.json
-Configured for: ${email}${N}"
-EOF
+  echo -e "${G}Policy file successfully written!\nLocation: /usr/local/share/policy-test-tool/policies.json\nConfigured for: ${email}${N}"
   echo -e "${G}Emerging chrome-binary-tests to get fake_dmserver...${N}"
   while [[ ! -f /usr/local/libexec/chrome-binary-tests/fake_dmserver ]]; do
     emerge chrome-binary-tests || echo -e "${R}Failed to emerge fake_dmserver, retrying...${N}"
