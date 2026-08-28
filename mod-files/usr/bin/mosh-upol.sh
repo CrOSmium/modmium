@@ -134,6 +134,18 @@ grabpolicy(){
   full_menu
 }
 
+grabpol2(){
+  employ grabpol2f
+  menu_reset
+  full_menu
+}
+
+grabpol2f(){
+  echo -e "Grabbing policies..."
+  error=$(python /usr/share/.policy-test-tool/decode_policy.py 2>&1) \
+    || fail "${R}Unable to decode policies!\n${N}${error}"
+}
+
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
@@ -144,16 +156,16 @@ menu_logo() {
 menu_reset() {
   menuText="\nPolicy Test Tool [User Policy Editor]\n${D}[Please note that this will set your policies to the recommended defaults for Modmium,\nif you'd like to edit them, they can be found in '${N}/usr/local/share/policy-test-tool/policies.json${D}']${N}\n"
   if [[ -f $DEVINSTALL_FILE || -f $POLTEST_FILE ]]; then
-    options=("Run Policy Editor" "Update policy.json [from downloads]" "Reinstall" "Exit")
-    functions=("install" "grabpolicy" "reinstall" "quit")
+    options=("Run Policy Editor" "Extract policies from current account" "Update policy.json [from downloads]" "Reinstall" "Exit")
+    functions=("install" "grabpol2" "grabpolicy" "reinstall" "quit")
   else
-    options=("Run Policy Editor (Install)" "Update policy.json [from downloads]" "Exit")
-    functions=("install" "grabpolicy" "quit")
+    options=("Run Policy Editor (Install)" "Extract policies from current account" "Update policy.json [from downloads]" "Exit")
+    functions=("install" "grabpol2" "grabpolicy" "quit")
   fi
   if [[ ! -f $POLICYFILE ]]; then
-    options=("Grab policy.json from Downloads" "Exit")
-    functions=("grabpolicy" "quit")
-    menuText="\nMOSH user policy editor\n\n${R}PLEASE LOGIN TO YOUR ACCOUNT, GO TO ${N}chrome://policy${R} AND SAVE IT TO THE ROOT OF YOUR DOWNLOADS FOLDER.\n${N}After that, run 'Grab policy.json from Downloads', then remove the account (or powerwash)."
+    options=("Extract policies from current account" "Grab policy.json from Downloads" "Exit")
+    functions=("grabpol2" "grabpolicy" "quit")
+    menuText="\nMOSH user policy editor\n\n${R}PLEASE LOGIN TO YOUR ACCOUNT, GO TO ${N}chrome://policy${R} AND SAVE IT TO THE ROOT OF YOUR DOWNLOADS FOLDER.\n${N}After that, run 'Grab policy.json from Downloads', then remove the account (or powerwash).\n\n${R}If ${N}chrome://policy${R} is blocked${N} (${D}or you're feeling lazy${N}), (${R}MAKE SURE YOU'RE LOGGED IN${N}) press the 'Extract Policies from current account',\nthen remove the account (or powerwash).\n"
   fi
   num_options=${#options[@]}
 }
