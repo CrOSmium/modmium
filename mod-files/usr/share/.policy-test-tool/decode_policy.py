@@ -5,6 +5,7 @@ import json
 import argparse
 import subprocess
 import re
+import hashlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -21,8 +22,11 @@ SESSION_MANAGER_SERVICE   = "org.chromium.SessionManager"
 SESSION_MANAGER_PATH      = "/org/chromium/SessionManager"
 SESSION_MANAGER_INTERFACE = "org.chromium.SessionManagerInterface"
 
+ACCOUNT_TYPE_DEVICE  = 0
 ACCOUNT_TYPE_USER    = 1
-POLICY_DOMAIN_CHROME = 0
+
+POLICY_DOMAIN_CHROME     = 0
+POLICY_DOMAIN_EXTENSIONS = 1
 
 POLICY_OPTIONS_MANDATORY   = 0
 POLICY_OPTIONS_RECOMMENDED = 1
@@ -58,9 +62,14 @@ def _field_varint(field_num: int, value: int) -> bytes:
 def _field_bytes(field_num: int, data: bytes) -> bytes:
     return _varint((field_num << 3) | 2) + _varint(len(data)) + data
 
-def build_policy_descriptor(account_id: str) -> bytes:
-    blob  = _field_varint(1, ACCOUNT_TYPE_USER)
-    blob += _field_bytes(2, account_id.encode("utf-8"))
+def build_policy_descriptor(account_type: int, account_id: str = "", domain: int = POLICY_DOMAIN_CHROME, component_id: str = "") -> bytes:
+    blob  = _field_varint(1, account_type)
+    if account_id:
+        blob += _field_bytes(2, account_id.encode("utf-8"))
+    if domain != POLICY_DOMAIN_CHROME:
+        blob += _field_varint(3, domain)
+    if component_id:
+        blob += _field_bytes(4, component_id.encode("utf-8"))
     return blob
 
 def _run_dbus(method: str, *args) -> str:
@@ -118,11 +127,62 @@ def get_active_account_id() -> str:
     print(f"  Found active session: {account_id}")
     return account_id
 
-def fetch_policy_blob(account_id: str) -> bytes:
-    descriptor_blob = build_policy_descriptor(account_id)
+def get_user_hash(account_id: str) -> str:
+    for salt_path in ["/home/.shadow/salt", "/var/lib/system_salt"]:
+        if os.path.exists(salt_path):
+            with open(salt_path, "rb") as f:
+                system_salt = f.read()
+            break
+    else:
+        raise RuntimeError("No system salt file found at /home/.shadow/salt or /var/lib/system_salt")
+    username_lower = account_id.lower().encode("utf-8")
+    user_hash = hashlib.sha1(system_salt + username_lower).hexdigest()
+    print(f"  User hash: {user_hash}")
+    return user_hash
+
+def get_extension_ids(user_hash: str) -> list:
+    ext_dir = f"/home/user/{user_hash}/Extensions"
+    if not os.path.isdir(ext_dir):
+        print(f"  Extensions directory not found: {ext_dir}")
+        return []
+    ids = [
+        name for name in os.listdir(ext_dir)
+        if os.path.isdir(os.path.join(ext_dir, name))
+        and re.fullmatch(r'[a-p]{32}', name)
+    ]
+    print(f"  Found {len(ids)} extensions")
+    return ids
+
+def fetch_policy_blob(account_type: int, account_id: str = "", domain: int = POLICY_DOMAIN_CHROME, component_id: str = "") -> bytes:
+    descriptor_blob = build_policy_descriptor(account_type, account_id, domain, component_id)
     dbus_arg = "array:byte:" + ",".join(f"0x{b:02x}" for b in descriptor_blob)
     output = _run_dbus("RetrievePolicyEx", dbus_arg)
     return _parse_byte_array(output)
+
+def fetch_extension_policy(account_id: str, ext_id: str) -> dict | None:
+    try:
+        blob = fetch_policy_blob(ACCOUNT_TYPE_USER, account_id, POLICY_DOMAIN_EXTENSIONS, ext_id)
+    except RuntimeError:
+        return None
+
+    try:
+        fetch_response = PolicyFetchResponse()
+        fetch_response.ParseFromString(blob)
+        if not fetch_response.policy_data:
+            return None
+
+        policy_data = PolicyData()
+        policy_data.ParseFromString(fetch_response.policy_data)
+        if not policy_data.policy_value:
+            return None
+
+        raw = policy_data.policy_value.decode("utf-8", errors="replace")
+        parsed = json.loads(raw)
+        if not parsed:
+            return None
+        return parsed
+    except Exception:
+        return None
 
 def get_policy_level(policy_proto):
     if not policy_proto.HasField("value"):
@@ -171,12 +231,7 @@ def decode_cloud_policy_settings(settings, scope="user", source="sourceCloud"):
         elif type_name == "StringListPolicyProto":
             value = decode_string_list_proto(proto)
         elif type_name == "StringPolicyProto":
-            raw = proto.value
-            try:
-                parsed = json.loads(raw)
-                value = parsed if isinstance(parsed, (dict, list)) else raw
-            except (json.JSONDecodeError, ValueError):
-                value = raw
+            value = proto.value
         else:
             value = str(proto)
 
@@ -188,8 +243,7 @@ def decode_cloud_policy_settings(settings, scope="user", source="sourceCloud"):
 
     return policies
 
-def decode_policy_fetch_response(blob: bytes, scope="user",
-                                  source="sourceCloud") -> dict:
+def decode_policy_fetch_response(blob: bytes, scope="user", source="sourceCloud") -> dict:
     if not HAS_PROTOS:
         raise RuntimeError(
             f"Chromium proto _pb2 files not found or failed to import.\n"
@@ -208,20 +262,6 @@ def decode_policy_fetch_response(blob: bytes, scope="user",
     policy_data = PolicyData()
     policy_data.ParseFromString(fetch_response.policy_data)
 
-    identity = {}
-    for attr, key in [
-        ("device_id",          "client_id"),
-        ("annotated_location", "device_location"),
-        ("annotated_asset_id", "asset_id"),
-        ("display_domain",     "display_domain"),
-        ("machine_name",       "machine_name"),
-    ]:
-        try:
-            if policy_data.HasField(attr):
-                identity[key] = getattr(policy_data, attr)
-        except ValueError:
-            pass
-
     is_managed = (policy_data.state == PolicyData.ACTIVE)
 
     settings = CloudPolicySettings()
@@ -229,10 +269,75 @@ def decode_policy_fetch_response(blob: bytes, scope="user",
 
     policies = decode_cloud_policy_settings(settings, scope, source)
 
-    return {
+    return policies, policy_data, is_managed
+
+def main():
+    parser = argparse.ArgumentParser(
+        description=f"Fetch ChromeOS user and device policy via D-Bus and write to {OUTPUT_PATH}"
+    )
+    parser.add_argument("--account-id")
+    parser.add_argument("--input")
+    parser.add_argument("--source", default="sourceCloud", choices=list(POLICY_SOURCE.values()))
+    parser.add_argument("--no-extensions", action="store_true")
+    args = parser.parse_args()
+
+    if args.input:
+        print(f"Reading binary blob from {args.input}")
+        with open(args.input, "rb") as f:
+            blob = f.read()
+        user_policies, policy_data, is_managed = decode_policy_fetch_response(blob, "user", args.source)
+        device_policies = {}
+        identity = {}
+        account_id = args.account_id
+        user_hash = None
+    else:
+        print("Fetching policy via D-Bus...")
+        account_id = args.account_id or get_active_account_id()
+        print(f"  Using account: {account_id}")
+
+        print("  Fetching user policy...")
+        user_blob = fetch_policy_blob(ACCOUNT_TYPE_USER, account_id)
+        print(f"  Received {len(user_blob)} bytes")
+        user_policies, policy_data, is_managed = decode_policy_fetch_response(user_blob, "user", args.source)
+        print(f"  Decoded {len(user_policies)} user policies")
+
+        print("  Fetching device policy...")
+        device_policies = {}
+        try:
+            device_blob = fetch_policy_blob(ACCOUNT_TYPE_DEVICE)
+            print(f"  Received {len(device_blob)} bytes")
+            device_policies, _, _ = decode_policy_fetch_response(device_blob, "machine", args.source)
+            print(f"  Decoded {len(device_policies)} device policies")
+        except Exception as e:
+            print(f"  Warning: could not fetch device policy: {e}")
+
+        identity = {}
+        for attr, key in [
+            ("device_id",          "client_id"),
+            ("annotated_location", "device_location"),
+            ("annotated_asset_id", "asset_id"),
+            ("display_domain",     "display_domain"),
+            ("machine_name",       "machine_name"),
+        ]:
+            try:
+                if policy_data.HasField(attr):
+                    identity[key] = getattr(policy_data, attr)
+            except ValueError:
+                pass
+
+        user_hash = None
+        if not args.no_extensions:
+            try:
+                user_hash = get_user_hash(account_id)
+            except Exception as e:
+                print(f"  Warning: could not get user hash: {e}")
+
+    all_policies = {**user_policies, **device_policies}
+
+    result = {
         "chromePolicies": {
             "name":     "Chrome Policies",
-            "policies": policies,
+            "policies": all_policies,
         },
         "status": {
             "user": {
@@ -243,42 +348,21 @@ def decode_policy_fetch_response(blob: bytes, scope="user",
             }
         },
         "identity": identity,
+        "extensionPolicies": {},
     }
 
-def main():
-    parser = argparse.ArgumentParser(
-        description=f"Fetch ChromeOS user policy via D-Bus and write to {OUTPUT_PATH}"
-    )
-    parser.add_argument(
-        "--account-id",
-        help="User account email. If omitted, auto-detected from active session."
-    )
-    parser.add_argument(
-        "--input",
-        help="Skip D-Bus, decode this binary blob file instead."
-    )
-    parser.add_argument(
-        "--scope", default="user", choices=["user", "machine"],
-    )
-    parser.add_argument(
-        "--source", default="sourceCloud", choices=list(POLICY_SOURCE.values()),
-    )
-    args = parser.parse_args()
-
-    if args.input:
-        print(f"Reading binary blob from {args.input}")
-        with open(args.input, "rb") as f:
-            blob = f.read()
-    else:
-        print("Fetching policy via D-Bus...")
-        account_id = args.account_id or get_active_account_id()
-        print(f"  Using account: {account_id}")
-        blob = fetch_policy_blob(account_id)
-        print(f"  Received {len(blob)} bytes")
-
-    print("Decoding PolicyFetchResponse...")
-    result = decode_policy_fetch_response(blob, args.scope, args.source)
-    print(f"  Decoded {len(result['chromePolicies']['policies'])} policies")
+    if not args.input and not args.no_extensions and user_hash and account_id:
+        print("Fetching extension policies...")
+        ext_ids = get_extension_ids(user_hash)
+        for ext_id in ext_ids:
+            print(f"  Fetching policy for {ext_id}...")
+            ext_policy = fetch_extension_policy(account_id, ext_id)
+            if ext_policy:
+                result["extensionPolicies"][ext_id] = ext_policy
+                print(f"    Got {len(ext_policy)} entries")
+            else:
+                print(f"    No policy")
+        print(f"  Extension policies fetched: {len(result['extensionPolicies'])}")
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
