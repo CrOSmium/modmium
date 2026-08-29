@@ -31,6 +31,8 @@ changeShell(){
     sleep 3
     exit
   fi
+  menu_reset
+  full_menu
 }
 
 menu_reset(){
