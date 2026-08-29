@@ -26,7 +26,7 @@ changeShell(){
     fail "${R}Could not find ${shellPref}, exiting...${N}"
   else
     echo -e "${G}${shellPref} found at $(which ${shellPref})${N}"
-    echo -e "Setting shell...${N}"
+    echo -e "${Y}Setting shell...${N}"
     which ${shellPref} > $shellfile
     echo -e "${G}Done!${N}"
     sleep 3
