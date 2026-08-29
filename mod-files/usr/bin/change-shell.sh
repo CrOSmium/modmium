@@ -15,6 +15,12 @@ fi
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
+fail(){
+  echo -e "$1"
+  sleep 3
+  exit 1
+}
+
 changeShell(){
   tput cnorm
   stty echo
@@ -32,8 +38,6 @@ changeShell(){
     sleep 3
     exit
   fi
-  menu_reset
-  full_menu
 }
 
 menu_reset(){
