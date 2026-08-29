@@ -1,4 +1,5 @@
 #!/bin/bash
+# written by fd21d69f9adc05e461ac
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
