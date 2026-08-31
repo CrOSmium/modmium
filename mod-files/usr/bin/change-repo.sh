@@ -57,7 +57,7 @@ setRepo(){
 changeRepo(){
   tput cnorm
   stty echo
-  echo -e "${R}WARNING. Changing the source repository allows the owner of the repository to ${UN}execute any code${RUN} on this device.${N}\n Be certain you trust the developers. Unless you own the repository yourself and are a developer, you should probably not use this."
+  echo -e "${R}WARNING. Changing the source repository allows the owner of the repository to ${UN}execute any code${RUN} on this device.${N}\nBe certain you trust the developers. Unless you own the repository yourself and are a developer, you should probably not use this."
   echo -ne "Enter the URL to the repository: "
   read -re URL
 
@@ -97,7 +97,7 @@ menu_reset(){
   num_options=${#options[@]}
   menuText=$(cat <<EOF
 Your current repository is ${B}${repository:-$originalRepository}${N}
-You can change what repository will be used for updating modmium.
+You can change what repository will be used for updating Modmium.
 EOF
   )
   num_options=${#options[@]}
