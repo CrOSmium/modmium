@@ -85,6 +85,7 @@ resetRepo(){
   if [[ $REPLY =~ ^[Nn] ]]; then
     fail "${R}Exiting...${N}"
   fi
+  parseUrl "${originalRepository}"
   tput civis
   stty -echo
   setRepo
