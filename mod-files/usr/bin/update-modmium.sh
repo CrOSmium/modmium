@@ -117,9 +117,9 @@ updateModmium() {
   cd /mnt/stateful_partition/git
   [[ -d modmium ]] && rm -rf modmium
   if has_ssh_key; then
-    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${repo:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${repo:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
   dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/${owner:-CrOsmium}/${owner:-modmium} with details of changes you made, if any...${N}"
@@ -258,9 +258,9 @@ installCros() {
   cd /mnt/stateful_partition/git
   [[ -d modmium ]] && rm -rf modmium
   if has_ssh_key; then
-    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${repo:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${repo:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
