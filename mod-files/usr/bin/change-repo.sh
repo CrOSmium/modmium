@@ -11,6 +11,9 @@ if [[ -d /usr/local/nix/store ]]; then
   source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
   unset LD_LIBRARY_PATH
 fi
+owner=$(cat /usr/share/.gitowner)
+repo=$(cat /usr/share/.gitrepo)
+[[ ( -n $owner ) && ( -n $repo ) ]] && repository="https://github.com/${owner}/${repo}"
 originalRepository="https://github.com/CrOSmium/modmium"
 
 # -- MAIN SCRIPT --
@@ -39,16 +42,14 @@ parseUrl(){
   export owner="$(echo "$path" | cut -d'/' -f1)"
   export repo="$(echo "$path" | cut -d'/' -f2)"
 
-  if [[ -z "$owner" || -z "$repo" ]]; then
-    fail "${R}Could not parse owner/repo from ${1}${N}"
-  fi
+  [[ -z "$owner" || -z "$repo" ]] && fail "${R}Could not parse owner/repo from ${1}${N}"
 }
 
 setRepo(){
   echo -e "${Y}Changing repository...${N}"
   echo "${owner}" >/usr/share/.gitowner
   echo "${repo}" >/usr/share/.gitrepo
-  echo -e "${G}Done!"
+  echo -e "${G}Done!${N}"
   sleep 3
   exit
 }
