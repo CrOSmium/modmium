@@ -13,6 +13,8 @@ fail(){
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
+owner=$(cat /usr/share/.gitowner)
+repo=$(cat /usr/share/.gitrepo)
 
 if ! which git &>/dev/null || ! which file &>/dev/null; then
   echo -e "${R}Dependencies not installed, installing...${N}"
@@ -115,12 +117,12 @@ updateModmium() {
   cd /mnt/stateful_partition/git
   [[ -d modmium ]] && rm -rf modmium
   if has_ssh_key; then
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
-  dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/crosmium/modmium with details of changes you made, if any...${N}"
+  dropModFiles || fail "${R}Failed to drop updated files, please make an issue report on https://github.com/${owner:-CrOsmium}/${owner:-modmium} with details of changes you made, if any...${N}"
   echo -e "${G}Cleaning up... (DO NOT RESTART YOUR DEVICE)${N}"
   rm -rf /mnt/stateful_partition/git/modmium
   echo "$branch" > /.branch # actually update branch
@@ -256,9 +258,9 @@ installCros() {
   cd /mnt/stateful_partition/git
   [[ -d modmium ]] && rm -rf modmium
   if has_ssh_key; then
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch git@github.com:${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   else
-    git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}"
+    git clone --depth 1 -b $branch --single-branch https://github.com/${owner:-CrOsmium}/${owner:-modmium}.git || fail "${R}Failed to clone repository, exiting...${N}"
   fi
   echo -e "${G}Successfully cloned repository!${N} Dropping new files..."
 
@@ -437,6 +439,10 @@ changeShell(){
   runscript /usr/bin/change-shell.sh
 }
 
+changeRepo(){
+  runscript /usr/bin/change-repo.sh
+}
+
 toggleEnrollment(){
   runscript /usr/bin/toggle-enrollment.sh
 }
@@ -460,8 +466,8 @@ fi
 menu_reset() {
   menuText="\nModmium Manager\n"
   [[ $unconverted_fs == $FLAGS_TRUE ]] && menuText="\nModmium Manager\n\nNOTICE: ${Y}You are running Modmium on ${R}ext2${Y}, the next time you change your ChromeOS version, you will be upgraded to ${G}ext4${Y}.${N}\n"
-  options=("Update Modmium" "Change ChromeOS Version" "Change Shell" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
-  functions=("updateModmium" "installCros" "changeShell" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
+  options=("Update Modmium" "Change ChromeOS Version" "Change Shell" "Change Source Repository" "Swap Boot Priority" "Toggle Enrollment" "Add Local Account" "Feature Toggles" "Exit")
+  functions=("updateModmium" "installCros" "changeShell" "changeRepo" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
 }
 
