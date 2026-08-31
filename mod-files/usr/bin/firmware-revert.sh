@@ -1,7 +1,7 @@
 #!/bin/bash
 # Written by codenerd87 for modmium
 fail(){
-    printf "An error has occured. This script is scary so join https://discord.gg/ATmWKdEUfC for support.\n"
+    printf "An error has occured. This script is scary so join https://discord.gg/ZHnqxNDQXA for support.\n"
     printf "$1\n"
     exit
 }
