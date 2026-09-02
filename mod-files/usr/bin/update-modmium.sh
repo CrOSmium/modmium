@@ -83,7 +83,6 @@ askBranch(){
 }
 
 dropModFiles() {
-  rm -f /usr/sbin/device_managementd # cp refuses to write over it if it exists and is running
   modFiles=$(find modmium/mod-files -mindepth 1 -name "*")
   for file in $modFiles; do
     if [[ -d $file ]]; then
