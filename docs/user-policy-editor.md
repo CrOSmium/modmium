@@ -16,6 +16,8 @@ We use a set of Google tools named policy-test-tool and fake_dmserver (see [the 
 ## Obtaining your policy file after install
 1. Enroll into your enterprise and login to your enterprise account
 2. Open `chrome://policy` and export your policy file to your Downloads folder, do not rename the file, it must be in the root of your `Downloads` folder.
+> [!NOTE]
+> If `chrome://policy` is blocked, instead of downloading the policy file, just press `Extract policies from current account`, and skip to step 5.
 3. Open VT-2 and navigate to `Edit User Policies`
 4. Select `Grab policy.json from Downloads`
 5. Your policy file is now saved, it should show the menu that says `Install`, if it doesn't, check that you actually placed your policy file into downloads, and that the name is the same as it was originally. 
