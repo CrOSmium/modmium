@@ -44,10 +44,14 @@ install(){
     echo -e "${G}Installing required dependencies...${N}"
     printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
     ldconfig
-    emerge protobuf-python
     touch $DEVINSTALL_FILE
   fi
 
+  if [[ -f $DEVINSTALL_FILE ]] && ! python3 -c "import google.protobuf" &>/dev/null; then
+    echo -e "${G}Installing protobuf-python...${N}"
+    emerge protobuf-python || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
+  fi
+  
   cp /etc/chrome_dev.conf /etc/.chrome_dev.conf
 
   cleanup(){
