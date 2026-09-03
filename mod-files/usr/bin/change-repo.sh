@@ -57,7 +57,7 @@ setRepo(){
 changeRepo(){
   tput cnorm
   stty echo
-  echo -e "${R}WARNING. Changing the source repository allows the owner of the repository to ${UN}execute any code${RUN} on this device.${N}\nBe certain you trust the developers. Unless you own the repository yourself and are a developer, you should probably not use this."
+  echo -e "${R}WARNING: Changing the source repository allows the owner of the repository to ${UN}execute any code${RUN} on this device.${N}\nBe ${R}certain${N} you trust the developers. Unless you own the repository yourself and are a developer, you should probably not use this. ${R}If you don't understand any of this, GO BACK NOW.${N}"
   echo -ne "Enter the URL to the repository: "
   read -re URL
 
