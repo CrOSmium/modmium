@@ -49,7 +49,7 @@ setRepo(){
   echo -e "${Y}Changing repository...${N}"
   echo "${owner}" >/usr/share/.gitowner
   echo "${repo}" >/usr/share/.gitrepo
-  echo -e "${G}Done!${N}"
+  echo -e "${G}Done, you can use the updater to update to the repository you selected!${N}"
   sleep 3
   exit
 }
@@ -80,7 +80,7 @@ changeRepo(){
 resetRepo(){
   tput cnorm
   stty echo
-  echo -e "Would you like to ${B}reset${N} the source repository to the official CrOsmium version? [Y/n]"
+  echo -e "Would you like to ${B}reset${N} the source repository to the official Modmium (by CrOSmium)? [Y/n]"
   read -re
   if [[ $REPLY =~ ^[Nn] ]]; then
     fail "${R}Exiting...${N}"
