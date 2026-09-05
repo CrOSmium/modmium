@@ -27,11 +27,11 @@ updateMix(){
 
 menu_reset(){
   if [[ -f $MARKER ]]; then
-  options=("Install Nix" "Update ${G}Mix${N}" "Go Back")
-  functions=("installNix" "updateMix" "quit")
+    options=("Install Nix" "Update ${G}Mix${N}" "Go Back")
+    functions=("installNix" "updateMix" "quit")
   else
-  options=("Install Nix" "Go Back")
-  functions=("installNix" "quit")
+    options=("Install Nix" "Go Back")
+    functions=("installNix" "quit")
   fi
   num_options=${#options[@]}
   menuText=$(cat <<EOF
