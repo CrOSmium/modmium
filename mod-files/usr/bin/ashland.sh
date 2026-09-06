@@ -94,7 +94,13 @@ uninstallAshland() {
   [[ $running == 1 ]] && asChronos quit &>/dev/null
   rm -f /usr/local/bin/ashland "$ashJob"
   rm -rf "$ashDir"
-  echo -e "${G}Removed.${N} Chrome's debugging port was left enabled, disable it under Feature Toggles if you want."
+  echo -e "${G}Ashland removed successfully! ${N}"
+  if [[ $cdp == 1 ]]; then
+    sed -i '/^--remote-debugging-port=/d;/^--remote-allow-origins=/d' /etc/chrome_dev.conf
+    echo -e "${Y}Disabling Chrome's debugging port.${N} Restarting the UI, MOSH will close."
+    sleep 3
+    restart ui
+  fi
   sleep 2.5
   menu_reset
   full_menu
