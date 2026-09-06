@@ -98,6 +98,7 @@ menu_reset(){
   menuText=$(cat <<EOF
 Your current repository is ${B}${repository:-$originalRepository}${N}
 You can change what repository will be used for updating Modmium.
+
 EOF
   )
   num_options=${#options[@]}
