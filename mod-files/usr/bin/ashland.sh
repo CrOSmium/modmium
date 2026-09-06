@@ -198,7 +198,7 @@ EOF
 tput civis
 
 menu_reset() {
-  menuText="\nManage Ashland\n"
+  menuText="\nManage Ashland (Tiled Window Manager)\n"
   options=()
   checkStatus
   if [[ $installed == 0 ]]; then
