@@ -186,7 +186,7 @@ menu_reset() {
     fi
     options+=("Layout [$layout]")
     options+=("Gaps [$gapsIn/$gapsOut]")
-    options+=("Uninstall ashland")
+    options+=("Uninstall Ashland")
     functions=("toggleAshland" "toggleAutostart" "cycleLayout" "cycleGaps" "uninstallAshland" "quit")
   fi
   options+=("Exit")
