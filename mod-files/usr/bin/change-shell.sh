@@ -48,6 +48,7 @@ menu_reset(){
 Your current shell is ${B}$(basename ${shell:-bash})${N}
 You can change what shell will be used for root in this menu.
 Ensure the shell is in \$PATH (nix-installed shells are supported).
+
 EOF
   )
   num_options=${#options[@]}
