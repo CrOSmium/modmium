@@ -182,7 +182,7 @@ menu_reset() {
     if [[ $autostart == 1 ]]; then
       options+=("Autostart on Reboot [ON]")
     else
-      options+=("Autostart ashland on reboot [OFF]")
+      options+=("Autostart on Reboot [OFF]")
     fi
     options+=("Layout [$layout]")
     options+=("Gaps [$gapsIn/$gapsOut]")
