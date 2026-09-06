@@ -24,7 +24,7 @@ if ! which python3 &>/dev/null; then
   ldconfig # reload shared libraries to include python libs
 fi
 
-tarball="https://codeload.github.com/pilotbellyt-spec/ashland/tar.gz/refs/heads/main"
+tarball="https://codeload.github.com/CrOSmium/ashland/tar.gz/refs/heads/main"
 ashDir="/usr/local/lib/ashland"
 ashConf="/home/chronos/user/.config/ashland/ashland.conf"
 ashJob="/etc/init/ashland.conf"
