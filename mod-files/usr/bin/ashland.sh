@@ -177,7 +177,7 @@ menu_reset() {
     if [[ $running == 1 ]]; then
       options+=("Toggle Ashland [ON]")
     else
-      options+=("Toggle ashland [OFF]")
+      options+=("Toggle Ashland [OFF]")
     fi
     if [[ $autostart == 1 ]]; then
       options+=("Autostart ashland on reboot [ON]")
