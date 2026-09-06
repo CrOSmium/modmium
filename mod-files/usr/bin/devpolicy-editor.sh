@@ -104,7 +104,7 @@ ENTERPRISE=(
   "DeviceLoginScreenInputMethods" "DeviceLoginScreenLocales"
   "ManagedGuestSessionPrivacyWarningsEnabled" "DeviceLocalAccountAutoLoginId"
   "DeviceLocalAccountAutoLoginDelay" "DeviceLocalAccountAutoLoginBailoutEnabled"
-  "DeviceLocalAccountPromptForNetworkWhenOffline" "KioskChromeAppsForceAllowed"
+  "DeviceLocalAccountPromptForNetworkWhenOffline"
 )
 
 MISC=(
