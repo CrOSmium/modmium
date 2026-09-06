@@ -82,7 +82,7 @@ installAshland() {
   if [[ $cdp == 0 ]]; then
     echo -e "${Y}ashland needs Chrome's debugging port, which requires a UI restart.${N}"
     bash "$ashDir/enable-cdp.sh" --no-restart &>/dev/null || fail "${R}Could not edit /etc/chrome_dev.conf.${N}"
-    echo -e "${G}Installed!${N} Restarting the UI, MOSH will close."
+    echo -e "${G}Installed!${N} \n${R}Restarting UI... (MOSH will close)${N}"
     sleep 3
     restart ui
   fi
@@ -114,7 +114,7 @@ uninstallAshland() {
   echo -e "${G}Ashland removed successfully! ${N}"
   if [[ $cdp == 1 ]]; then
     sed -i '/^--remote-debugging-port=/d;/^--remote-allow-origins=/d' /etc/chrome_dev.conf
-    echo -e "${Y}Disabling Chrome's debugging port.${N} Restarting the UI, MOSH will close."
+    echo -e "${R}Restarting UI... (MOSH will close)${N}"
     sleep 3
     restart ui
   fi
