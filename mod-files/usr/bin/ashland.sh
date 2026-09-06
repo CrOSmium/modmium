@@ -62,8 +62,7 @@ checkStatus() {
   gapsOut=$(readOption gaps_out)
 }
 
-installAshland() {
-  clear
+fetchAshland() {
   echo -e "Downloading ashland..."
   rm -rf /tmp/ashland-src
   mkdir -p /tmp/ashland-src
@@ -75,6 +74,11 @@ installAshland() {
   echo -e "Installing..."
   HOME=/home/chronos/user bash "$ashDir/install.sh" &>/dev/null || fail "${R}Install failed.${N}"
   chown -R chronos:chronos "$ashDir" /home/chronos/user/.config/ashland
+}
+
+installAshland() {
+  clear
+  fetchAshland
   if [[ $cdp == 0 ]]; then
     echo -e "${Y}ashland needs Chrome's debugging port, which requires a UI restart.${N}"
     bash "$ashDir/enable-cdp.sh" --no-restart &>/dev/null || fail "${R}Could not edit /etc/chrome_dev.conf.${N}"
@@ -83,6 +87,19 @@ installAshland() {
     restart ui
   fi
   echo -e "${G}Installed!${N}"
+  sleep 1.67
+  menu_reset
+  full_menu
+}
+
+updateAshland() {
+  clear
+  fetchAshland
+  if [[ $running == 1 ]]; then
+    asChronos quit &>/dev/null
+    asChronos start &>/dev/null
+  fi
+  echo -e "${G}Updated!${N}"
   sleep 1.67
   menu_reset
   full_menu
@@ -217,8 +234,9 @@ menu_reset() {
     fi
     options+=("Layout [$layout]")
     options+=("Gaps [$gapsIn/$gapsOut]")
+    options+=("Update Ashland")
     options+=("Uninstall Ashland")
-    functions=("toggleAshland" "toggleAutostart" "cycleLayout" "cycleGaps" "uninstallAshland" "helpMenu" "quit")
+    functions=("toggleAshland" "toggleAutostart" "cycleLayout" "cycleGaps" "updateAshland" "uninstallAshland" "helpMenu" "quit")
   fi
   options+=("Help")
   options+=("Exit")
