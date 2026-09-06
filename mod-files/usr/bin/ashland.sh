@@ -167,7 +167,7 @@ cycleGaps() {
 tput civis
 
 menu_reset() {
-  menuText="\nTiling Window Manager\n"
+  menuText="\nManage Ashland\n"
   options=()
   checkStatus
   if [[ $installed == 0 ]]; then
