@@ -169,6 +169,31 @@ cycleGaps() {
   full_menu
 }
 
+helpMenu() {
+  clear
+  cat <<EOF
+
+${B}Ashland Keybinds${N}
+
+All keybinds are ${G}Search${N}+${G}Shift${N}.
+
+${G}Enter${N}          spawn window
+${G}Q${N}              kill window
+${G}J / K${N}          focus next / prev
+${G}Arrows${N}         focus by direction
+${G}H / L${N}          move window prev / next
+${G}F${N}              toggle floating
+${G}D / M / G / O${N}  dwindle / master / grid / monocle
+${G}- / =${N}          master ratio
+${G}R${N}              retile
+
+-- Press any key to return --
+EOF
+  read -n 1
+  menu_reset
+  full_menu
+}
+
 # -- MAIN SCRIPT --
 tput civis
 
@@ -178,7 +203,7 @@ menu_reset() {
   checkStatus
   if [[ $installed == 0 ]]; then
     options+=("Install Ashland")
-    functions=("installAshland" "quit")
+    functions=("installAshland" "helpMenu" "quit")
   else
     if [[ $running == 1 ]]; then
       options+=("Toggle Ashland [ON]")
@@ -193,8 +218,9 @@ menu_reset() {
     options+=("Layout [$layout]")
     options+=("Gaps [$gapsIn/$gapsOut]")
     options+=("Uninstall Ashland")
-    functions=("toggleAshland" "toggleAutostart" "cycleLayout" "cycleGaps" "uninstallAshland" "quit")
+    functions=("toggleAshland" "toggleAutostart" "cycleLayout" "cycleGaps" "uninstallAshland" "helpMenu" "quit")
   fi
+  options+=("Help")
   options+=("Exit")
   num_options=${#options[@]}
 }
