@@ -138,7 +138,7 @@ cycleLayout() {
       break
     fi
   done
-  echo -e "Switching to ${B}$layout${N}..."
+  echo -e "Changing layout to ${B}$layout${N}..."
   writeOption layout "$layout"
   [[ $running == 1 ]] && asChronos layout "$layout" &>/dev/null
   sleep 1
