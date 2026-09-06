@@ -14,6 +14,8 @@ as_system() {
 selected_index=0
 branch=$(cat /.branch)
 modver=$(cat /usr/share/.version)
+shellfile=/root/.modshell
+shell=$(cat $shellfile)
 # -----------------------
 
 # TUI colors :D
@@ -93,6 +95,7 @@ runscript() {
 }
 
 selector() {
+  shell=$(cat $shellfile)
   for option in ${!options[@]}; do
     if [[ $selected_index == $option ]]; then
       ${functions[$option]}
