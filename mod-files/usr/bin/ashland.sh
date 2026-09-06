@@ -175,7 +175,7 @@ menu_reset() {
     functions=("installAshland" "quit")
   else
     if [[ $running == 1 ]]; then
-      options+=("Toggle ashland [ON]")
+      options+=("Toggle Ashland [ON]")
     else
       options+=("Toggle ashland [OFF]")
     fi
