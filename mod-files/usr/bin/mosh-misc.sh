@@ -58,7 +58,7 @@ credits(){
 tput civis # :whale:
 
 menu_reset() {
-  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Install/Manage Tiling Window Manager" "Credits" "Go back")
+  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Credits" "Go back")
   functions=("modsplash"  "cr3nroll" "erevert" "prenix" "tilingWm" "credits" "quit")
   num_options=${#options[@]}
 }
