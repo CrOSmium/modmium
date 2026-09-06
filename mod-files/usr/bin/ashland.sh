@@ -171,7 +171,7 @@ menu_reset() {
   options=()
   checkStatus
   if [[ $installed == 0 ]]; then
-    options+=("Install ashland")
+    options+=("Install Ashland")
     functions=("installAshland" "quit")
   else
     if [[ $running == 1 ]]; then
