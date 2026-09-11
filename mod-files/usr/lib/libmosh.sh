@@ -96,7 +96,6 @@ runscript() {
 }
 
 selector() {
-  shell=$(cat $shellfile)
   for option in ${!options[@]}; do
     if [[ $selected_index == $option ]]; then
       ${functions[$option]}
