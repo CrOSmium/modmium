@@ -15,7 +15,8 @@ selected_index=0
 branch=$(cat /.branch)
 modver=$(cat /usr/share/.version)
 shellfile=/root/.modshell
-shell=$(<"$shellfile") 2>/dev/null || echo "bash"
+shell="bash"
+[ -s "$shellfile" ] && shell=$(<"$shellfile")
 # -----------------------
 
 # TUI colors :D
