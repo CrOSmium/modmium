@@ -215,7 +215,7 @@ EOF
 tput civis
 
 menu_reset() {
-  menuText="\nManage Ashland (Tiled Window Manager)\n[ASHLAND IS A WORK IN PROGRESS]\n"
+  menuText="\nManage Ashland (Tiled Window Manager)\n${R}[ASHLAND IS EXPERIMENTAL, USE AT YOUR OWN RISK]${N}\n"
   options=()
   checkStatus
   if [[ $installed == 0 ]]; then
