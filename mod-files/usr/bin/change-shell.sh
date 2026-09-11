@@ -24,7 +24,7 @@ fail(){
 changeShell(){
   tput cnorm
   stty echo
-  echo -ne "Enter the name of your preferred shell: "
+  echo -ne "\nEnter the name of your preferred shell: "
   read -rep '' shellPref
   tput civis
   stty -echo
@@ -33,9 +33,10 @@ changeShell(){
   else
     echo -e "${G}${shellPref} found at $(which ${shellPref})${N}"
     echo -e "${Y}Setting shell...${N}"
+    sleep 0.4
     which ${shellPref} > $shellfile
     echo -e "${G}Done!${N}"
-    sleep 3
+    sleep 2.5
     exit
   fi
 }
