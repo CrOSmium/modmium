@@ -96,8 +96,8 @@ menu_reset(){
   functions=("changeRepo" "resetRepo" "quit")
   num_options=${#options[@]}
   menuText=$(cat <<EOF
-Your current repository is ${B}${repository:-$originalRepository}${N}
-You can change what repository will be used for updating Modmium.
+\nYour current repository is ${B}${repository:-$originalRepository}${N}
+You can change what repository will be used for updating Modmium.\n
 EOF
   )
   num_options=${#options[@]}
