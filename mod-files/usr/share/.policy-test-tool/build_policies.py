@@ -114,7 +114,7 @@ def main():
     user["ExtensionSettings"] = build_ext_settings(
         user.get("ExtensionInstallForcelist", []),
         args.ublock,
-        args.force-install-exts,
+        args.force_install_exts,
     )
 
     result = {
