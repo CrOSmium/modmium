@@ -78,7 +78,7 @@ EOF
   echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
   read -r install_ublock
 
-  recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji") # TODO: add the id for Securly Classroom
+  recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh") # TODO: add the id for Securly Classroom
 														   # i think this would also fix issue #58
 
   found_ids=()
