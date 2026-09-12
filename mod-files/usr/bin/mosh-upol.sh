@@ -78,11 +78,38 @@ EOF
   echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
   read -r install_ublock
 
+  recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh") # TODO: add the id for Securly Classroom
+														   # i think this would also fix issue #58
+
+  found_ids=()
+  for id in "${recommend_force_ids[@]}"; do
+    if grep -q "$id" /root/policy.json; then
+      found_ids+=("$id")
+    fi
+  done
+
+  if [[ ${#found_ids[@]} -gt 0 ]]; then
+	echo -e "${G}These extension IDs have been found in the force install list:${N}"
+	for id in "${found_ids[@]}"; do
+      echo -e "  - ${B}$id${N}"
+    done
+	echo -ne "${N}These extensions are ${R}known to break${N} when not set to force install. ${G}Would you like to set them to force install? [Y/n]: ${N}"
+	read -r force_exts
+  fi
+
   if [[ $install_ublock =~ ^[Nn]$ ]]; then
     INSTALL_UBLOCK=0
   else
     INSTALL_UBLOCK=1
   fi
+
+  if [[ $force_exts =~ ^[Nn]$ ]]; then
+    FORCE_EXTS=0
+  else
+    FORCE_EXTS=1
+  fi
+
+
 
   rm -rf /usr/local/share/policy-test-tool
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
@@ -92,7 +119,9 @@ EOF
   python policy_dump_converter.py --input-dump /root/policy.json --output-policies extracted.json --policy-user "$email" >/dev/null 2>&1 || fail "${R}Failed to extract policies, do you have a policy.json?${N}"
 
   UBLOCK_FLAG=""
+  FORCE_EXTS_FLAG=""
   [[ "$INSTALL_UBLOCK" == "1" ]] && UBLOCK_FLAG="--ublock"
+  [[ "$FORCE_EXTS" == "1" ]] && UBLOCK_FLAG="--force-install-exts $(IFS=,; echo "${found_ids[*]}")"
 
   echo -e "${B}Building policies.json...${N}"
   python build_policies.py \
@@ -100,6 +129,7 @@ EOF
     --policy-source /root/policy.json \
     --email "$email" \
     $UBLOCK_FLAG \
+	$FORCE_EXTS_FLAG \
     --output /usr/local/share/policy-test-tool/policies.json \
     || fail "${R}Failed to build policies.json${N}"
 
