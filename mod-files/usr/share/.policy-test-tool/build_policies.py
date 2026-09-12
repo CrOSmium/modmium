@@ -46,7 +46,7 @@ PASSTHROUGH_POLICIES = [
     "WebAppInstallForceList",
 ]
 
-def build_ext_settings(forcelist, install_ublock):
+def build_ext_settings(forcelist, install_ublock, force_exts):
     ext_settings = {}
     for entry in forcelist:
         if ";" in entry:
@@ -55,7 +55,10 @@ def build_ext_settings(forcelist, install_ublock):
             ext_id = entry
             update_url = "https://clients2.google.com/service/update2/crx"
         entry_dict = ext_settings.get(ext_id, {})
-        entry_dict["installation_mode"] = "normal_installed"
+        if ext_id in force_exts:
+            entry_dict["installation_mode"] = "force_installed"
+        else:
+            entry_dict["installation_mode"] = "normal_installed"
         entry_dict["update_url"] = update_url
         ext_settings[ext_id] = entry_dict
 
@@ -67,12 +70,16 @@ def build_ext_settings(forcelist, install_ublock):
 
     return ext_settings
 
+def ext_list(s):
+    return [i.strip() for i in s.split(",")] if s else []
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--extracted", required=True, help="Path to extracted.json")
     parser.add_argument("--policy-source", required=True, help="Path to original policy.json (for passthrough fields)")
     parser.add_argument("--email", required=True, help="Target user email")
     parser.add_argument("--ublock", action="store_true", help="Install uBlock Origin")
+    parser.add_argument("--force-install-exts", type=ext_list, help="IDs to keep on force install separated by commas")
     parser.add_argument("--output", required=True, help="Output policies.json path")
     args = parser.parse_args()
 
@@ -107,6 +114,7 @@ def main():
     user["ExtensionSettings"] = build_ext_settings(
         user.get("ExtensionInstallForcelist", []),
         args.ublock,
+        args.force-install-exts,
     )
 
     result = {
