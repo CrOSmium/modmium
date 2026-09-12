@@ -1,5 +1,5 @@
-If you would like to contribute, we accept PR's! **Please don't open PR's into the stable branch**, everything new goes through nightly first.
-
+If you would like to contribute, we accept PR's! **Please don't open PR's into the stable branch**, everything new goes through nightly first.<br><br>
+Also, if you find a bug, check if it's been fixed in nightly before creating an issue!
 ## repo layout
 * `bootsplash/`
    * contains default bootsplash SVG files which can be converted into PNG files to be used by modify-bootsplash.sh in MOSH.

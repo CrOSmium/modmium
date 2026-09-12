@@ -48,6 +48,9 @@ erevert(){
 prenix(){
   runscript /usr/bin/nix-preinstall.sh
 }
+tilingWm(){
+  runscript /usr/bin/ashland.sh
+}
 credits(){
   runscriptnoroot creditsMenu
 }
@@ -55,8 +58,8 @@ credits(){
 tput civis # :whale:
 
 menu_reset() {
-  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Install Nix" "Credits" "Go back")
-  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "credits" "quit")
+  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Credits" "Go back")
+  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "tilingWm" "credits" "quit")
   num_options=${#options[@]}
 }
 
