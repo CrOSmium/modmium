@@ -5,6 +5,7 @@ source /root/.bashrc # to get $EDITOR
 jsonFile="/usr/local/share/policy-test-tool/dump.json"
 DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 DEVPOL_FILE="/mnt/stateful_partition/.devpol_setup"
+PYTHON_PROTOSKID="/mnt/stateful_partition/.python_protoskid" # this just checks for the packages themselves, i was too lazy to rename it after changing that.
 
 fail(){
   echo -e "$1"
@@ -31,24 +32,47 @@ if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   fi
 
   ldconfig # emerge breaks without this too
-  emerge cryptography nano pyyaml protobuf-python
+  emerge cryptography nano pyyaml protobuf-python || fail "${R}emerge failed. Check your internet connection and try again.${N}"
+  touch $PYTHON_PROTOSKID
+  
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool || fail "${R}Could not copy tool files from /usr/share/.policy-test-tool.${N}"
 
-  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
+  # Only mark setup complete once everything above succeeded
   touch $DEVPOL_FILE
 fi
+
+# before you ask, why does this check twice?
+# this is for people who used this prior to some changes, and it breaks their policy editor ig.
+if [[ ! -f $PYTHON_PROTOSKID ]]; then
+  source /etc/profile # emerge breaks without this
+  echo -e "${B}Installing required dependencies...${N}"
+  if [[ -f $DEVINSTALL_FILE ]]; then
+    ldconfig
+    emerge cryptography nano pyyaml protobuf-python || fail "${R}emerge failed. Check your internet connection and try again.${N}" # I was gonna make this emerge just protobuf-python, but might as well do the others too.
+    touch $PYTHON_PROTOSKID
+  else 
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
+    touch $DEVINSTALL_FILE
+    ldconfig
+    emerge cryptography nano pyyaml protobuf-python || fail "${R}emerge failed. Check your internet connection and try again.${N}"
+    touch $PYTHON_PROTOSKID
+  fi
+fi
+
 if [[ ! -f "$jsonFile" ]]; then
-  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool
-  cd /usr/local/share/policy-test-tool || exit 1
+  cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool || fail "${R}Could not restore tool files from /usr/share/.policy-test-tool.${N}"
+  cd /usr/local/share/policy-test-tool || fail "${R}Could not enter tool directory.${N}"
   ldconfig
   echo -e "${B}Dumping device policy to json...${N}"
-  python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json
+  python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json || fail "${R}Policy dump failed. Check that a policy file exists in /var/lib/devicesettings/.${N}"
   echo -e "${G}Done! Starting editor...${N}"
   sleep 2
   stty -echo
   tput civis
   clear
 fi
-cd /usr/local/share/policy-test-tool
+
+cd /usr/local/share/policy-test-tool || fail "${R}Tool directory missing even after setup. Try deleting $DEVPOL_FILE and re-running.${N}"
 
 # there's gotta be a better way to do this but whatever :sob:
 RESTRICTIONS=(

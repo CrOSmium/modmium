@@ -570,7 +570,7 @@ MEOW
 # -- MAIN SCRIPT --
 tput civis # :whale:
 menu_reset() {
-  menuText="\nFeature Toggles (THIS ENABLES FEATURES THAT CAN AND WILL BRICK YOUR INSTALL, USE AT YOUR OWN RISK)\n"
+  menuText="\nFeature Toggles ${R}[THIS ENABLES FEATURES THAT CAN AND WILL BRICK YOUR INSTALL, USE AT YOUR OWN RISK]${N}\n"
   options=()
   checkStatus
   if [[ $chromebookplus == 1 ]]; then
