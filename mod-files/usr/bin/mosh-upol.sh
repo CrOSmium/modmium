@@ -91,7 +91,7 @@ EOF
 	for id in "${found_ids[@]}"; do
       echo -e "  - ${B}$id${N}"
     done
-	echo -ne "${N}These extensions are ${R}known to break${N} when not set to force install. ${G}Would you like to set them to force install? [Y/n]: ${N}"
+	echo -ne "${N}These extensions are ${R}known to break${N} when not set to force install. ${G}Would you like to set them to force install? (${R}You will be unable to toggle them off${G})${N}\n[Y/n]: ${N}"
 	read -r force_exts
   fi
 
