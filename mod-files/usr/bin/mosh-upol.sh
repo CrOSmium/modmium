@@ -11,6 +11,9 @@ DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 POLICYFILE="/root/policy.json"
 
+# -- exts to recommend on force
+recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh")
+
 # -- FUNCTIONS --
 
 fail(){
@@ -78,7 +81,7 @@ EOF
   echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
   read -r install_ublock
 
-  recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh") # i think this would also fix issue #58
+  # i think this would also fix issue #58
   found_ids=()
   for id in "${recommend_force_ids[@]}"; do
     if grep -q "$id" /root/policy.json; then
