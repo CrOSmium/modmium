@@ -101,6 +101,7 @@ replace_custom() {
   custom_img_path=$(find /home/user/*/MyFiles -maxdepth 0 | head -n 1)/${custom_img_path}
   if [[ -f $custom_img_path ]]; then
     ldconfig
+    restore_conf_backup
     if [ "$(ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "$custom_img_path")" != "1" ]; then
       replace_multiframe $custom_img_path
     else
