@@ -11,7 +11,7 @@ DEVINSTALL_FILE="/mnt/stateful_partition/.devinstall_complete"
 POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 POLICYFILE="/root/policy.json"
 
-# -- exts to recommend on force
+# -- exts to recommend forceinstall
 recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh")
 
 # -- FUNCTIONS --
