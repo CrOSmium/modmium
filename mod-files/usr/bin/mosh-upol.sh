@@ -81,7 +81,6 @@ EOF
   echo -ne "${G}Install uBlock Origin MV3? [Y/n]: ${N}"
   read -r install_ublock
 
-  # i think this would also fix issue #58
   found_ids=()
   for id in "${recommend_force_ids[@]}"; do
     if grep -q "$id" /root/policy.json; then
