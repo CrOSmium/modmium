@@ -290,6 +290,7 @@ installCros() {
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
+  rm -rf mnt/* # file system optimizations
   [[ -d /usr/share/vboot/userkeys ]] && cp -r /usr/share/vboot/userkeys mnt/usr/share/vboot
 
   # now to copy relevant files to new root
