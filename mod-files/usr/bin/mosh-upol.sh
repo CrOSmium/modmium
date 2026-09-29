@@ -95,6 +95,8 @@ EOF
     done
 	echo -ne "${N}These extensions are ${R}known to break${N} when not set to force install. ${G}Would you like to set them to force install? (${R}You will be unable to toggle them off${G})${N}\n[Y/n]: ${N}"
 	read -r force_exts
+  else
+  	force_exts="n"
   fi
 
   if [[ $install_ublock =~ ^[Nn]$ ]]; then
