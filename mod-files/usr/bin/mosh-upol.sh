@@ -95,6 +95,8 @@ EOF
     done
 	echo -ne "${N}These extensions are ${R}known to break${N} when not set to force install. ${G}Would you like to set them to force install? (${R}You will be unable to toggle them off${G})${N}\n[Y/n]: ${N}"
 	read -r force_exts
+  else
+  	force_exts="n"
   fi
 
   if [[ $install_ublock =~ ^[Nn]$ ]]; then
@@ -157,7 +159,7 @@ EOF
 grabpolicy(){
   echo -e "Grabbing policy.json..."
   sleep 0.4
-  policy=$(find /home/user/*/MyFiles/Downloads/ -name "policies_*" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d" " -f2-)
+  policy=$(find /home/user/*/MyFiles/Downloads/ -name "polic*" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d" " -f2-)
   [[ -z "$policy" ]] && echo -e "No policy file found, are you sure it's in Downloads?" >&2
   sudo cp -- "$policy" /root/policy.json > /dev/null 2>&1
   sync # someone's policy.json didn't write
