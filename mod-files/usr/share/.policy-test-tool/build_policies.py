@@ -71,7 +71,9 @@ def build_ext_settings(forcelist, install_ublock, force_exts):
     return ext_settings
 
 def ext_list(s):
-    return [i.strip() for i in s.split(",")] if s else []
+    if not s or not str(s).strip():
+        return []
+    return [i.strip() for i in str(s).split(",") if i.strip()]
 
 def main():
     parser = argparse.ArgumentParser()
@@ -79,7 +81,7 @@ def main():
     parser.add_argument("--policy-source", required=True, help="Path to original policy.json (for passthrough fields)")
     parser.add_argument("--email", required=True, help="Target user email")
     parser.add_argument("--ublock", action="store_true", help="Install uBlock Origin")
-    parser.add_argument("--force-install-exts", type=ext_list, help="IDs to keep on force install separated by commas")
+    parser.add_argument("--force-install-exts", type=ext_list, nargs="?",const="",default=[],help="IDs to keep on force install separated by commas")
     parser.add_argument("--output", required=True, help="Output policies.json path")
     args = parser.parse_args()
 
