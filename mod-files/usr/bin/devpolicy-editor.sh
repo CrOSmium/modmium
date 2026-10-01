@@ -63,6 +63,7 @@ if [[ ! -f "$jsonFile" ]]; then
   cp -r /usr/share/.policy-test-tool /usr/local/share/policy-test-tool || fail "${R}Could not restore tool files from /usr/share/.policy-test-tool.${N}"
   cd /usr/local/share/policy-test-tool || fail "${R}Could not enter tool directory.${N}"
   ldconfig
+  emerge --noreplace --quiet cryptography nano pyyaml protobuf-python &> /dev/null # this just really makes sure #85 doesn't happen ig
   echo -e "${B}Dumping device policy to json...${N}"
   python devpol.py --dump --input $(ls /var/lib/devicesettings/policy.* | sort -V | tail -n 1) --output dump.json || fail "${R}Policy dump failed. Check that a policy file exists in /var/lib/devicesettings/.${N}"
   echo -e "${G}Done! Starting editor...${N}"
