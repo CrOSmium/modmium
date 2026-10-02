@@ -196,8 +196,15 @@ installCros() {
   mkdir -p /mnt/stateful_partition/git
   cd /mnt/stateful_partition/git
   if [[ -d /root/.ssh ]]; then
-    [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
-    git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    echo -e "Do you have git SSH set up? [If you don't know what this is, just press enter] "
+    echo -ne "[y/N]: "
+    read -re gitssh
+    if [[ "$gitssh" =~ ^[Yy]$ ]]; then
+      [[ ! -d /home/chronos/user/.ssh ]] && mkdir /home/chronos/user/.ssh
+      git clone --depth 1 -b $branch --single-branch git@github.com:crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    else
+      git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
+    fi
   else
     git clone --depth 1 -b $branch --single-branch https://github.com/crosmium/modmium.git || fail "${R}Failed to clone repository, exiting...${N}" keepflag
   fi
@@ -223,6 +230,7 @@ installCros() {
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
+  cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d ${BACKUP}/userkeys ]] && cp -r ${BACKUP}/userkeys mnt/usr/share/vboot
   echo $branch > mnt/.branch
@@ -235,7 +243,7 @@ installCros() {
   if [[ $QUICKINSTALL == $FLAGS_FALSE ]]; then
     echo -e "Would you like to powerwash? (Can prevent blackscreening on boot)"
     echo -ne "[y/N]: "
-    read pwr
+    read -re pwr
     if [[ "$pwr" =~ ^[Yy]$ ]]; then
       echo -e "Your device ${R}will${N} powerwash on next boot."
       echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
@@ -267,7 +275,7 @@ installCros() {
   sync;sync;sync  # i do not trust chromeOS.
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
-  if [[ $REPLY =~ ^[Nn]$ ]]; then 
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
     echo -e "${B}Reboot when ready! Exiting...${N}"
     sleep 2
     start powerd &>/dev/null
@@ -446,7 +454,7 @@ selectBackup(){
     mkdir -p /tmp/p12
     mount ${intdis}p12 /tmp/p12
     [[ $(ls /tmp/p12/firmware | grep backup) ]] || flashrom -r /tmp/p12/firmware/backup_${moment}.rom
-    sync;sync;sync # don't count how many syncs are in this script 
+    sync;sync;sync # don't count how many syncs are in this script
     umount /tmp/p12
     rmdir /tmp/p12
   fi
