@@ -172,11 +172,16 @@ full_menu() {
           selected_index=$(((selected_index + 1) % num_options))
           ;;
       esac
-    elif [[ "$key" =~ [1-9] ]]; then
-      target_index=$((key - 1))
-      if [ "$target_index" -lt "$num_options" ]; then
-        selected_index=$target_index
-      fi
+    elif [[ "$key" =~ [0-9] ]]; then
+		key2=""
+		read -rsn1 -t 0.4 key2
+		rc=$?
+		[[ "$key2" =~ [0-9] ]] && key="$key$key2"
+		target_index=$((10#$key - 1))
+		if [ "$target_index" -ge 0 ] && [ "$target_index" -lt "$num_options" ]; then
+			selected_index=$target_index
+		fi
+		[[ $rc -eq 0 && -z "$key2" ]] && break
     elif [[ "$key" == "" ]]; then
       break
     fi
