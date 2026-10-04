@@ -450,7 +450,9 @@ toggleEnrollment(){
 localAcc(){
   runscriptnoroot /usr/bin/localacc.sh
 }
-
+modules(){
+  runscript /usr/bin/modules.sh
+}
 features(){
   runscript /usr/bin/features.sh
 }
@@ -466,8 +468,8 @@ fi
 menu_reset() {
   menuText="\nModmium Manager\n"
   [[ $unconverted_fs == $FLAGS_TRUE ]] && menuText="\nModmium Manager\n\nNOTICE: ${Y}You are running Modmium on ${R}ext2${Y}, the next time you change your ChromeOS version, you will be upgraded to ${G}ext4${Y}.${N}\n"
-  options=("${G}Update Modmium${N}" "${Y}Change ChromeOS Version${N}" "${B}Change Shell${N}" "${R}Change Source Repository${N}" "${D}Swap Boot Priority${N}" "${Y}Toggle Enrollment${N}" "Add Local Account" "Feature Toggles" "Exit")
-  functions=("updateModmium" "installCros" "changeShell" "changeRepo" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
+  options=("${G}Update Modmium${N}" "${Y}Change ChromeOS Version${N}" "Modules" "${B}Change Shell${N}" "${R}Change Source Repository${N}" "${D}Swap Boot Priority${N}" "${Y}Toggle Enrollment${N}" "Add Local Account" "Feature Toggles" "Exit")
+  functions=("updateModmium" "installCros" "modules" "changeShell" "changeRepo" "toggleBootPriority" "toggleEnrollment" "localAcc" "features" "quit")
   num_options=${#options[@]}
 }
 
