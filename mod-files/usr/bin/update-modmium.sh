@@ -13,8 +13,8 @@ fail(){
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
-owner=$(cat /usr/share/.gitowner)
-repo=$(cat /usr/share/.gitrepo)
+owner=$(cat /usr/share/.gitowner 2>/dev/null)
+repo=$(cat /usr/share/.gitrepo 2>/dev/null)
 
 if ! which git &>/dev/null || ! which file &>/dev/null; then
   echo -e "${R}Dependencies not installed, installing...${N}"
