@@ -148,14 +148,16 @@ display_menu() {
   echo -e "$menuText" # this is so you can add extra text to menus like nix-preinstall.sh without rewriting the display_menu function in it
 
   for i in "${!options[@]}"; do
+    local keysel="${keymap:$i:1}"
     if [[ $i -eq $selected_index ]]; then
-      printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
+      printf "\e[7m > %s) ${options[$i]} \e[0m\n" "$keysel"
     else
-      printf "   $(($i + 1))) ${options[$i]}      \n"
+      printf "   %s) ${options[$i]}      \n" "$keysel"
     fi
   done
 }
 full_menu() {
+  keymap="1234567890-=qwertyuiopasdfghjklzxcvbnm" # map of keys for each option, so 11 would be '-', and 13 would be 'q'
   clear
   stty -echo
   tput civis
@@ -172,8 +174,9 @@ full_menu() {
           selected_index=$(((selected_index + 1) % num_options))
           ;;
       esac
-    elif [[ "$key" =~ [1-9] ]]; then
-      target_index=$((key - 1))
+    elif [[ -n "$key" && "$keymap" == *"$key"* ]]; then
+      prefix="${keymap%%"$key"*}"
+      target_index=${#prefix}
       if [ "$target_index" -lt "$num_options" ]; then
         selected_index=$target_index
       fi
