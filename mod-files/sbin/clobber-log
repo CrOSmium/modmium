@@ -55,7 +55,7 @@ append_log() {
 
 # fix "can't reach google" after using the device policy editor and powerwashing
 chrome_dev_thing() { 
-  [ -f /etc/chrome_dev.conf ] && rm /etc/chrome_dev.conf
+  [ -f /etc/chrome_dev.conf ] && echo "" > /etc/chrome_dev.conf
 }
 
 repair_log() {
