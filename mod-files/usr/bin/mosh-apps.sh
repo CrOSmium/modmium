@@ -17,7 +17,7 @@ index() {
   paths=()
   options=()
   if [[ $nopt == 1 ]];then
-    menuText="\nINFO: You can add up to 9 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
+    menuText="\nINFO: You can add up to 38 apps (or scripts) to this menu by editing '/usr/local/config/apps.conf'\n(The formatting is 'COMMAND | NAME' on each line)"
   fi
   while IFS='|' read -r path name || [[ -n "$path" ]]; do
     [[ "$path" =~ ^#.* ]] || [[ -z "$path" ]] && continue
