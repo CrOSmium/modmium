@@ -8,6 +8,7 @@ import 'chrome://resources/ash/common/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/ash/common/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/ash/common/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/ash/common/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/ash/common/cr_elements/md_select.css.js';
 import 'chrome://resources/ash/common/cr_elements/cr_textarea/cr_textarea.js';
 import 'chrome://resources/ash/common/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
@@ -21,6 +22,7 @@ import 'chrome://resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 const MENU_ITEMS = [
@@ -296,7 +298,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
   static get properties() { return {item: Object}; }
   static get template() {
     return html`
-      <style include="cr-shared-style cros-color-overrides">
+      <style include="cr-shared-style cros-color-overrides md-select">
         :host { display: block; }
         .settings-box {
           align-items: center;
@@ -322,16 +324,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
         .actions { align-items: center; display: flex; gap: 8px; }
         cr-input { min-width: 280px; }
         cr-textarea { margin: 12px 0; width: 100%; }
-        select {
-          appearance: none;
-          background: var(--cros-sys-input_field_on_shaded);
-          border: 0;
-          border-radius: 8px;
-          color: var(--cros-sys-on_surface);
-          min-width: 180px;
-          outline: none;
-          padding: 10px 32px 10px 12px;
-        }
+        select { --md-select-width: 180px; }
         cr-button.danger { color: var(--cros-sys-error); }
         cr-link-row { min-height: var(--settings-row-min-height); }
       </style>
@@ -356,7 +349,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
             <cr-input type="password" aria-label$="[[item.label]]"></cr-input>
           </template>
           <template is="dom-if" if="[[_isSelect(item)]]">
-            <select aria-label$="[[item.label]]">
+            <select class="md-select" aria-label$="[[item.label]]">
               <template is="dom-repeat" items="[[item.options]]" as="option">
                 <option selected$="[[_selected(option, item.value)]]">[[option]]</option>
               </template>
@@ -1182,3 +1175,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
   }
 }
 customElements.define(ModmiumSettingsUiElement.is, ModmiumSettingsUiElement);
+
+window.addEventListener('load', () => {
+  ColorChangeUpdater.forDocument().start();
+});
