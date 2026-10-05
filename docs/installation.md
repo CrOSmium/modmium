@@ -47,7 +47,7 @@
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary).
 2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
 3. open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -SLk modmium.dev/fwmp.sh)` to clear Firmware Management Parameters.
-4. Run `curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>` to install developer firmware (devfw) & backup to a drive or directory easily. 
+4. Run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>` to install developer firmware (devfw) & backup your firmware to a drive or directory easily. 
 5. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENDED [seriously, pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot.
 6. Enter recovery **[Esc+Refresh+Power]**.
 7. Plug in the disk with Modmium on it.

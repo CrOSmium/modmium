@@ -1,0 +1,102 @@
+
+#!/bin/sh
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+# This script can maintain a log file across stateful partition wiping
+# transition.
+SCRIPT="$0"
+CLOBBER_LOG_FILE="clobber.log"
+# Temp folder is always accessible (by tmpfs), but stateful partition may be not
+# available. To verify that, check the existence of STATEFUL_LOG_FOLDER.
+STATEFUL_LOG_FOLDER="/mnt/stateful_partition/unencrypted/"
+STATEFUL_LOG_PATH="$STATEFUL_LOG_FOLDER/$CLOBBER_LOG_FILE"
+TMP_LOG_PATH="/tmp/$CLOBBER_LOG_FILE"
+MAX_KEEP_LOG_LINES=512
+BLOCK_DUMP_LINES=64
+log_prefix() {
+  echo "$(date --utc '+%Y/%m/%d %H:%M:%S') UTC"
+}
+preserve_log() {
+  # Try to copy log from stateful partition to tmp.
+  local source_path="$STATEFUL_LOG_PATH"
+  local dest_path="$TMP_LOG_PATH"
+  # TODO(hungte) store log in some special place, like last sector of stateful
+  # partition so that logs won't be lost if user interrupts during wiping.
+  if [ -s "$source_path" ]; then
+    tail -n $MAX_KEEP_LOG_LINES "$source_path" >"$dest_path"
+  fi
+  echo "$(log_prefix) (preserve log): $@" >>"$dest_path"
+}
+restore_log() {
+  # Try to copy log from tmp back to stateful partition.
+  local source_path="$TMP_LOG_PATH"
+  local dest_path="$STATEFUL_LOG_PATH"
+  # the mode should be matched to chromeos_startup.
+  mkdir -p -m 0755 "$STATEFUL_LOG_FOLDER"
+  if [ -s "$source_path" ]; then
+    cp "$source_path" "$dest_path"
+  fi
+  echo "$(log_prefix) (restore log): $@" >>"$dest_path"
+}
+find_log_path() {
+  # Always use log in stateful partition, otherwise create in temp.
+  local dest_path="$STATEFUL_LOG_PATH"
+  if [ ! -d "$STATEFUL_LOG_FOLDER" ]; then
+    dest_path="$TMP_LOG_PATH"
+  fi
+  echo "$dest_path"
+}
+append_log() {
+  # Add one line of log into the clobber log file.
+  local dest_path="$(find_log_path)"
+  echo "$(log_prefix) $@" >>"$dest_path"
+}
+
+# fix "can't reach google" after using the device policy editor and powerwashing
+chrome_dev_thing() { 
+  [ -f /etc/chrome_dev.conf ] && echo "" > /etc/chrome_dev.conf
+}
+
+repair_log() {
+  # Report detail messages for the status of stateful partition.
+  local dest_path="$TMP_LOG_PATH"
+  # TODO(hungte) try to recover logs from some where - see preserve_log.
+  if [ ! -b "$1" ]; then
+    echo "$(log_prefix) repair: $1: invalid device file." >>"$dest_path"
+    return
+  fi
+  echo "$(log_prefix) (repair): $@" >>"$dest_path"
+  # "fsck -n" and "mount -v" may also help.
+  dumpe2fs -fh "$1" >>"$dest_path" 2>&1
+  # try to dump first several blocks
+  echo "-- File system $1 block data (gz+base64):" >>"$dest_path"
+  dd if="$1" bs=1M count=1 | gzip -c | base64 |
+    head -n $BLOCK_DUMP_LINES >>"$dest_path" 2>/dev/null
+  echo "-- File system $1 block data dump complete." >>"$dest_path"
+  # to read back the block data, extract to a file and do
+  # cat block | base64 -d | gunzip -c -d > block.bin
+}
+# Process the very limited commands
+case "$1" in
+  --preserve )
+    shift
+    preserve_log "$@"
+    ;;
+  --restore )
+    shift
+    chrome_dev_thing
+    restore_log "$@"
+    ;;
+  --repair )
+    shift
+    repair_log "$@"
+    ;;
+  -- )
+    shift
+    append_log "$@"
+    ;;
+  * )
+    append_log "$@"
+    ;;
+esac

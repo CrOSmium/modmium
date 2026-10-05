@@ -14,6 +14,9 @@ as_system() {
 selected_index=0
 branch=$(cat /.branch)
 modver=$(cat /usr/share/.version)
+shellfile=/root/.modshell
+shell="bash"
+[ -s "$shellfile" ] && shell=$(<"$shellfile")
 # -----------------------
 
 # TUI colors :D
@@ -87,7 +90,7 @@ runscript() {
   stty echo
   tput cnorm
   echo "$1"
-  employ as_system "$1"
+  employ as_system clearsecbits "$1"
   menu_reset
   full_menu
 }
@@ -104,7 +107,7 @@ menu_logo() {
   echo -ne "\033]0;MOSH\007"
   if [[ "$TERM" != "xterm" ]]; then
     echo -e "Welcome to MOSH, the Modmium developer shell\n\nIf you got here by mistake, don't panic! Just close this tab and carry on.\n\nThis shell contains a list of utilities for performing various actions on a chromebook running Modmium.\n"
-  else 
+  else
     echo -e "Welcome to VT-MOSH, the Modmium developer console.\n\nIf you got here by mistake, don't panic! Just press exit, then Ctrl+Alt+F1 [usually the back arrow] and carry on.\n\nThis console contains a list of utilities for performing various actions on a chromebook running Modmium.\n"
   fi
 }
@@ -145,14 +148,16 @@ display_menu() {
   echo -e "$menuText" # this is so you can add extra text to menus like nix-preinstall.sh without rewriting the display_menu function in it
 
   for i in "${!options[@]}"; do
+    local keysel="${keymap:$i:1}"
     if [[ $i -eq $selected_index ]]; then
-      printf "\e[7m > $(($i + 1))) ${options[$i]} \e[0m\n"
+      printf "\e[7m > %s) ${options[$i]} \e[0m\n" "$keysel"
     else
-      printf "   $(($i + 1))) ${options[$i]}      \n"
+      printf "   %s) ${options[$i]}      \n" "$keysel"
     fi
   done
 }
 full_menu() {
+  keymap="1234567890-=qwertyuiopasdfghjklzxcvbnm" # map of keys for each option, so 11 would be '-', and 13 would be 'q'
   clear
   stty -echo
   tput civis
@@ -169,8 +174,9 @@ full_menu() {
           selected_index=$(((selected_index + 1) % num_options))
           ;;
       esac
-    elif [[ "$key" =~ [1-9] ]]; then
-      target_index=$((key - 1))
+    elif [[ -n "$key" && "$keymap" == *"$key"* ]]; then
+      prefix="${keymap%%"$key"*}"
+      target_index=${#prefix}
       if [ "$target_index" -lt "$num_options" ]; then
         selected_index=$target_index
       fi
