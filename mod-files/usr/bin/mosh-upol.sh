@@ -12,7 +12,7 @@ POLTEST_FILE="/mnt/stateful_partition/.policytesttool_setup"
 POLICYFILE="/root/policy.json"
 
 # -- exts to recommend forceinstall
-recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh")
+recommend_force_ids=("johiffgefcnfiddcakohlcpebgpidnji" "hkobaiihndnbfhbkmjjfbdimfbdcppdh" "jfbecfmiegcjddenjhlbhlikcbfmnafd")
 
 # -- FUNCTIONS --
 
