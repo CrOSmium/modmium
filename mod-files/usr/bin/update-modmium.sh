@@ -102,6 +102,12 @@ dropModFiles() {
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp modmium/build-utils/lib/minioverride-${arch}.so /lib/minioverride.so
   cp modmium/build-utils/bin/clearsecbits-${arch} /usr/bin/clearsecbits
+  modmium/build-utils/install-webui.sh / "$arch"
+  if status modmium-web 2>/dev/null | grep -q running; then
+    restart modmium-web
+  else
+    start modmium-web
+  fi
 }
 
 has_ssh_key() {

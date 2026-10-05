@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEPENDENCIES=$(echo "bsdtar" "file" "futility" "jq" "pv" "wget")
+DEPENDENCIES=$(echo "bsdtar" "file" "futility" "jq" "pv" "python3" "wget")
 
 # pre-flight checklist
 source ./build-utils/common_minimal.sh
@@ -275,6 +275,7 @@ dropModFiles(){
   [[ $arch == *"ARM"* ]] && arch="aarch64"
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
+  build-utils/install-webui.sh mnt "$arch"
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50 # RECOVERY WILL FAIL IF YOU REMOVE THIS LINE
   [[ -d build-utils/keys/userkeys ]] && cp -r build-utils/keys/userkeys mnt/usr/share/vboot
   sleep 0.5
