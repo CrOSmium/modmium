@@ -125,7 +125,7 @@ const DETAIL_DATA = {
   repository: {
     page: 'manager', title: 'Source repository', cards: [{rows: [
       {label: 'Repository URL', kind: 'input', value: 'https://github.com/CrOSmium/modmium', actions: [
-        {label: 'Save', primary: true, danger: true, prompt: 'Use this update repository?',
+        {label: 'Save', primary: true, confirm: true, prompt: 'Use this update repository?',
           message: 'Repository saved', moshAction: 'repository.set', args: ['true']},
       ]},
       {label: 'Official repository', actions: [
@@ -347,7 +347,12 @@ class ModmiumSettingsRowElement extends PolymerElement {
         }
         .secondary:empty { display: none; }
         .actions { align-items: center; display: flex; gap: 8px; }
-        cr-input { min-width: 280px; }
+        cr-input {
+          --cr-input-background-color: var(--cros-sys-input_field_on_shaded);
+          --cr-input-error-display: none;
+          --cr-input-width: 280px;
+          margin-inline-start: 16px;
+        }
         cr-textarea { margin: 12px 0; width: 100%; }
         select { --md-select-width: 180px; }
         cr-button.danger { color: var(--cros-sys-error); }
@@ -878,7 +883,11 @@ class ModmiumSettingsMainElement extends PolymerElement {
       detail: String,
       daemonStatus: String,
       moshMenus: Object,
-      cards: {type: Array, computed: '_cards(page, detail, daemonStatus, moshMenus)'},
+      modmiumState: Object,
+      cards: {
+        type: Array,
+        computed: '_cards(page, detail, daemonStatus, moshMenus, modmiumState)',
+      },
       title: {type: String, computed: '_title(detail)'},
     };
   }
@@ -960,7 +969,7 @@ class ModmiumSettingsMainElement extends PolymerElement {
       </div>
     `;
   }
-  _cards(page, detail, daemonStatus, moshMenus) {
+  _cards(page, detail, daemonStatus, moshMenus, state) {
     const source = detail ? DETAIL_DATA[detail]?.cards :
       GUI_PAGE_OVERRIDES[page] || genericMenuCards(moshMenus?.[page]);
     const cards = structuredClone(source || GUI_PAGE_OVERRIDES.manager);
@@ -970,7 +979,44 @@ class ModmiumSettingsMainElement extends PolymerElement {
         if (row.detail && !row.action) row.action = 'Open';
       }
     }
+    this._applyState(cards, page, detail, state);
     return cards;
+  }
+  _applyState(cards, page, detail, state) {
+    if (!state?.repository) return;
+    const rows = cards.flatMap(card => card.rows);
+    const row = label => rows.find(candidate => candidate.label === label);
+    if (!detail && page === 'manager') {
+      row('Nightly').label = `Modmium ${state.branch}`;
+      row('ChromeOS version').sublabel = state.chromeosVersion;
+      row('Shell').sublabel = state.shell;
+      row('Source repository').sublabel = state.repository.replace('https://github.com/', '');
+      row('Enrollment').sublabel = state.enrollmentEnabled ? 'Enabled' : 'Disabled';
+    } else if (detail === 'update') {
+      row('Current build').sublabel = `Modmium ${state.modmiumVersion} ${state.branch}`;
+    } else if (detail === 'version') {
+      const version = row('ChromeOS version');
+      version.value = state.chromeosVersion;
+      if (!version.options.includes(state.chromeosVersion)) version.options.unshift(state.chromeosVersion);
+    } else if (detail === 'shell') {
+      row('Shell executable').value = state.shell;
+    } else if (detail === 'repository') {
+      row('Repository URL').value = state.repository;
+    } else if (detail === 'enrollment') {
+      const enrollment = row('Enrollment');
+      enrollment.sublabel = state.enrollmentEnabled ? 'Enabled' : 'Disabled';
+      enrollment.actions[0].label = state.enrollmentEnabled ?
+        'Disable enrollment' : 'Enable enrollment';
+    } else if (detail === 'features') {
+      row('Chromebook Plus features').checked = state.chromebookPlus;
+      row('Studio Mic').checked = state.studioMic;
+      row('System Blur').checked = state.systemBlur;
+    } else if (detail === 'user-policies') {
+      row('Policy file').sublabel = state.policyFileLoaded ?
+        'policy.json loaded' : 'No policy.json loaded';
+    } else if (detail === 'apps-config') {
+      rows.find(candidate => candidate.kind === 'textarea').value = state.appsConfig;
+    }
   }
   _title(detail) { return DETAIL_DATA[detail]?.title || ''; }
   _routeChanged() {
@@ -990,6 +1036,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
       detail: {type: String, value: ''},
       daemonStatus: {type: String, value: 'Connecting to Modmium'},
       moshMenus: {type: Object, value: () => ({})},
+      modmiumState: {type: Object, value: () => ({})},
       isNarrow: {type: Boolean, value: false},
       query: {type: String, value: ''},
       searchResults: {type: Array, value: () => []},
@@ -1080,6 +1127,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
           <modmium-settings-main page="[[page]]" detail="[[detail]]"
               daemon-status="[[daemonStatus]]"
               mosh-menus="[[moshMenus]]"
+              modmium-state="[[modmiumState]]"
               on-modmium-open-detail="_openDetail"
               on-modmium-action="_action"
               on-modmium-back="_back">
@@ -1156,7 +1204,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
   }
   _action(event) {
     const action = event.detail;
-    if (action.danger) {
+    if (action.danger || action.confirm) {
       this.pendingAction = {
         ...action,
         successMessage: action.message,
@@ -1208,6 +1256,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
     }
     if (event.data?.type === 'ready') {
       event.source.postMessage({type: 'request', body: 'health'}, event.origin);
+      event.source.postMessage({type: 'request', body: 'state'}, event.origin);
       event.source.postMessage({type: 'request', body: 'menus'}, event.origin);
       return;
     }
@@ -1221,10 +1270,13 @@ class ModmiumSettingsUiElement extends PolymerElement {
           `Service ${response.serviceVersion}` : 'Service error';
       } else if (response.type === 'menus') {
         this.moshMenus = Object.fromEntries(response.menus.map(menu => [menu.id, menu]));
+      } else if (response.type === 'state') {
+        this.modmiumState = response;
       } else if (response.type === 'action' && response.ok) {
         this._showToast(this._pendingMoshAction?.successMessage ||
           this._pendingMoshAction?.message || 'Done');
         this._pendingMoshAction = null;
+        event.source.postMessage({type: 'request', body: 'state'}, event.origin);
       } else if (response.error) {
         this._showToast(response.error);
         this._pendingMoshAction = null;

@@ -1,6 +1,8 @@
 use std::fmt;
+use std::fs;
 use std::io::{self, Read, Write};
 use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::{
     Arc,
@@ -123,6 +125,7 @@ fn serve(mut stream: TcpStream) -> Result<(), Error> {
             Frame::Text => {
                 let response = match std::str::from_utf8(&payload) {
                     Ok("health") => HEALTH_JSON.to_owned(),
+                    Ok("state") => modmium_state(),
                     Ok("menus") => describe_mosh().unwrap_or_else(error_json),
                     Ok(request) if request.starts_with("run\t") => {
                         run_mosh_action(request).unwrap_or_else(error_json)
@@ -139,6 +142,87 @@ fn serve(mut stream: TcpStream) -> Result<(), Error> {
             }
         }
     }
+}
+
+fn modmium_state() -> String {
+    let branch = read_trimmed("/.branch").unwrap_or_else(|| "unknown".into());
+    let version = read_trimmed("/usr/share/.version").unwrap_or_else(|| "unknown".into());
+    let milestone = read_lsb_value("CHROMEOS_RELEASE_CHROME_MILESTONE").unwrap_or_default();
+    let shell = read_trimmed("/root/.modshell")
+        .and_then(|path| Path::new(&path).file_name()?.to_str().map(str::to_owned))
+        .unwrap_or_else(|| "bash".into());
+    let owner = read_trimmed("/usr/share/.gitowner").unwrap_or_else(|| "CrOSmium".into());
+    let repository = read_trimmed("/usr/share/.gitrepo").unwrap_or_else(|| "modmium".into());
+    let apps = fs::read_to_string("/usr/local/config/apps.conf").unwrap_or_default();
+
+    let mut json = String::from("{\"type\":\"state\",\"branch\":");
+    push_json_string(&mut json, &branch);
+    json.push_str(",\"modmiumVersion\":");
+    push_json_string(&mut json, &version);
+    json.push_str(",\"chromeosVersion\":");
+    push_json_string(&mut json, &milestone);
+    json.push_str(",\"shell\":");
+    push_json_string(&mut json, &shell);
+    json.push_str(",\"repository\":");
+    push_json_string(
+        &mut json,
+        &format!("https://github.com/{owner}/{repository}"),
+    );
+    json.push_str(",\"appsConfig\":");
+    push_json_string(&mut json, &apps);
+    push_bool(
+        &mut json,
+        "enrollmentEnabled",
+        !Path::new("/.deprovision").exists(),
+    );
+    push_bool(
+        &mut json,
+        "chromebookPlus",
+        read_trimmed("/run/libsegmentation/feature_device_info").as_deref() == Some("CAMQAg=="),
+    );
+    push_bool(
+        &mut json,
+        "studioMic",
+        Path::new("/usr/lib64/libforcefm.so").is_file()
+            && file_contains("/usr/share/cros/init/cras-env.sh", "libforcefm.so"),
+    );
+    push_bool(
+        &mut json,
+        "systemBlur",
+        Path::new("/usr/lib64/libfakephysmem.so").is_file()
+            && file_contains("/etc/chrome_dev.conf", "libfakephysmem.so"),
+    );
+    push_bool(
+        &mut json,
+        "policyFileLoaded",
+        Path::new("/root/policy.json").is_file(),
+    );
+    json.push('}');
+    json
+}
+
+fn read_trimmed(path: &str) -> Option<String> {
+    fs::read_to_string(path)
+        .ok()
+        .map(|text| text.trim().to_owned())
+        .filter(|text| !text.is_empty())
+}
+
+fn read_lsb_value(name: &str) -> Option<String> {
+    let contents = fs::read_to_string("/etc/lsb-release").ok()?;
+    contents.lines().find_map(|line| {
+        let (key, value) = line.split_once('=')?;
+        (key == name).then(|| value.trim_matches('"').to_owned())
+    })
+}
+
+fn file_contains(path: &str, needle: &str) -> bool {
+    fs::read_to_string(path).is_ok_and(|contents| contents.contains(needle))
+}
+
+fn push_bool(json: &mut String, name: &str, value: bool) {
+    use std::fmt::Write as _;
+    let _ = write!(json, ",\"{name}\":{value}");
 }
 
 fn run_mosh_action(request: &str) -> io::Result<String> {
@@ -828,6 +912,13 @@ mod tests {
             )
             .is_err()
         );
+    }
+
+    #[test]
+    fn state_snapshot_contains_the_current_repository() {
+        let state = modmium_state();
+        assert!(state.starts_with("{\"type\":\"state\""));
+        assert!(state.contains("\"repository\":\"https://github.com/"));
     }
 
     fn tcp_pair() -> (TcpStream, TcpStream) {
