@@ -489,7 +489,7 @@ importkeys() {
 			sleep 1
 			echo -e "Importing RW_VPD..."
 			sudo vpd -i RW_VPD -O
-			while IFS= read -r line; do
+			while IFS= builtin read -r line; do
 				clean_line=$(echo "$line" | tr -d '"')
 				sudo vpd -i RW_VPD -s "$clean_line"
 			done <"$impdirec/RW.vpd"
@@ -497,7 +497,7 @@ importkeys() {
 			sleep 1.6
 			echo -e "Importing RO_VPD..."
 			sudo vpd -i RO_VPD -O
-			while IFS= read -r line; do
+			while IFS= builtin read -r line; do
 				clean_line=$(echo "$line" | tr -d '"')
 				sudo vpd -i RO_VPD -s "$clean_line"
 			done <"$impdirec/RO.vpd"
@@ -1134,6 +1134,32 @@ selector() {
             return ;;
     esac
 }
+
+if [[ $MOSH_FRONTEND == gui ]]; then
+	source /usr/lib/libmosh.sh
+
+	loadsavedkeysForGui() {
+		local key serial secret
+		mosh_input key ""
+		[[ $key =~ ^[A-Za-z0-9.-]+$ ]] || return 1
+		serial=$(vpd -i RW_VPD -g "saved_${key}_serial_number")
+		secret=$(vpd -i RW_VPD -g "saved_${key}_stable_device_secret")
+		[[ -n $serial && -n $secret ]] || return 1
+		[[ -n $(vpd -i RO_VPD -g factory_serial_number) ]] ||
+			vpd -i RO_VPD -s factory_serial_number="$(vpd -i RO_VPD -g serial_number)"
+		[[ -n $(vpd -i RO_VPD -g factory_stable_device_secret) ]] ||
+			vpd -i RO_VPD -s factory_stable_device_secret="$(vpd -i RO_VPD -g stable_device_secret_DO_NOT_SHARE)"
+		vpd -i RO_VPD -s serial_number="$serial"
+		vpd -i RO_VPD -s stable_device_secret_DO_NOT_SHARE="$secret"
+	}
+
+	mosh_gui_run_action cr3nroll.save savecurrentkeys
+	mosh_gui_run_action cr3nroll.load loadsavedkeysForGui
+	mosh_gui_run_action cr3nroll.generate genkeys
+	mosh_gui_run_action cr3nroll.import importkeys
+	mosh_gui_run_action cr3nroll.backup backupvpd
+fi
+
 clear
 full_menu
 tput cnorm

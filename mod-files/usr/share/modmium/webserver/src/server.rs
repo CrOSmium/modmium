@@ -13,7 +13,8 @@ use std::time::Duration;
 
 const ADDRESS: SocketAddrV4 = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 27182);
 const MAX_HANDSHAKE: usize = 8 * 1024;
-const MAX_MESSAGE: usize = 16 * 1024;
+const MAX_MESSAGE: usize = 512 * 1024;
+const MAX_APPS_CONFIG: usize = 16 * 1024;
 const MAX_CONNECTIONS: usize = 8;
 const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(3);
 const WRITE_TIMEOUT: Duration = Duration::from_secs(3);
@@ -23,22 +24,96 @@ const BRIDGE_ORIGIN: &str = "http://127.0.0.1:27182";
 const PROTOCOL: &str = "modmium.v1";
 const WEBSOCKET_GUID: &[u8] = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 const MOSH_MENUS: &[(&str, &str)] = &[("misc", "/usr/bin/mosh-misc.sh")];
-const MOSH_ACTIONS: &[(&str, &str, &str, usize)] = &[
-    ("shell.set", "/usr/bin/change-shell.sh", "changeShell", 1),
-    ("repository.set", "/usr/bin/change-repo.sh", "changeRepo", 2),
+const UPDATE_SCRIPT: &str = "/usr/bin/update-modmium.sh";
+const REPOSITORY_SCRIPT: &str = "/usr/bin/change-repo.sh";
+const ENROLLMENT_SCRIPT: &str = "/usr/bin/toggle-enrollment.sh";
+const FEATURES_SCRIPT: &str = "/usr/bin/features.sh";
+const POLICIES_SCRIPT: &str = "/usr/bin/devpolicy-editor.sh";
+const BOOTSPLASH_SCRIPT: &str = "/usr/bin/modify-bootsplash.sh";
+const CR3NROLL_SCRIPT: &str = "/usr/bin/cr3nroll.sh";
+const REVERT_SCRIPT: &str = "/usr/bin/emergency-revert.sh";
+const NIX_SCRIPT: &str = "/usr/bin/nix-preinstall.sh";
+const ASHLAND_SCRIPT: &str = "/usr/bin/ashland.sh";
+
+const MOSH_ACTIONS: &[(&str, &str, &str, usize, usize)] = &[
+    ("update.run", UPDATE_SCRIPT, "updateModmium", 1, 1),
+    ("version.install", UPDATE_SCRIPT, "installCros", 6, 8),
+    ("boot.swap", UPDATE_SCRIPT, "toggleBootPriority", 3, 3),
+    ("shell.set", "/usr/bin/change-shell.sh", "changeShell", 1, 1),
+    ("repository.set", REPOSITORY_SCRIPT, "changeRepo", 2, 2),
+    ("repository.reset", REPOSITORY_SCRIPT, "resetRepo", 1, 1),
+    ("enrollment.enable", ENROLLMENT_SCRIPT, "yesenroll", 2, 2),
+    ("enrollment.disable", ENROLLMENT_SCRIPT, "noenroll", 2, 2),
     (
-        "repository.reset",
-        "/usr/bin/change-repo.sh",
-        "resetRepo",
+        "feature.chromebook-plus",
+        FEATURES_SCRIPT,
+        "chromebookPlus",
+        0,
+        0,
+    ),
+    ("feature.studio-mic", FEATURES_SCRIPT, "studioMic", 0, 0),
+    ("feature.system-blur", FEATURES_SCRIPT, "systemBlur", 0, 0),
+    ("policies.save", POLICIES_SCRIPT, "policies.save", 1, 1),
+    ("policies.load", POLICIES_SCRIPT, "policies.load", 0, 0),
+    ("policies.apply", POLICIES_SCRIPT, "policies.apply", 0, 0),
+    ("policies.reset", POLICIES_SCRIPT, "policies.reset", 0, 0),
+    ("bootsplash.replace", BOOTSPLASH_SCRIPT, "replace", 1, 1),
+    (
+        "bootsplash.custom",
+        BOOTSPLASH_SCRIPT,
+        "replace_custom",
+        1,
         1,
     ),
+    ("bootsplash.restore", BOOTSPLASH_SCRIPT, "restore", 0, 0),
+    (
+        "bootsplash.download",
+        BOOTSPLASH_SCRIPT,
+        "download_backup",
+        0,
+        0,
+    ),
+    ("bootsplash.remove", BOOTSPLASH_SCRIPT, "remove", 1, 1),
+    ("cr3nroll.save", CR3NROLL_SCRIPT, "cr3nroll.save", 2, 2),
+    ("cr3nroll.load", CR3NROLL_SCRIPT, "cr3nroll.load", 1, 1),
+    (
+        "cr3nroll.generate",
+        CR3NROLL_SCRIPT,
+        "cr3nroll.generate",
+        4,
+        4,
+    ),
+    ("cr3nroll.import", CR3NROLL_SCRIPT, "cr3nroll.import", 1, 1),
+    ("cr3nroll.backup", CR3NROLL_SCRIPT, "cr3nroll.backup", 1, 1),
+    ("revert.factory", REVERT_SCRIPT, "factoryReset", 2, 4),
+    ("revert.os", REVERT_SCRIPT, "restoreOS", 1, 1),
+    ("revert.mpkeys", REVERT_SCRIPT, "restoreMPkeys", 1, 3),
+    ("nix.install", NIX_SCRIPT, "installNix", 0, 0),
+    ("mix.update", NIX_SCRIPT, "updateMix", 0, 0),
+    ("ashland.install", ASHLAND_SCRIPT, "installAshland", 0, 0),
+    ("ashland.update", ASHLAND_SCRIPT, "updateAshland", 0, 0),
+    (
+        "ashland.uninstall",
+        ASHLAND_SCRIPT,
+        "uninstallAshland",
+        0,
+        0,
+    ),
+    ("ashland.toggle", ASHLAND_SCRIPT, "toggleAshland", 0, 0),
+    ("ashland.autostart", ASHLAND_SCRIPT, "toggleAutostart", 0, 0),
+    ("ashland.layout", ASHLAND_SCRIPT, "cycleLayout", 0, 0),
+    ("ashland.gaps", ASHLAND_SCRIPT, "cycleGaps", 0, 0),
 ];
 
 const BRIDGE_HTML: &str = r#"<!doctype html><meta charset=utf-8><script>
 const webuiOrigin = 'chrome://borealis-motd';
-const socket = new WebSocket('ws://127.0.0.1:27182/v1', 'modmium.v1');
-socket.onopen = () => parent.postMessage({type: 'ready'}, webuiOrigin);
-socket.onmessage = event => parent.postMessage({type: 'response', body: event.data}, webuiOrigin);
+let socket;
+function connect() {
+  socket = new WebSocket('ws://127.0.0.1:27182/v1', 'modmium.v1');
+  socket.onopen = () => parent.postMessage({type: 'ready'}, webuiOrigin);
+  socket.onmessage = event => parent.postMessage({type: 'response', body: event.data}, webuiOrigin);
+  socket.onclose = () => setTimeout(connect, 500);
+}
 addEventListener('message', event => {
   if (event.origin === webuiOrigin && event.source === parent &&
       event.data?.type === 'request' && typeof event.data.body === 'string' &&
@@ -46,6 +121,7 @@ addEventListener('message', event => {
     socket.send(event.data.body);
   }
 });
+connect();
 </script>"#;
 
 const HEALTH_JSON: &str = concat!(
@@ -148,12 +224,15 @@ fn modmium_state() -> String {
     let branch = read_trimmed("/.branch").unwrap_or_else(|| "unknown".into());
     let version = read_trimmed("/usr/share/.version").unwrap_or_else(|| "unknown".into());
     let milestone = read_lsb_value("CHROMEOS_RELEASE_CHROME_MILESTONE").unwrap_or_default();
+    let board = read_lsb_value("CHROMEOS_RELEASE_BOARD").unwrap_or_default();
     let shell = read_trimmed("/root/.modshell")
         .and_then(|path| Path::new(&path).file_name()?.to_str().map(str::to_owned))
         .unwrap_or_else(|| "bash".into());
     let owner = read_trimmed("/usr/share/.gitowner").unwrap_or_else(|| "CrOSmium".into());
     let repository = read_trimmed("/usr/share/.gitrepo").unwrap_or_else(|| "modmium".into());
     let apps = fs::read_to_string("/usr/local/config/apps.conf").unwrap_or_default();
+    let policies =
+        fs::read_to_string("/usr/local/share/policy-test-tool/dump.json").unwrap_or_default();
 
     let mut json = String::from("{\"type\":\"state\",\"branch\":");
     push_json_string(&mut json, &branch);
@@ -161,6 +240,8 @@ fn modmium_state() -> String {
     push_json_string(&mut json, &version);
     json.push_str(",\"chromeosVersion\":");
     push_json_string(&mut json, &milestone);
+    json.push_str(",\"board\":");
+    push_json_string(&mut json, &board);
     json.push_str(",\"shell\":");
     push_json_string(&mut json, &shell);
     json.push_str(",\"repository\":");
@@ -170,6 +251,13 @@ fn modmium_state() -> String {
     );
     json.push_str(",\"appsConfig\":");
     push_json_string(&mut json, &apps);
+    json.push_str(",\"devicePolicies\":");
+    push_json_string(&mut json, &policies);
+    json.push_str(",\"bootRoot\":");
+    push_json_string(&mut json, &boot_root());
+    push_string_array(&mut json, "bootsplashes", &bootsplashes());
+    push_string_array(&mut json, "savedEnrollmentKeys", &saved_enrollment_keys());
+    push_string_array(&mut json, "stableVersions", &stable_versions(&milestone));
     push_bool(
         &mut json,
         "enrollmentEnabled",
@@ -194,11 +282,99 @@ fn modmium_state() -> String {
     );
     push_bool(
         &mut json,
-        "policyFileLoaded",
-        Path::new("/root/policy.json").is_file(),
+        "nixInstalled",
+        Path::new("/usr/local/.nix_install_done").is_file(),
+    );
+    push_bool(
+        &mut json,
+        "ashlandInstalled",
+        Path::new("/usr/local/bin/ashland").is_file(),
+    );
+    push_bool(
+        &mut json,
+        "ashlandAutostart",
+        Path::new("/etc/init/ashland.conf").is_file(),
+    );
+    push_bool(
+        &mut json,
+        "ashlandRunning",
+        command_succeeds("pgrep", &["-x", "ashland"]),
     );
     json.push('}');
     json
+}
+
+fn boot_root() -> String {
+    let output = Command::new("rootdev").arg("-s").output().ok();
+    let root = output
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+        .unwrap_or_default();
+    if root.trim_end().ends_with('3') {
+        "Root A"
+    } else if root.trim_end().ends_with('5') {
+        "Root B"
+    } else {
+        "Unknown"
+    }
+    .into()
+}
+
+fn bootsplashes() -> Vec<String> {
+    let Ok(entries) = fs::read_dir("/bootsplash") else {
+        return Vec::new();
+    };
+    let mut names: Vec<_> = entries
+        .flatten()
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter(|name| name.ends_with(".png"))
+        .collect();
+    names.sort();
+    names
+}
+
+fn stable_versions(current: &str) -> Vec<String> {
+    let contents = fs::read_to_string("/usr/share/.stable_versions.txt").unwrap_or_default();
+    let mut versions: Vec<_> = contents
+        .split(',')
+        .map(str::trim)
+        .filter(|version| valid_milestone(version))
+        .map(str::to_owned)
+        .collect();
+    if valid_milestone(current) && !versions.iter().any(|version| version == current) {
+        versions.push(current.to_owned());
+    }
+    versions.sort_by_key(|version| std::cmp::Reverse(version.parse::<u16>().unwrap_or_default()));
+    versions.dedup();
+    versions
+}
+
+fn saved_enrollment_keys() -> Vec<String> {
+    let Ok(output) = Command::new("vpd").args(["-i", "RW_VPD", "-l"]).output() else {
+        return Vec::new();
+    };
+    let mut names = Vec::new();
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        let Some(start) = line.find("saved_") else {
+            continue;
+        };
+        let key = &line[start + 6..];
+        let key = key.split('_').next().unwrap_or_default().trim_matches('"');
+        if valid_key_name(key) && !names.iter().any(|name| name == key) {
+            names.push(key.to_owned());
+        }
+    }
+    names.sort();
+    names
+}
+
+fn command_succeeds(program: &str, arguments: &[&str]) -> bool {
+    Command::new(program)
+        .args(arguments)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
 }
 
 fn read_trimmed(path: &str) -> Option<String> {
@@ -225,18 +401,39 @@ fn push_bool(json: &mut String, name: &str, value: bool) {
     let _ = write!(json, ",\"{name}\":{value}");
 }
 
+fn push_string_array(json: &mut String, name: &str, values: &[String]) {
+    use std::fmt::Write as _;
+    let _ = write!(json, ",\"{name}\":[");
+    for (index, value) in values.iter().enumerate() {
+        if index != 0 {
+            json.push(',');
+        }
+        push_json_string(json, value);
+    }
+    json.push(']');
+}
+
 fn run_mosh_action(request: &str) -> io::Result<String> {
     let fields: Result<Vec<_>, _> = request.split('\t').skip(1).map(decode_field).collect();
     let fields = fields?;
     let action_id = fields
         .first()
         .ok_or_else(|| io::Error::other("missing action"))?;
-    let &(_, script, mosh_action, argument_count) = MOSH_ACTIONS
-        .iter()
-        .find(|(id, _, _, _)| *id == action_id)
-        .ok_or_else(|| io::Error::other("action unavailable"))?;
     let arguments = &fields[1..];
-    if arguments.len() != argument_count {
+    if action_id == "apps.save" {
+        validate_action_arguments(action_id, arguments)?;
+        save_apps_config(&arguments[0])?;
+        return action_json(action_id);
+    }
+    if action_id == "account.create" {
+        validate_action_arguments(action_id, arguments)?;
+        return run_script_action(action_id, "/usr/bin/localacc.sh", arguments);
+    }
+    let &(_, script, function, min_arguments, max_arguments) = MOSH_ACTIONS
+        .iter()
+        .find(|(id, _, _, _, _)| *id == action_id)
+        .ok_or_else(|| io::Error::other("action unavailable"))?;
+    if !(min_arguments..=max_arguments).contains(&arguments.len()) {
         return Err(io::Error::other("wrong number of action arguments"));
     }
     validate_action_arguments(action_id, arguments)?;
@@ -244,8 +441,8 @@ fn run_mosh_action(request: &str) -> io::Result<String> {
     let mut command = Command::new(script);
     command
         .env("MOSH_FRONTEND", "gui")
-        .env("MOSH_GUI_ACTION", mosh_action)
-        .env("MOSH_GUI_ALLOWED", mosh_action)
+        .env("MOSH_GUI_ACTION", function)
+        .env("MOSH_GUI_ALLOWED", function)
         .env("TERM", "dumb")
         .env("PATH", "/bin:/usr/bin:/sbin:/usr/sbin:/opt/bin")
         .stdin(Stdio::null())
@@ -253,28 +450,117 @@ fn run_mosh_action(request: &str) -> io::Result<String> {
     for (index, argument) in arguments.iter().enumerate() {
         command.env(format!("MOSH_GUI_ARG_{index}"), argument);
     }
-    let output = command.output()?;
-    if !output.status.success() {
-        return Err(io::Error::other(format!(
-            "action failed with {}",
-            output.status
-        )));
+    command.stdout(Stdio::piped());
+    let mut child = command.spawn()?;
+    let marker = format!("MOSH1\tstarted\t{function}").into_bytes();
+    let started = stream_contains(
+        child
+            .stdout
+            .take()
+            .ok_or_else(|| io::Error::other("action output unavailable"))?,
+        &marker,
+    )?;
+    let status = child.wait()?;
+    if !status.success() {
+        return Err(io::Error::other(format!("action failed with {}", status)));
     }
-    let started = String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .any(|line| line == format!("MOSH1\tstarted\t{mosh_action}"));
     if !started {
         return Err(io::Error::other("MOSH rejected the action"));
     }
+    if action_id == "update.run" {
+        schedule_service_restart()?;
+    }
 
+    action_json(action_id)
+}
+
+fn schedule_service_restart() -> io::Result<()> {
+    Command::new("/bin/sh")
+        .args(["-c", "sleep 1; restart modmium-web"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+    Ok(())
+}
+
+fn stream_contains(mut output: impl Read, marker: &[u8]) -> io::Result<bool> {
+    let mut found = false;
+    let mut tail = Vec::with_capacity(marker.len());
+    let mut buffer = [0; 4096];
+    loop {
+        let count = output.read(&mut buffer)?;
+        if count == 0 {
+            return Ok(found);
+        }
+        tail.extend_from_slice(&buffer[..count]);
+        found |= tail.windows(marker.len()).any(|window| window == marker);
+        if tail.len() > marker.len() {
+            tail.drain(..tail.len() - marker.len());
+        }
+    }
+}
+
+fn run_script_action(action_id: &str, script: &str, arguments: &[String]) -> io::Result<String> {
+    let mut command = Command::new(script);
+    command
+        .env("MOSH_FRONTEND", "gui")
+        .env("TERM", "dumb")
+        .env("PATH", "/bin:/usr/bin:/sbin:/usr/sbin:/opt/bin")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    for (index, argument) in arguments.iter().enumerate() {
+        command.env(format!("MOSH_GUI_ARG_{index}"), argument);
+    }
+    let status = command.status()?;
+    if !status.success() {
+        return Err(io::Error::other(format!("action failed with {status}")));
+    }
+    action_json(action_id)
+}
+
+fn action_json(action_id: &str) -> io::Result<String> {
     let mut json = String::from("{\"type\":\"action\",\"action\":");
     push_json_string(&mut json, action_id);
     json.push_str(",\"ok\":true}");
     Ok(json)
 }
 
+fn save_apps_config(contents: &str) -> io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+
+    fs::create_dir_all("/usr/local/config")?;
+    let temporary = format!("/usr/local/config/.apps.conf.{}", std::process::id());
+    fs::write(&temporary, contents)?;
+    fs::set_permissions(&temporary, fs::Permissions::from_mode(0o644))?;
+    fs::rename(temporary, "/usr/local/config/apps.conf")
+}
+
 fn validate_action_arguments(action: &str, arguments: &[String]) -> io::Result<()> {
     let valid = match action {
+        "apps.save" => arguments.len() == 1 && valid_apps_config(&arguments[0]),
+        "account.create" => {
+            arguments.len() == 5
+                && valid_account_name(&arguments[0])
+                && valid_domain(&arguments[1])
+                && !arguments[2].is_empty()
+                && arguments[2].len() <= 256
+                && arguments[2] == arguments[3]
+                && !arguments[4].trim().is_empty()
+                && arguments[4].len() <= 128
+        }
+        "update.run" => {
+            arguments.len() == 1 && matches!(arguments[0].as_str(), "stable" | "nightly")
+        }
+        "version.install" => {
+            (6..=8).contains(&arguments.len())
+                && valid_milestone(&arguments[0])
+                && arguments[1..].iter().all(|argument| valid_choice(argument))
+        }
+        "boot.swap" => {
+            arguments.len() == 3 && arguments.iter().all(|argument| valid_choice(argument))
+        }
         "shell.set" => {
             let shell = &arguments[0];
             !shell.is_empty()
@@ -285,13 +571,129 @@ fn validate_action_arguments(action: &str, arguments: &[String]) -> io::Result<(
         }
         "repository.set" => valid_github_url(&arguments[0]) && arguments[1] == "true",
         "repository.reset" => arguments[0] == "true",
-        _ => false,
+        "enrollment.enable" | "enrollment.disable" => arguments == ["y", "y"],
+        "bootsplash.replace" => arguments.len() == 1 && valid_filename(&arguments[0]),
+        "bootsplash.custom" => arguments.len() == 1 && valid_relative_path(&arguments[0]),
+        "bootsplash.remove" => arguments == ["y"],
+        "policies.save" => arguments.len() == 1 && arguments[0].len() <= MAX_MESSAGE,
+        "cr3nroll.save" => {
+            arguments.len() == 2 && valid_key_name(&arguments[0]) && arguments[1] == "y"
+        }
+        "cr3nroll.load" => arguments.len() == 1 && valid_key_name(&arguments[0]),
+        "cr3nroll.generate" => {
+            arguments.len() == 4
+                && arguments[0] == "y"
+                && arguments[1] == "a"
+                && arguments[2] == "y"
+                && valid_key_name(&arguments[3])
+        }
+        "cr3nroll.import" | "cr3nroll.backup" => {
+            arguments.len() == 1 && valid_device_path(&arguments[0])
+        }
+        "revert.factory" => {
+            arguments.len() >= 2
+                && valid_milestone(arguments.last().unwrap())
+                && arguments[..arguments.len() - 1]
+                    .iter()
+                    .all(|argument| valid_choice(argument))
+                && arguments[0] == "y"
+        }
+        "revert.mpkeys" => {
+            arguments.iter().all(|argument| valid_choice(argument))
+                && arguments.first().is_some_and(|argument| argument == "y")
+        }
+        "revert.os" => arguments.len() == 1 && valid_milestone(&arguments[0]),
+        _ => arguments.is_empty() && MOSH_ACTIONS.iter().any(|item| item.0 == action),
     };
     if valid {
         Ok(())
     } else {
         Err(io::Error::other("invalid action arguments"))
     }
+}
+
+fn valid_choice(value: &str) -> bool {
+    matches!(value, "y" | "n" | "stable" | "nightly")
+}
+
+fn valid_milestone(value: &str) -> bool {
+    value
+        .parse::<u16>()
+        .is_ok_and(|milestone| (80..=999).contains(&milestone))
+}
+
+fn valid_filename(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 128
+        && !value.contains('/')
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'.' | b'+' | b'-'))
+}
+
+fn valid_relative_path(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 512
+        && !value.starts_with('/')
+        && !value.split('/').any(|part| part == "..")
+        && !value
+            .bytes()
+            .any(|byte| byte == 0 || byte == b'\r' || byte == b'\n')
+}
+
+fn valid_device_path(value: &str) -> bool {
+    (value.starts_with("/home/user/") || value.starts_with("/mnt/stateful_partition/"))
+        && value.len() <= 512
+        && !value.split('/').any(|part| part == "..")
+        && !value
+            .bytes()
+            .any(|byte| byte == 0 || byte == b'\r' || byte == b'\n')
+}
+
+fn valid_key_name(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-'))
+}
+
+fn valid_account_name(value: &str) -> bool {
+    !value.trim().is_empty()
+        && value.len() <= 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+}
+
+fn valid_domain(value: &str) -> bool {
+    value.len() <= 253
+        && value.contains('.')
+        && !value.ends_with('.')
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-'))
+}
+
+fn valid_apps_config(contents: &str) -> bool {
+    if contents.len() > MAX_APPS_CONFIG {
+        return false;
+    }
+    let mut entries = 0;
+    for line in contents.lines() {
+        let line = line.trim();
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let Some((command, name)) = line.split_once('|') else {
+            return false;
+        };
+        if command.trim().is_empty() || name.trim().is_empty() {
+            return false;
+        }
+        entries += 1;
+    }
+    entries <= 38
 }
 
 fn valid_github_url(url: &str) -> bool {
@@ -891,12 +1293,39 @@ mod tests {
     }
 
     #[test]
+    fn finds_an_action_marker_across_output_chunks() {
+        let mut output = vec![b'x'; 4094];
+        output.extend_from_slice(b"MOSH1\tstarted\tupdateModmium\n");
+        assert!(stream_contains(&output[..], b"MOSH1\tstarted\tupdateModmium").unwrap());
+    }
+
+    #[test]
     fn accepts_the_gui_action_arguments() {
         assert!(validate_action_arguments("shell.set", &["/bin/bash".into()]).is_ok());
         assert!(
             validate_action_arguments(
                 "repository.set",
                 &["https://github.com/CrOSmium/modmium".into(), "true".into()]
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_action_arguments(
+                "apps.save",
+                &["nano /usr/local/config/apps.conf | Edit apps.conf".into()]
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_action_arguments(
+                "account.create",
+                &[
+                    "pilot".into(),
+                    "modmium.dev".into(),
+                    "password".into(),
+                    "password".into(),
+                    "Pilot".into(),
+                ]
             )
             .is_ok()
         );
@@ -912,6 +1341,8 @@ mod tests {
             )
             .is_err()
         );
+        assert!(validate_action_arguments("apps.save", &["missing separator".into()]).is_err());
+        assert!(MOSH_ACTIONS.iter().all(|action| !action.0.contains("user")));
     }
 
     #[test]

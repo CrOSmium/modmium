@@ -37,82 +37,63 @@ const GUI_PAGE_OVERRIDES = {
     {
       header: 'Modmium',
       rows: [
-        {label: 'Nightly', status: true, detail: 'update', action: 'Check for updates', primary: true},
-        {label: 'ChromeOS version', sublabel: '152', detail: 'version'},
-        {label: 'Shell', sublabel: 'bash', detail: 'shell'},
-        {label: 'Source repository', sublabel: 'CrOSmium/modmium', detail: 'repository'},
-        {label: 'Boot priority', sublabel: 'Root A', detail: 'boot'},
+        {label: 'Current build', sublabel: 'Modmium', detail: 'update'},
+        {label: 'ChromeOS version', detail: 'version'},
+        {label: 'Shell', detail: 'shell'},
+        {label: 'Source repository', detail: 'repository'},
+        {label: 'Boot priority', detail: 'boot'},
       ],
     },
     {
       header: 'Device',
       rows: [
-        {label: 'Enrollment', sublabel: 'Enabled', detail: 'enrollment'},
+        {label: 'Enrollment', detail: 'enrollment'},
         {label: 'Local account', detail: 'account'},
         {label: 'Feature toggles', detail: 'features'},
       ],
     },
   ],
-  policies: [
-    {
-      header: 'Policies',
-      rows: [
-        {label: 'Device policies', sublabel: 'Restrictions, reporting, enterprise, misc', detail: 'device-policies'},
-        {label: 'User policies', sublabel: 'policy.json', detail: 'user-policies'},
-      ],
-    },
-  ],
-  apps: [
-    {
-      header: 'MOSH apps',
-      rows: [
-        {label: 'apps.conf', sublabel: 'Commands shown in the MOSH Apps menu', detail: 'apps-config'},
-      ],
-    },
-  ],
-  misc: [
-    {
-      header: 'Misc',
-      rows: [
-        {label: 'Bootsplash', detail: 'bootsplash'},
-        {label: 'Cr3nroll', detail: 'cr3nroll'},
-        {label: 'Emergency revert', detail: 'revert'},
-        {label: 'Nix', detail: 'nix'},
-        {label: 'Ashland', detail: 'ashland'},
-        {label: 'Credits', detail: 'credits'},
-      ],
-    },
-  ],
+  policies: [{
+    header: 'Policies',
+    rows: [
+      {label: 'Device policies', sublabel: 'Edit and apply the current device policy', detail: 'device-policies'},
+    ],
+  }],
+  apps: [{
+    header: 'MOSH apps',
+    rows: [
+      {label: 'apps.conf', sublabel: 'Commands shown in the MOSH Apps menu', detail: 'apps-config'},
+    ],
+  }],
+  misc: [{
+    header: 'Misc',
+    rows: [
+      {label: 'Bootsplash', detail: 'bootsplash'},
+      {label: 'Cr3nroll', detail: 'cr3nroll'},
+      {label: 'Emergency revert', detail: 'revert'},
+      {label: 'Nix', detail: 'nix'},
+      {label: 'Ashland', detail: 'ashland'},
+      {label: 'Credits', detail: 'credits'},
+    ],
+  }],
 };
-
-function genericMenuCards(menu) {
-  if (!menu) return [];
-  return [{
-    header: menu.title,
-    rows: menu.items
-      .filter(item => item.id.split('.').at(-1) !== 'exit')
-      .map(item => ({
-        label: item.label,
-        detail: item.view || '',
-        actions: !item.view && item.enabled ? [{
-          label: 'Run',
-          moshMenu: menu.id,
-          moshAction: item.id,
-        }] : [],
-      })),
-  }];
-}
 
 const DETAIL_DATA = {
   update: {
     page: 'manager', title: 'Update Modmium', cards: [{rows: [
-      {label: 'Current build', sublabel: 'Modmium nightly', actions: [{label: 'Check now', primary: true, message: 'Update check started'}]},
+      {label: 'Installed version', sublabel: 'Modmium'},
+      {label: 'Branch', kind: 'select', options: ['stable', 'nightly'], value: 'nightly', actions: [
+        {label: 'Update', primary: true, confirm: true, prompt: 'Update Modmium now?',
+          message: 'Modmium updated', moshAction: 'update.run'},
+      ]},
     ]}],
   },
   version: {
     page: 'manager', title: 'ChromeOS version', cards: [{rows: [
-      {label: 'ChromeOS version', kind: 'select', options: ['152', '151', '150'], value: '152'},
-      {actions: [{label: 'Continue', primary: true, message: 'ChromeOS version selected'}]},
+      {label: 'Milestone', kind: 'select', options: [], value: '152', actions: [
+        {label: 'Install', danger: true, prompt: 'Install this ChromeOS version?',
+          message: 'ChromeOS version installed', moshAction: 'version.install'},
+      ]},
     ]}],
   },
   shell: {
@@ -136,87 +117,156 @@ const DETAIL_DATA = {
   },
   boot: {
     page: 'manager', title: 'Boot priority', cards: [{rows: [
-      {label: 'Current boot root', sublabel: 'Root A', actions: [{label: 'Swap priority', primary: true, message: 'Boot priority swapped'}]},
+      {label: 'Current boot root', sublabel: 'Unknown', actions: [
+        {label: 'Swap and reboot', danger: true, prompt: 'Switch boot roots and reboot?',
+          message: 'Boot priority changed', moshAction: 'boot.swap', args: ['y', 'n', 'n']},
+      ]},
     ]}],
   },
   enrollment: {
     page: 'manager', title: 'Enrollment', cards: [{rows: [
-      {label: 'Enrollment', sublabel: 'Enabled', actions: [{label: 'Disable enrollment', danger: true, message: 'Disable enrollment?'}]},
+      {label: 'Enrollment', sublabel: 'Enabled', actions: [
+        {label: 'Disable enrollment', danger: true,
+          prompt: 'Change enrollment and powerwash this Chromebook?',
+          message: 'Enrollment changed', moshAction: 'enrollment.disable', args: ['y', 'y']},
+      ]},
     ]}],
   },
   account: {
     page: 'manager', title: 'Add local account', cards: [{rows: [
-      {label: 'Username', kind: 'input'},
-      {label: 'Domain', kind: 'input', value: 'modmium.dev'},
-      {label: 'Display name', kind: 'input'},
-      {label: 'Password', kind: 'password'},
-      {actions: [{label: 'Create account', primary: true, message: 'Local account ready to create'}]},
+      {name: 'username', label: 'Username', kind: 'input'},
+      {name: 'domain', label: 'Domain', kind: 'input', value: 'modmium.dev'},
+      {name: 'displayName', label: 'Display name', kind: 'input'},
+      {name: 'password', label: 'Password', kind: 'password'},
+      {name: 'passwordConfirm', label: 'Confirm password', kind: 'password'},
+      {actions: [
+        {label: 'Create account', primary: true, confirm: true,
+          prompt: 'Create this local account and restart Chrome?',
+          message: 'Local account created', moshAction: 'account.create',
+          fields: ['username', 'domain', 'password', 'passwordConfirm', 'displayName']},
+      ]},
     ]}],
   },
   features: {
     page: 'manager', title: 'Feature toggles', cards: [{rows: [
-      {label: 'Chromebook Plus features', kind: 'toggle'},
-      {label: 'Studio Mic', kind: 'toggle'},
-      {label: 'System Blur', kind: 'toggle', checked: true},
+      {label: 'Chromebook Plus features', kind: 'toggle',
+        toggleAction: {message: 'Chromebook Plus features changed', moshAction: 'feature.chromebook-plus'}},
+      {label: 'Studio Mic', kind: 'toggle',
+        toggleAction: {message: 'Studio Mic changed', moshAction: 'feature.studio-mic'}},
+      {label: 'System Blur', kind: 'toggle',
+        toggleAction: {message: 'System Blur changed', moshAction: 'feature.system-blur'}},
     ]}],
   },
   'device-policies': {
-    page: 'policies', title: 'Device policies', cards: [{header: 'Policy categories', rows: [
-      {label: 'Restrictions', actions: [{label: 'Edit', message: 'Restrictions opened'}]},
-      {label: 'Reporting', actions: [{label: 'Edit', message: 'Reporting opened'}]},
-      {label: 'Enterprise settings', actions: [{label: 'Edit', message: 'Enterprise settings opened'}]},
-      {label: 'Misc', actions: [{label: 'Edit', message: 'Misc policies opened'}]},
-      {actions: [{label: 'Reset changes', danger: true, message: 'Reset policy changes?'}, {label: 'Apply policies', primary: true, message: 'Device policies applied'}]},
-    ]}],
-  },
-  'user-policies': {
-    page: 'policies', title: 'User policies', cards: [{rows: [
-      {label: 'Policy file', sublabel: 'No policy.json loaded', actions: [{label: 'Grab from Downloads', message: 'Policy import selected'}]},
-      {label: 'Current account', actions: [{label: 'Extract policies', message: 'Policy extraction selected'}]},
-      {label: 'Policy editor', actions: [{label: 'Run editor', primary: true, message: 'User policy editor selected'}]},
-      {label: 'Editor installation', actions: [{label: 'Reinstall', message: 'Policy editor reinstall selected'}]},
+    page: 'policies', title: 'Device policies', cards: [{rows: [
+      {name: 'devicePolicies', label: 'Policy JSON', kind: 'textarea', value: '', actions: [
+        {label: 'Save', primary: true, message: 'Policy changes saved', moshAction: 'policies.save'},
+      ]},
+      {actions: [
+        {label: 'Load from device', message: 'Policies loaded', moshAction: 'policies.load'},
+        {label: 'Reset changes', danger: true, prompt: 'Restore the original device policy?',
+          message: 'Policies reset', moshAction: 'policies.reset'},
+        {label: 'Apply policies', primary: true, confirm: true, prompt: 'Apply these device policies?',
+          message: 'Policies applied', moshAction: 'policies.apply'},
+      ]},
     ]}],
   },
   'apps-config': {
     page: 'apps', title: 'Apps', cards: [{header: 'apps.conf', rows: [
-      {kind: 'textarea', value: 'nano /usr/local/config/apps.conf | Edit apps.conf'},
-      {sublabel: 'COMMAND | NAME · Maximum 9 entries', actions: [{label: 'Save', primary: true, message: 'Apps configuration saved'}]},
+      {label: 'Entries', sublabel: 'COMMAND | NAME · Maximum 38 entries',
+        kind: 'textarea', value: '', actions: [
+          {label: 'Save', primary: true, message: 'Apps configuration saved', moshAction: 'apps.save'},
+        ]},
     ]}],
   },
   bootsplash: {
     page: 'misc', title: 'Bootsplash', cards: [{rows: [
-      {label: 'Modmium bootsplash', actions: [{label: 'Replace', message: 'Modmium bootsplash selected'}]},
-      {label: 'Custom image', actions: [{label: 'Choose', message: 'Custom image selected'}]},
-      {label: 'Stock bootsplash', actions: [{label: 'Restore', message: 'Stock bootsplash restored'}, {label: 'Download backup', message: 'Stock bootsplash backup selected'}]},
-      {label: 'Installed bootsplash', actions: [{label: 'Remove', danger: true, message: 'Remove the installed bootsplash?'}]},
+      {label: 'Modmium image', kind: 'select', options: [], value: '', actions: [
+        {label: 'Replace', primary: true, message: 'Bootsplash replaced', moshAction: 'bootsplash.replace'},
+      ]},
+      {label: 'Custom image path', kind: 'input', value: 'Downloads/', actions: [
+        {label: 'Replace', primary: true, message: 'Bootsplash replaced', moshAction: 'bootsplash.custom'},
+      ]},
+      {label: 'Stock bootsplash', actions: [
+        {label: 'Restore', message: 'Stock bootsplash restored', moshAction: 'bootsplash.restore'},
+        {label: 'Download backup', message: 'Stock bootsplash downloaded', moshAction: 'bootsplash.download'},
+      ]},
+      {label: 'Installed bootsplash', actions: [
+        {label: 'Remove', danger: true, prompt: 'Remove the installed bootsplash?',
+          message: 'Bootsplash removed', moshAction: 'bootsplash.remove', args: ['y']},
+      ]},
     ]}],
   },
   cr3nroll: {
     page: 'misc', title: 'Cr3nroll', cards: [{rows: [
-      {label: 'Current enrollment keys', actions: [{label: 'Save', message: 'Enrollment keys saved'}]},
-      {label: 'Saved enrollment keys', actions: [{label: 'Load', message: 'Saved keys selected'}]},
-      {label: 'New enrollment keys', actions: [{label: 'Generate', message: 'Key generation selected'}]},
-      {label: 'Enrollment info', actions: [{label: 'Import', message: 'Enrollment import selected'}, {label: 'Backup', message: 'Enrollment backup selected'}]},
+      {label: 'Save current keys as', kind: 'input', actions: [
+        {label: 'Save', primary: true, message: 'Enrollment keys saved',
+          moshAction: 'cr3nroll.save', appendArgs: ['y']},
+      ]},
+      {label: 'Saved keys', kind: 'select', options: [], value: '', actions: [
+        {label: 'Load', danger: true, prompt: 'Replace the active enrollment keys?',
+          message: 'Enrollment keys loaded', moshAction: 'cr3nroll.load'},
+      ]},
+      {label: 'Generate keys as', kind: 'input', actions: [
+        {label: 'Generate', primary: true, message: 'Enrollment keys generated',
+          moshAction: 'cr3nroll.generate'},
+      ]},
+      {label: 'Import directory', kind: 'input', value: '/home/user/', actions: [
+        {label: 'Import', danger: true, prompt: 'Overwrite VPD from this directory?',
+          message: 'Enrollment information imported', moshAction: 'cr3nroll.import'},
+      ]},
+      {label: 'Backup directory', kind: 'input', value: '/home/user/', actions: [
+        {label: 'Backup', primary: true, message: 'Enrollment information backed up',
+          moshAction: 'cr3nroll.backup'},
+      ]},
     ]}],
   },
   revert: {
     page: 'misc', title: 'Emergency revert', cards: [{rows: [
-      {label: 'Full factory revert', actions: [{label: 'Restore OS and MPkeys', danger: true, message: 'Restore ChromeOS and MPkeys?'}]},
-      {label: 'ChromeOS', actions: [{label: 'Restore OS', danger: true, message: 'Restore ChromeOS?'}]},
-      {label: 'MPkeys', actions: [{label: 'Revert MPkeys', danger: true, message: 'Revert MPkeys?'}]},
+      {label: 'Factory ChromeOS milestone', kind: 'select', options: [], value: '152', actions: [
+        {label: 'Restore OS and MPkeys', danger: true,
+          prompt: 'Restore factory ChromeOS and MPkeys?',
+          message: 'Factory restore completed', moshAction: 'revert.factory'},
+      ]},
+      {label: 'ChromeOS milestone', kind: 'select', options: [], value: '152', actions: [
+        {label: 'Restore OS', danger: true, prompt: 'Restore factory ChromeOS?',
+          message: 'ChromeOS restored', moshAction: 'revert.os'},
+      ]},
+      {label: 'MPkeys', actions: [
+        {label: 'Revert MPkeys', danger: true, prompt: 'Revert MPkeys?',
+          message: 'MPkeys reverted', moshAction: 'revert.mpkeys'},
+      ]},
     ]}],
   },
   nix: {
     page: 'misc', title: 'Nix', cards: [{rows: [
-      {label: 'Nix', actions: [{label: 'Install', primary: true, message: 'Nix installation selected'}]},
-      {label: 'Mix', actions: [{label: 'Update', message: 'Mix update selected'}]},
+      {label: 'Nix', actions: [
+        {label: 'Install', primary: true, confirm: true, prompt: 'Install Nix?',
+          message: 'Nix installed', moshAction: 'nix.install'},
+      ]},
+      {label: 'Mix', actions: [
+        {label: 'Update', message: 'Mix updated', moshAction: 'mix.update'},
+      ]},
     ]}],
   },
   ashland: {
     page: 'misc', title: 'Ashland', cards: [{rows: [
-      {label: 'Ashland', actions: [{label: 'Install', primary: true, message: 'Ashland installation selected'}]},
-      {label: 'Run Ashland', kind: 'toggle'},
-      {label: 'Autostart on reboot', kind: 'toggle'},
+      {label: 'Ashland', sublabel: 'Not installed', actions: [
+        {label: 'Install', primary: true, message: 'Ashland installed', moshAction: 'ashland.install'},
+        {label: 'Update', message: 'Ashland updated', moshAction: 'ashland.update'},
+        {label: 'Uninstall', danger: true, prompt: 'Uninstall Ashland?',
+          message: 'Ashland uninstalled', moshAction: 'ashland.uninstall'},
+      ]},
+      {label: 'Run Ashland', kind: 'toggle',
+        toggleAction: {message: 'Ashland state changed', moshAction: 'ashland.toggle'}},
+      {label: 'Autostart on reboot', kind: 'toggle',
+        toggleAction: {message: 'Ashland autostart changed', moshAction: 'ashland.autostart'}},
+      {label: 'Layout', actions: [
+        {label: 'Next', message: 'Ashland layout changed', moshAction: 'ashland.layout'},
+      ]},
+      {label: 'Window gaps', actions: [
+        {label: 'Next', message: 'Ashland gaps changed', moshAction: 'ashland.gaps'},
+      ]},
     ]}],
   },
   credits: {
@@ -373,23 +423,24 @@ class ModmiumSettingsRowElement extends PolymerElement {
           </div>
 
           <template is="dom-if" if="[[_isInput(item)]]">
-            <cr-input value="[[item.value]]" aria-label$="[[item.label]]"></cr-input>
+            <cr-input value="{{item.value}}" aria-label$="[[item.label]]"></cr-input>
           </template>
           <template is="dom-if" if="[[_isPassword(item)]]">
-            <cr-input type="password" aria-label$="[[item.label]]"></cr-input>
+            <cr-input type="password" value="{{item.value}}" aria-label$="[[item.label]]"></cr-input>
           </template>
           <template is="dom-if" if="[[_isSelect(item)]]">
-            <select class="md-select" aria-label$="[[item.label]]">
+            <select class="md-select" aria-label$="[[item.label]]" on-change="_controlChanged">
               <template is="dom-repeat" items="[[item.options]]" as="option">
                 <option selected$="[[_selected(option, item.value)]]">[[option]]</option>
               </template>
             </select>
           </template>
           <template is="dom-if" if="[[_isToggle(item)]]">
-            <cr-toggle checked="[[item.checked]]" aria-label$="[[item.label]]"></cr-toggle>
+            <cr-toggle checked="{{item.checked}}" aria-label$="[[item.label]]"
+                on-change="_toggleAction"></cr-toggle>
           </template>
           <template is="dom-if" if="[[_isTextarea(item)]]">
-            <cr-textarea value="[[item.value]]" aria-label="MOSH apps configuration"></cr-textarea>
+            <cr-textarea value="{{item.value}}" aria-label$="[[item.label]]"></cr-textarea>
           </template>
           <template is="dom-if" if="[[item.actions.length]]">
             <div class="actions">
@@ -420,10 +471,20 @@ class ModmiumSettingsRowElement extends PolymerElement {
       bubbles: true, composed: true, detail: this.item.detail,
     }));
   }
+  _controlChanged(event) { this.set('item.value', event.target.value); }
+  _toggleAction() {
+    if (!this.item.toggleAction) return;
+    this.dispatchEvent(new CustomEvent('modmium-action', {
+      bubbles: true, composed: true, detail: {...this.item.toggleAction},
+    }));
+  }
+  fieldValue(name) {
+    return this.item.name === name ? String(this.item.value || '') : null;
+  }
   _runAction(event) {
     const action = {...event.model.action};
     const control = this.shadowRoot.querySelector('cr-input, select, cr-textarea');
-    action.args = control ? [control.value, ...(action.args || [])] : action.args || [];
+    action.args = control ? [control.value, ...(action.appendArgs || action.args || [])] : action.args || [];
     this.dispatchEvent(new CustomEvent('modmium-action', {
       bubbles: true, composed: true, detail: action,
     }));
@@ -987,38 +1048,77 @@ class ModmiumSettingsMainElement extends PolymerElement {
     const rows = cards.flatMap(card => card.rows);
     const row = label => rows.find(candidate => candidate.label === label);
     if (!detail && page === 'manager') {
-      row('Nightly').label = `Modmium ${state.branch}`;
+      row('Current build').sublabel = `Modmium ${state.modmiumVersion} ${state.branch}`;
       row('ChromeOS version').sublabel = state.chromeosVersion;
       row('Shell').sublabel = state.shell;
       row('Source repository').sublabel = state.repository.replace('https://github.com/', '');
       row('Enrollment').sublabel = state.enrollmentEnabled ? 'Enabled' : 'Disabled';
     } else if (detail === 'update') {
-      row('Current build').sublabel = `Modmium ${state.modmiumVersion} ${state.branch}`;
+      row('Installed version').sublabel = `Modmium ${state.modmiumVersion} ${state.branch}`;
+      row('Branch').value = state.branch;
     } else if (detail === 'version') {
-      const version = row('ChromeOS version');
-      version.value = state.chromeosVersion;
-      if (!version.options.includes(state.chromeosVersion)) version.options.unshift(state.chromeosVersion);
+      row('Milestone').options = state.stableVersions;
+      row('Milestone').value = state.chromeosVersion;
     } else if (detail === 'shell') {
       row('Shell executable').value = state.shell;
     } else if (detail === 'repository') {
       row('Repository URL').value = state.repository;
+    } else if (detail === 'boot') {
+      row('Current boot root').sublabel = state.bootRoot;
     } else if (detail === 'enrollment') {
       const enrollment = row('Enrollment');
       enrollment.sublabel = state.enrollmentEnabled ? 'Enabled' : 'Disabled';
       enrollment.actions[0].label = state.enrollmentEnabled ?
         'Disable enrollment' : 'Enable enrollment';
+      enrollment.actions[0].moshAction = state.enrollmentEnabled ?
+        'enrollment.disable' : 'enrollment.enable';
     } else if (detail === 'features') {
       row('Chromebook Plus features').checked = state.chromebookPlus;
       row('Studio Mic').checked = state.studioMic;
       row('System Blur').checked = state.systemBlur;
-    } else if (detail === 'user-policies') {
-      row('Policy file').sublabel = state.policyFileLoaded ?
-        'policy.json loaded' : 'No policy.json loaded';
+    } else if (detail === 'device-policies') {
+      row('Policy JSON').value = state.devicePolicies;
     } else if (detail === 'apps-config') {
       rows.find(candidate => candidate.kind === 'textarea').value = state.appsConfig;
+    } else if (detail === 'bootsplash') {
+      const installed = row('Modmium image');
+      installed.options = state.bootsplashes;
+      installed.value = state.bootsplashes[0] || '';
+      if (!state.bootsplashes.length) {
+        cards[0].rows = cards[0].rows.filter(candidate => candidate !== installed);
+      }
+    } else if (detail === 'cr3nroll') {
+      const saved = row('Saved keys');
+      saved.options = state.savedEnrollmentKeys;
+      saved.value = state.savedEnrollmentKeys[0] || '';
+    } else if (detail === 'revert') {
+      row('Factory ChromeOS milestone').options = state.stableVersions;
+      row('Factory ChromeOS milestone').value = state.chromeosVersion;
+      row('ChromeOS milestone').options = state.stableVersions;
+      row('ChromeOS milestone').value = state.chromeosVersion;
+    } else if (detail === 'nix') {
+      row('Nix').sublabel = state.nixInstalled ? 'Installed' : 'Not installed';
+      if (!state.nixInstalled) cards[0].rows = [row('Nix')];
+    } else if (detail === 'ashland') {
+      const ashland = row('Ashland');
+      ashland.sublabel = state.ashlandInstalled ? 'Installed' : 'Not installed';
+      ashland.actions = state.ashlandInstalled ? ashland.actions.slice(1) : ashland.actions.slice(0, 1);
+      row('Run Ashland').checked = state.ashlandRunning;
+      row('Autostart on reboot').checked = state.ashlandAutostart;
+      if (!state.ashlandInstalled) cards[0].rows = [ashland];
     }
   }
   _title(detail) { return DETAIL_DATA[detail]?.title || ''; }
+  fieldValues(names) {
+    const rows = [...this.shadowRoot.querySelectorAll('modmium-settings-row')];
+    return names.map(name => {
+      for (const row of rows) {
+        const value = row.fieldValue(name);
+        if (value !== null) return value;
+      }
+      return '';
+    });
+  }
   _routeChanged() {
     if (!this.$?.mainPageContainer) return;
     this.$.mainPageContainer.classList.remove('entering');
@@ -1124,7 +1224,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
           </os-settings-menu>
         </div>
         <div id="center">
-          <modmium-settings-main page="[[page]]" detail="[[detail]]"
+          <modmium-settings-main id="main" page="[[page]]" detail="[[detail]]"
               daemon-status="[[daemonStatus]]"
               mosh-menus="[[moshMenus]]"
               modmium-state="[[modmiumState]]"
@@ -1203,7 +1303,9 @@ class ModmiumSettingsUiElement extends PolymerElement {
     this._setRoute(entry.page, entry.detail);
   }
   _action(event) {
-    const action = event.detail;
+    let action = {...event.detail};
+    if (action.fields) action.args = this.$.main.fieldValues(action.fields);
+    action = this._prepareAction(action);
     if (action.danger || action.confirm) {
       this.pendingAction = {
         ...action,
@@ -1214,6 +1316,27 @@ class ModmiumSettingsUiElement extends PolymerElement {
       return;
     }
     this._runAction(action);
+  }
+  _prepareAction(action) {
+    const args = action.args || [];
+    if (action.moshAction === 'version.install') {
+      const target = Number(args[0]);
+      const current = Number(this.modmiumState.chromeosVersion);
+      action.args = [String(target)];
+      if (target < current) action.args.push('y');
+      if (target < 131) action.args.push('y');
+      action.args.push(this.modmiumState.branch, 'y', 'n', 'n', 'n');
+    } else if (action.moshAction === 'cr3nroll.generate') {
+      action.args = ['y', 'a', 'y', args[0]];
+    } else if (action.moshAction === 'revert.factory') {
+      action.args = ['y'];
+      if (/^(corsola|dedede|nissa)/.test(this.modmiumState.board)) action.args.push('n');
+      action.args.push(args[0]);
+    } else if (action.moshAction === 'revert.mpkeys') {
+      action.args = ['y'];
+      if (/^(corsola|dedede|nissa)/.test(this.modmiumState.board)) action.args.push('n');
+    }
+    return action;
   }
   _cancelAction() {
     this.$.confirmDialog.cancel();
@@ -1280,6 +1403,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
       } else if (response.error) {
         this._showToast(response.error);
         this._pendingMoshAction = null;
+        event.source.postMessage({type: 'request', body: 'state'}, event.origin);
       }
     } catch {
       this.daemonStatus = 'Service error';

@@ -56,7 +56,7 @@ if [[ $MOSH_FRONTEND == gui ]]; then
         continue
       fi
       case $argument in
-        -p|-i) skip=1 ;;
+        -p|-i|-n|-t|-u) skip=1 ;;
         -*p*|-*i*) skip=1 ;;
         -*) ;;
         *) variable=$argument ;;
@@ -88,6 +88,17 @@ mosh_confirm() {
   local answer
   mosh_input answer "$1 [y/N] " n
   [[ $answer == y || $answer == Y || $answer == yes || $answer == true ]]
+}
+
+mosh_gui_run_action() {
+  local id=$1 function=$2
+  [[ $MOSH_FRONTEND == gui && $MOSH_GUI_ACTION == "$id" ]] || return 1
+  [[ " $MOSH_GUI_ALLOWED " == *" $id "* ]] || command exit 2
+  unset MOSH_GUI_ACTION
+  printf 'MOSH1\tstarted\t%s\n' "$id"
+  "$function"
+  printf 'MOSH1\tdone\t%s\n' "$id"
+  command exit 0
 }
 
 mosh_gui_menu() {
@@ -188,6 +199,14 @@ get_fixed_dst_drive() {
 }
 
 runscript() {
+  if [[ $MOSH_FRONTEND == gui ]]; then
+    if declare -F "$1" >/dev/null; then
+      "$1"
+    else
+      as_system clearsecbits "$1"
+    fi
+    return
+  fi
   stty echo
   tput cnorm
   echo "$1"
@@ -224,6 +243,14 @@ employ() { # this named employ to scare fanxql away
 }
 
 runscriptnoroot() {
+  if [[ $MOSH_FRONTEND == gui ]]; then
+    if declare -F "$1" >/dev/null; then
+      "$1"
+    else
+      "$1"
+    fi
+    return
+  fi
   stty echo
   tput cnorm
   echo "$1"
