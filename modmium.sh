@@ -224,14 +224,13 @@ installCros() {
       mkdir -p $dir
       cp $file $oldFile
       chown 0:0 $oldFile
-      chmod --reference="$file" "$oldFile"
+      chmod 777 $oldFile
     fi
   done
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp build-utils/lib/minioverride-${arch}.so mnt/lib/minioverride.so
   cp build-utils/bin/clearsecbits-${arch} mnt/usr/bin/clearsecbits
-  bash build-utils/install-webui.sh mnt "$arch"
   rm -rf mnt/root/.force_update_firmware mnt/opt/google/cr50 mnt/opt/google/ti50
   [[ -d ${BACKUP}/userkeys ]] && cp -r ${BACKUP}/userkeys mnt/usr/share/vboot
   echo $branch > mnt/.branch

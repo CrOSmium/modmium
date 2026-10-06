@@ -150,14 +150,7 @@ dropModFiles() {
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp modmium/build-utils/lib/minioverride-${arch}.so /lib/minioverride.so
   cp modmium/build-utils/bin/clearsecbits-${arch} /usr/bin/clearsecbits
-  bash modmium/build-utils/install-webui.sh / "$arch"
-  if [[ $MOSH_FRONTEND != gui ]]; then
-    if status modmium-web 2>/dev/null | grep -q running; then
-      restart modmium-web
-    else
-      start modmium-web
-    fi
-  fi
+  bash /root/gui/init.sh
 }
 
 has_ssh_key() {
@@ -191,9 +184,6 @@ updateModmium() {
     sleep 3
   fi
   echo -e "${G}Done!${N}"
-  if [[ $MOSH_FRONTEND == gui ]]; then
-    nohup /bin/sh -c 'sleep 1; restart modmium-web' >/dev/null 2>&1 &
-  fi
   sleep 2.67
   stty -echo
   exit
