@@ -16,6 +16,54 @@ source /usr/lib/libmosh.sh
 owner=$(cat /usr/share/.gitowner 2>/dev/null)
 repo=$(cat /usr/share/.gitrepo 2>/dev/null)
 
+validateGuiUpdate() {
+  mosh_gui_is_choice "$(mosh_gui_arg 0)" stable nightly
+}
+
+validateGuiVersion() {
+  local i
+  mosh_gui_is_milestone "$(mosh_gui_arg 0)" || return 1
+  for ((i = 1; i < MOSH_GUI_ARG_COUNT; i++)); do
+    mosh_gui_is_choice "$(mosh_gui_arg "$i")" y n stable nightly || return 1
+  done
+}
+
+validateGuiBootSwap() {
+  local i
+  for ((i = 0; i < MOSH_GUI_ARG_COUNT; i++)); do
+    mosh_gui_is_choice "$(mosh_gui_arg "$i")" y n || return 1
+  done
+}
+
+mosh_gui_action update.run updateModmium 1 1 validateGuiUpdate
+mosh_gui_action version.install installCros 6 8 validateGuiVersion
+mosh_gui_action boot.swap toggleBootPriority 3 3 validateGuiBootSwap
+
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  currentRoot=$(rootdev -s 2>/dev/null)
+  case $currentRoot in
+    *3) currentRoot='Root A' ;;
+    *5) currentRoot='Root B' ;;
+    *) currentRoot='Unknown' ;;
+  esac
+  mosh_gui_state branch string "${branch:-unknown}"
+  mosh_gui_state modmiumVersion string "${modver:-unknown}"
+  mosh_gui_state chromeosVersion string "$MILESTONE"
+  mosh_gui_state board string "$(grep '^CHROMEOS_RELEASE_BOARD=' /etc/lsb-release 2>/dev/null | cut -d= -f2 | tr -d '\r\"')"
+  mosh_gui_state bootRoot string "$currentRoot"
+  mosh_gui_state_list stableVersions
+  seen=,
+  for version in "$MILESTONE" ${STABLEVERSIONS//,/ }; do
+    version=${version//[[:space:]]/}
+    mosh_gui_is_milestone "$version" || continue
+    [[ $seen == *,$version,* ]] && continue
+    mosh_gui_state_item stableVersions "$version"
+    seen+="$version,"
+  done
+fi
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 if ! which git &>/dev/null || ! which file &>/dev/null; then
   echo -e "${R}Dependencies not installed, installing...${N}"
   source /etc/profile # required to get emerge working in mosh
@@ -92,7 +140,7 @@ dropModFiles() {
       mkdir -p $(dirname $realFile)
       cp $file $realFile
       chown 0:0 $realFile
-      chmod 777 $realFile
+      chmod --reference="$file" "$realFile"
     fi
   done
   if [[ -d /usr/local/share/policy-test-tool ]]; then
@@ -102,6 +150,7 @@ dropModFiles() {
   [[ $arch == *"ARM"* ]] && arch=aarch64
   cp modmium/build-utils/lib/minioverride-${arch}.so /lib/minioverride.so
   cp modmium/build-utils/bin/clearsecbits-${arch} /usr/bin/clearsecbits
+  bash /root/gui/init.sh
 }
 
 has_ssh_key() {
@@ -473,6 +522,7 @@ menu_reset() {
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

@@ -7,6 +7,33 @@
 stty -echo
 source /usr/lib/libmosh.sh
 
+validateGuiFactoryRevert() {
+  local i last=$((MOSH_GUI_ARG_COUNT - 1))
+  [[ $(mosh_gui_arg 0) == y ]] || return 1
+  mosh_gui_is_milestone "$(mosh_gui_arg "$last")" || return 1
+  for ((i = 0; i < last; i++)); do
+    mosh_gui_is_choice "$(mosh_gui_arg "$i")" y n || return 1
+  done
+}
+
+validateGuiMpkeysRevert() {
+  local i
+  [[ $(mosh_gui_arg 0) == y ]] || return 1
+  for ((i = 0; i < MOSH_GUI_ARG_COUNT; i++)); do
+    mosh_gui_is_choice "$(mosh_gui_arg "$i")" y n || return 1
+  done
+}
+
+validateGuiOsRevert() {
+  mosh_gui_is_milestone "$(mosh_gui_arg 0)"
+}
+
+mosh_gui_action revert.factory factoryReset 2 4 validateGuiFactoryRevert
+mosh_gui_action revert.os restoreOS 1 1 validateGuiOsRevert
+mosh_gui_action revert.mpkeys restoreMPkeys 1 3 validateGuiMpkeysRevert
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
@@ -238,6 +265,7 @@ menu_reset() {
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu
