@@ -203,7 +203,7 @@ fn parse_description(
     menus: &mut Vec<MenuOwner>,
 ) -> io::Result<()> {
     for line in String::from_utf8_lossy(output).lines() {
-        let Some(record) = line.strip_prefix("MOSH1\t") else {
+        let Some(record) = mosh_record(line) else {
             continue;
         };
         let fields: Vec<_> = record.split('\t').collect();
@@ -397,7 +397,7 @@ fn parse_state_records(
     fields: &mut BTreeMap<String, StateValue>,
 ) -> io::Result<()> {
     for line in String::from_utf8_lossy(output).lines() {
-        let Some(record) = line.strip_prefix("MOSH1\t") else {
+        let Some(record) = mosh_record(line) else {
             continue;
         };
         let parts: Vec<_> = record.split('\t').collect();
@@ -619,7 +619,7 @@ fn parse_mosh_menu(id: &str, output: &[u8]) -> io::Result<MoshMenu> {
     let mut title = None;
     let mut items = Vec::new();
     for line in text.lines() {
-        let Some(record) = line.strip_prefix("MOSH1\t") else {
+        let Some(record) = mosh_record(line) else {
             continue;
         };
         let fields: Vec<_> = record.split('\t').collect();
@@ -652,6 +652,11 @@ fn valid_name(name: &str) -> bool {
         && name
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+}
+
+fn mosh_record(line: &str) -> Option<&str> {
+    line.find("MOSH1\t")
+        .map(|offset| &line[offset + "MOSH1\t".len()..])
 }
 
 fn push_json_string(json: &mut String, text: &str) {
@@ -1080,7 +1085,7 @@ mod tests {
     fn parses_a_mosh_menu() {
         let menu = parse_mosh_menu(
             "manager",
-            b"noise\nMOSH1\tmenu\tManager\nMOSH1\titem\tmanager.shell\tShell\ttext\tshell\t1\n",
+            b"\x1b]0;MOSH\x07MOSH1\tmenu\tManager\nMOSH1\titem\tmanager.shell\tShell\ttext\tshell\t1\n",
         )
         .unwrap();
         assert_eq!(menu.title, "Manager");
@@ -1109,7 +1114,7 @@ mod tests {
         let mut fields = BTreeMap::new();
         parse_state_records(
             "/usr/bin/example.sh",
-            b"noise\nMOSH1\tstate\trepository\tstring\tCrOSmium%2Fmodmium\n\
+            b"\x1b]0;MOSH\x07MOSH1\tstate\trepository\tstring\tCrOSmium%2Fmodmium\n\
               MOSH1\tstate\tashlandRunning\tbool\t1\n\
               MOSH1\tstate-item\tstableVersions\t152\n\
               MOSH1\tstate-item\tstableVersions\t151\n",
@@ -1182,7 +1187,7 @@ mod tests {
         let mut menus = Vec::new();
         parse_description(
             "/usr/bin/example.sh",
-            b"noise\nMOSH1\taction\trepository.set\t2\t2\nMOSH1\tmenu-owner\tmisc\n",
+            b"\x1b]0;MOSH\x07MOSH1\taction\trepository.set\t2\t2\nMOSH1\tmenu-owner\tmisc\n",
             &mut actions,
             &mut menus,
         )
