@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-backup=/mnt/stateful_partition/.modmium/resources.pak
+backup=/opt/google/chrome/resources.pak.modmium-backup.gz
 python3 /usr/share/modmium/webui/patch_resources.py /opt/google/chrome/resources.pak --backup "$backup" --restore
 rm -f "$backup"
 stop modmium-web 2>/dev/null || true

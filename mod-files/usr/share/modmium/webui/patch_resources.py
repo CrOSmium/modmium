@@ -4,11 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import gzip
 import hashlib
 import os
 from pathlib import Path
-import shutil
 import struct
 import tempfile
 
@@ -93,8 +93,8 @@ def digest(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
 
-def atomic_replace(path: Path, content: bytes) -> None:
-    old = path.stat()
+def atomic_replace(path: Path, content: bytes, old: os.stat_result | None = None) -> None:
+    old = old or path.stat()
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     temporary = Path(temporary_name)
     try:
@@ -114,6 +114,43 @@ def atomic_replace(path: Path, content: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def replace_pak(path: Path, content: bytes, recovery: bytes) -> None:
+    old = path.stat()
+    try:
+        atomic_replace(path, content, old)
+        return
+    except OSError as error:
+        if error.errno != errno.ENOSPC:
+            raise
+    path.unlink()
+    try:
+        atomic_replace(path, content, old)
+    except Exception:
+        atomic_replace(path, recovery, old)
+        raise
+
+
+def read_backup(path: Path) -> bytes:
+    content = path.read_bytes()
+    return gzip.decompress(content) if content.startswith(b"\x1f\x8b") else content
+
+
+def write_backup(path: Path, content: bytes, source: Path) -> None:
+    atomic_replace(path, gzip.compress(content, compresslevel=9, mtime=0), source.stat())
+
+
+def migrate_backup(path: Path, legacy: Path | None, source: Path) -> None:
+    if not legacy or not legacy.is_file():
+        return
+    content = read_backup(legacy)
+    DataPack(content)
+    if path.is_file() and digest(read_backup(path)) != digest(content):
+        raise ValueError("backup files do not match")
+    if not path.exists():
+        write_backup(path, content, source)
+    legacy.unlink()
+
+
 def apply(path: Path, backup: Path, html_path: Path, script_path: Path) -> None:
     current = path.read_bytes()
     try:
@@ -124,16 +161,16 @@ def apply(path: Path, backup: Path, html_path: Path, script_path: Path) -> None:
     except ValueError:
         if not backup.is_file():
             raise
-        original = backup.read_bytes()
+        original = read_backup(backup)
         pack = DataPack(original)
         html_index = pack.find(HTML_MARKERS, "Borealis MOTD HTML in backup")
         script_index = pack.find(SCRIPT_MARKERS, "Commerce browser proxy script in backup")
 
-    if backup.exists() and digest(backup.read_bytes()) != digest(original):
+    if backup.exists() and digest(read_backup(backup)) != digest(original):
         raise ValueError(f"existing backup does not match the original PAK: {backup}")
     if not backup.exists():
-        shutil.copy2(path, backup)
-        if digest(backup.read_bytes()) != digest(original):
+        write_backup(backup, original, path)
+        if digest(read_backup(backup)) != digest(original):
             raise ValueError("backup verification failed")
 
     html = html_path.read_bytes()
@@ -146,7 +183,7 @@ def apply(path: Path, backup: Path, html_path: Path, script_path: Path) -> None:
         raise ValueError("rebuilt HTML verification failed")
     if check.decode(check.blobs[script_index]) != script:
         raise ValueError("rebuilt script verification failed")
-    atomic_replace(path, rebuilt)
+    replace_pak(path, rebuilt, current)
     print(
         f"patched {path}: HTML resource {pack.entries[html_index][0]}, "
         f"script resource {pack.entries[script_index][0]}"
@@ -154,9 +191,10 @@ def apply(path: Path, backup: Path, html_path: Path, script_path: Path) -> None:
 
 
 def restore(path: Path, backup: Path) -> None:
-    content = backup.read_bytes()
+    current = path.read_bytes()
+    content = read_backup(backup)
     DataPack(content)
-    atomic_replace(path, content)
+    replace_pak(path, content, current)
     if digest(path.read_bytes()) != digest(content):
         raise ValueError("restore verification failed")
     print(f"restored {path} from {backup}")
@@ -166,12 +204,14 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("pak", type=Path)
     parser.add_argument("--backup", type=Path)
+    parser.add_argument("--legacy-backup", type=Path)
     parser.add_argument("--restore", action="store_true")
     parser.add_argument("--html", type=Path, default=Path(__file__).with_name("borealis_motd.html"))
     parser.add_argument("--script", type=Path, default=Path(__file__).with_name("shopping_service_browser_proxy.js"))
     args = parser.parse_args()
     pak = args.pak.resolve()
     backup = (args.backup or pak.with_name(f"{pak.name}.modmium-backup")).resolve()
+    migrate_backup(backup, args.legacy_backup, pak)
     if args.restore:
         restore(pak, backup)
     else:
