@@ -32,7 +32,7 @@ const MENU_ITEMS = [
   {path: 'misc', label: 'Misc', icon: 'modmium:system-preferences'},
 ];
 
-const PAGE_DATA = {
+const GUI_PAGE_OVERRIDES = {
   manager: [
     {
       header: 'Modmium',
@@ -85,6 +85,24 @@ const PAGE_DATA = {
   ],
 };
 
+function genericMenuCards(menu) {
+  if (!menu) return [];
+  return [{
+    header: menu.title,
+    rows: menu.items
+      .filter(item => item.id.split('.').at(-1) !== 'exit')
+      .map(item => ({
+        label: item.label,
+        detail: item.view || '',
+        actions: !item.view && item.enabled ? [{
+          label: 'Run',
+          moshMenu: menu.id,
+          moshAction: item.id,
+        }] : [],
+      })),
+  }];
+}
+
 const DETAIL_DATA = {
   update: {
     page: 'manager', title: 'Update Modmium', cards: [{rows: [
@@ -99,14 +117,21 @@ const DETAIL_DATA = {
   },
   shell: {
     page: 'manager', title: 'Shell', cards: [{rows: [
-      {label: 'Shell executable', kind: 'input', value: 'bash'},
-      {actions: [{label: 'Save', primary: true, message: 'Shell saved'}]},
+      {label: 'Shell executable', kind: 'input', value: 'bash', actions: [
+        {label: 'Save', primary: true, message: 'Shell saved', moshAction: 'shell.set'},
+      ]},
     ]}],
   },
   repository: {
     page: 'manager', title: 'Source repository', cards: [{rows: [
-      {label: 'Repository URL', kind: 'input', value: 'https://github.com/CrOSmium/modmium'},
-      {actions: [{label: 'Reset', message: 'Repository reset'}, {label: 'Save', primary: true, message: 'Repository saved'}]},
+      {label: 'Repository URL', kind: 'input', value: 'https://github.com/CrOSmium/modmium', actions: [
+        {label: 'Save', primary: true, danger: true, prompt: 'Use this update repository?',
+          message: 'Repository saved', moshAction: 'repository.set', args: ['true']},
+      ]},
+      {label: 'Official repository', actions: [
+        {label: 'Reset', danger: true, prompt: 'Reset to the official Modmium repository?',
+          message: 'Repository reset', moshAction: 'repository.reset', args: ['true']},
+      ]},
     ]}],
   },
   boot: {
@@ -391,7 +416,9 @@ class ModmiumSettingsRowElement extends PolymerElement {
     }));
   }
   _runAction(event) {
-    const action = event.model.action;
+    const action = {...event.model.action};
+    const control = this.shadowRoot.querySelector('cr-input, select, cr-textarea');
+    action.args = control ? [control.value, ...(action.args || [])] : action.args || [];
     this.dispatchEvent(new CustomEvent('modmium-action', {
       bubbles: true, composed: true, detail: action,
     }));
@@ -850,7 +877,8 @@ class ModmiumSettingsMainElement extends PolymerElement {
       page: String,
       detail: String,
       daemonStatus: String,
-      cards: {type: Array, computed: '_cards(page, detail, daemonStatus)'},
+      moshMenus: Object,
+      cards: {type: Array, computed: '_cards(page, detail, daemonStatus, moshMenus)'},
       title: {type: String, computed: '_title(detail)'},
     };
   }
@@ -932,9 +960,10 @@ class ModmiumSettingsMainElement extends PolymerElement {
       </div>
     `;
   }
-  _cards(page, detail, daemonStatus) {
-    const source = detail ? DETAIL_DATA[detail]?.cards : PAGE_DATA[page];
-    const cards = structuredClone(source || PAGE_DATA.manager);
+  _cards(page, detail, daemonStatus, moshMenus) {
+    const source = detail ? DETAIL_DATA[detail]?.cards :
+      GUI_PAGE_OVERRIDES[page] || genericMenuCards(moshMenus?.[page]);
+    const cards = structuredClone(source || GUI_PAGE_OVERRIDES.manager);
     for (const card of cards) {
       for (const row of card.rows) {
         if (row.status) row.sublabel = daemonStatus;
@@ -960,6 +989,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
       page: {type: String, value: 'manager'},
       detail: {type: String, value: ''},
       daemonStatus: {type: String, value: 'Connecting to Modmium'},
+      moshMenus: {type: Object, value: () => ({})},
       isNarrow: {type: Boolean, value: false},
       query: {type: String, value: ''},
       searchResults: {type: Array, value: () => []},
@@ -1049,6 +1079,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
         <div id="center">
           <modmium-settings-main page="[[page]]" detail="[[detail]]"
               daemon-status="[[daemonStatus]]"
+              mosh-menus="[[moshMenus]]"
               on-modmium-open-detail="_openDetail"
               on-modmium-action="_action"
               on-modmium-back="_back">
@@ -1089,7 +1120,7 @@ class ModmiumSettingsUiElement extends PolymerElement {
       this.page = DETAIL_DATA[detail].page;
       this.detail = detail;
     } else {
-      this.page = PAGE_DATA[page] ? page : 'manager';
+      this.page = (GUI_PAGE_OVERRIDES[page] || this.moshMenus[page]) ? page : 'manager';
       this.detail = '';
     }
   }
@@ -1126,21 +1157,38 @@ class ModmiumSettingsUiElement extends PolymerElement {
   _action(event) {
     const action = event.detail;
     if (action.danger) {
-      this.pendingAction = action;
+      this.pendingAction = {
+        ...action,
+        successMessage: action.message,
+        message: action.prompt || action.message,
+      };
       this.$.confirmDialog.showModal();
       return;
     }
-    this._showToast(action.message);
+    this._runAction(action);
   }
   _cancelAction() {
     this.$.confirmDialog.cancel();
     this.pendingAction = null;
   }
   _confirmAction() {
-    const message = this.pendingAction.message.replace(/\?$/, ' selected');
+    const action = this.pendingAction;
     this.$.confirmDialog.close();
     this.pendingAction = null;
-    this._showToast(message);
+    this._runAction(action);
+  }
+  _runAction(action) {
+    if (!action.moshAction) {
+      this._showToast(action.message);
+      return;
+    }
+    const fields = ['run', action.moshAction, ...(action.args || [])]
+      .map(field => encodeURIComponent(String(field)));
+    this._pendingMoshAction = action;
+    this.$.daemonBridge.contentWindow.postMessage({
+      type: 'request', body: fields.join('\t'),
+    }, 'http://127.0.0.1:27182');
+    this._showToast('Working…');
   }
   _showToast(message) {
     this.toastText = message;
@@ -1160,15 +1208,27 @@ class ModmiumSettingsUiElement extends PolymerElement {
     }
     if (event.data?.type === 'ready') {
       event.source.postMessage({type: 'request', body: 'health'}, event.origin);
+      event.source.postMessage({type: 'request', body: 'menus'}, event.origin);
       return;
     }
     if (event.data?.type !== 'response' || typeof event.data.body !== 'string') return;
 
     clearTimeout(this._daemonTimer);
     try {
-      const status = JSON.parse(event.data.body);
-      this.daemonStatus = status.status === 'ok' ?
-        `Service ${status.serviceVersion}` : 'Service error';
+      const response = JSON.parse(event.data.body);
+      if (response.status) {
+        this.daemonStatus = response.status === 'ok' ?
+          `Service ${response.serviceVersion}` : 'Service error';
+      } else if (response.type === 'menus') {
+        this.moshMenus = Object.fromEntries(response.menus.map(menu => [menu.id, menu]));
+      } else if (response.type === 'action' && response.ok) {
+        this._showToast(this._pendingMoshAction?.successMessage ||
+          this._pendingMoshAction?.message || 'Done');
+        this._pendingMoshAction = null;
+      } else if (response.error) {
+        this._showToast(response.error);
+        this._pendingMoshAction = null;
+      }
     } catch {
       this.daemonStatus = 'Service error';
     }

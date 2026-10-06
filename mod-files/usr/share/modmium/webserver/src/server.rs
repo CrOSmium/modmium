@@ -1,6 +1,7 @@
 use std::fmt;
 use std::io::{self, Read, Write};
 use std::net::{Ipv4Addr, SocketAddrV4, TcpListener, TcpStream};
+use std::process::{Command, Stdio};
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
@@ -19,6 +20,17 @@ const WEBUI_ORIGIN: &str = "chrome://borealis-motd";
 const BRIDGE_ORIGIN: &str = "http://127.0.0.1:27182";
 const PROTOCOL: &str = "modmium.v1";
 const WEBSOCKET_GUID: &[u8] = b"258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+const MOSH_MENUS: &[(&str, &str)] = &[("misc", "/usr/bin/mosh-misc.sh")];
+const MOSH_ACTIONS: &[(&str, &str, &str, usize)] = &[
+    ("shell.set", "/usr/bin/change-shell.sh", "changeShell", 1),
+    ("repository.set", "/usr/bin/change-repo.sh", "changeRepo", 2),
+    (
+        "repository.reset",
+        "/usr/bin/change-repo.sh",
+        "resetRepo",
+        1,
+    ),
+];
 
 const BRIDGE_HTML: &str = r#"<!doctype html><meta charset=utf-8><script>
 const webuiOrigin = 'chrome://borealis-motd';
@@ -109,11 +121,15 @@ fn serve(mut stream: TcpStream) -> Result<(), Error> {
     loop {
         match read_frame(&mut stream, &mut payload)? {
             Frame::Text => {
-                if payload == b"health" {
-                    write_frame(&mut stream, 0x1, HEALTH_JSON.as_bytes())?;
-                } else {
-                    write_frame(&mut stream, 0x1, b"{\"error\":\"unknown request\"}")?;
-                }
+                let response = match std::str::from_utf8(&payload) {
+                    Ok("health") => HEALTH_JSON.to_owned(),
+                    Ok("menus") => describe_mosh().unwrap_or_else(error_json),
+                    Ok(request) if request.starts_with("run\t") => {
+                        run_mosh_action(request).unwrap_or_else(error_json)
+                    }
+                    _ => "{\"error\":\"unknown request\"}".to_owned(),
+                };
+                write_frame(&mut stream, 0x1, response.as_bytes())?;
             }
             Frame::Ping => write_frame(&mut stream, 0xa, &payload)?,
             Frame::Pong => {}
@@ -123,6 +139,254 @@ fn serve(mut stream: TcpStream) -> Result<(), Error> {
             }
         }
     }
+}
+
+fn run_mosh_action(request: &str) -> io::Result<String> {
+    let fields: Result<Vec<_>, _> = request.split('\t').skip(1).map(decode_field).collect();
+    let fields = fields?;
+    let action_id = fields
+        .first()
+        .ok_or_else(|| io::Error::other("missing action"))?;
+    let &(_, script, mosh_action, argument_count) = MOSH_ACTIONS
+        .iter()
+        .find(|(id, _, _, _)| *id == action_id)
+        .ok_or_else(|| io::Error::other("action unavailable"))?;
+    let arguments = &fields[1..];
+    if arguments.len() != argument_count {
+        return Err(io::Error::other("wrong number of action arguments"));
+    }
+    validate_action_arguments(action_id, arguments)?;
+
+    let mut command = Command::new(script);
+    command
+        .env("MOSH_FRONTEND", "gui")
+        .env("MOSH_GUI_ACTION", mosh_action)
+        .env("MOSH_GUI_ALLOWED", mosh_action)
+        .env("TERM", "dumb")
+        .env("PATH", "/bin:/usr/bin:/sbin:/usr/sbin:/opt/bin")
+        .stdin(Stdio::null())
+        .stderr(Stdio::null());
+    for (index, argument) in arguments.iter().enumerate() {
+        command.env(format!("MOSH_GUI_ARG_{index}"), argument);
+    }
+    let output = command.output()?;
+    if !output.status.success() {
+        return Err(io::Error::other(format!(
+            "action failed with {}",
+            output.status
+        )));
+    }
+    let started = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .any(|line| line == format!("MOSH1\tstarted\t{mosh_action}"));
+    if !started {
+        return Err(io::Error::other("MOSH rejected the action"));
+    }
+
+    let mut json = String::from("{\"type\":\"action\",\"action\":");
+    push_json_string(&mut json, action_id);
+    json.push_str(",\"ok\":true}");
+    Ok(json)
+}
+
+fn validate_action_arguments(action: &str, arguments: &[String]) -> io::Result<()> {
+    let valid = match action {
+        "shell.set" => {
+            let shell = &arguments[0];
+            !shell.is_empty()
+                && shell.len() <= 128
+                && shell.bytes().all(|byte| {
+                    byte.is_ascii_alphanumeric() || matches!(byte, b'/' | b'_' | b'.' | b'+' | b'-')
+                })
+        }
+        "repository.set" => valid_github_url(&arguments[0]) && arguments[1] == "true",
+        "repository.reset" => arguments[0] == "true",
+        _ => false,
+    };
+    if valid {
+        Ok(())
+    } else {
+        Err(io::Error::other("invalid action arguments"))
+    }
+}
+
+fn valid_github_url(url: &str) -> bool {
+    let Some(path) = url.strip_prefix("https://github.com/") else {
+        return false;
+    };
+    let mut parts = path.strip_suffix(".git").unwrap_or(path).split('/');
+    let (Some(owner), Some(repository), None) = (parts.next(), parts.next(), parts.next()) else {
+        return false;
+    };
+    [owner, repository].into_iter().all(|part| {
+        !part.is_empty()
+            && part.len() <= 100
+            && part
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'.' | b'-'))
+    })
+}
+
+fn decode_field(field: &str) -> io::Result<String> {
+    let mut decoded = Vec::with_capacity(field.len());
+    let bytes = field.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' {
+            if index + 2 >= bytes.len() {
+                return Err(io::Error::other("bad request encoding"));
+            }
+            let high =
+                hex(bytes[index + 1]).ok_or_else(|| io::Error::other("bad request encoding"))?;
+            let low =
+                hex(bytes[index + 2]).ok_or_else(|| io::Error::other("bad request encoding"))?;
+            decoded.push(high << 4 | low);
+            index += 3;
+        } else {
+            decoded.push(bytes[index]);
+            index += 1;
+        }
+    }
+    String::from_utf8(decoded).map_err(|_| io::Error::other("request is not UTF-8"))
+}
+
+fn hex(byte: u8) -> Option<u8> {
+    match byte {
+        b'0'..=b'9' => Some(byte - b'0'),
+        b'a'..=b'f' => Some(byte - b'a' + 10),
+        b'A'..=b'F' => Some(byte - b'A' + 10),
+        _ => None,
+    }
+}
+
+struct MoshItem {
+    id: String,
+    label: String,
+    control: String,
+    view: String,
+    enabled: bool,
+}
+
+struct MoshMenu {
+    id: &'static str,
+    title: String,
+    items: Vec<MoshItem>,
+}
+
+fn describe_mosh() -> io::Result<String> {
+    let mut menus = Vec::with_capacity(MOSH_MENUS.len());
+    for &(id, script) in MOSH_MENUS {
+        let output = Command::new(script)
+            .env("MOSH_FRONTEND", "gui")
+            .env("MOSH_GUI_ACTION", "")
+            .env("TERM", "dumb")
+            .env("PATH", "/bin:/usr/bin:/sbin:/usr/sbin:/opt/bin")
+            .stdin(Stdio::null())
+            .stderr(Stdio::null())
+            .output()?;
+        if !output.status.success() {
+            return Err(io::Error::other(format!(
+                "{script} exited with {}",
+                output.status
+            )));
+        }
+        menus.push(parse_mosh_menu(id, &output.stdout)?);
+    }
+
+    let mut json = String::from("{\"type\":\"menus\",\"menus\":[");
+    for (menu_index, menu) in menus.iter().enumerate() {
+        if menu_index != 0 {
+            json.push(',');
+        }
+        json.push_str("{\"id\":");
+        push_json_string(&mut json, menu.id);
+        json.push_str(",\"title\":");
+        push_json_string(&mut json, &menu.title);
+        json.push_str(",\"items\":[");
+        for (item_index, item) in menu.items.iter().enumerate() {
+            if item_index != 0 {
+                json.push(',');
+            }
+            json.push_str("{\"id\":");
+            push_json_string(&mut json, &item.id);
+            json.push_str(",\"label\":");
+            push_json_string(&mut json, &item.label);
+            json.push_str(",\"control\":");
+            push_json_string(&mut json, &item.control);
+            json.push_str(",\"view\":");
+            push_json_string(&mut json, &item.view);
+            json.push_str(if item.enabled {
+                ",\"enabled\":true}"
+            } else {
+                ",\"enabled\":false}"
+            });
+        }
+        json.push_str("]}");
+    }
+    json.push_str("]}");
+    Ok(json)
+}
+
+fn parse_mosh_menu(id: &'static str, output: &[u8]) -> io::Result<MoshMenu> {
+    let text = String::from_utf8_lossy(output);
+    let mut title = None;
+    let mut items = Vec::new();
+    for line in text.lines() {
+        let Some(record) = line.strip_prefix("MOSH1\t") else {
+            continue;
+        };
+        let fields: Vec<_> = record.split('\t').collect();
+        match fields.as_slice() {
+            ["menu", name] => title = Some((*name).to_owned()),
+            ["item", item_id, label, control, view, enabled]
+                if valid_name(item_id) && matches!(*enabled, "0" | "1") =>
+            {
+                items.push(MoshItem {
+                    id: (*item_id).to_owned(),
+                    label: (*label).to_owned(),
+                    control: (*control).to_owned(),
+                    view: (*view).to_owned(),
+                    enabled: *enabled == "1",
+                });
+            }
+            _ => return Err(io::Error::other(format!("invalid MOSH record from {id}"))),
+        }
+    }
+    let title = title.ok_or_else(|| io::Error::other(format!("missing MOSH menu {id}")))?;
+    Ok(MoshMenu { id, title, items })
+}
+
+fn valid_name(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'))
+}
+
+fn push_json_string(json: &mut String, text: &str) {
+    json.push('"');
+    for character in text.chars() {
+        match character {
+            '"' => json.push_str("\\\""),
+            '\\' => json.push_str("\\\\"),
+            '\n' => json.push_str("\\n"),
+            '\r' => json.push_str("\\r"),
+            '\t' => json.push_str("\\t"),
+            character if character.is_control() => {
+                use std::fmt::Write as _;
+                let _ = write!(json, "\\u{:04x}", character as u32);
+            }
+            character => json.push(character),
+        }
+    }
+    json.push('"');
+}
+
+fn error_json(error: io::Error) -> String {
+    let mut json = String::from("{\"error\":");
+    push_json_string(&mut json, &error.to_string());
+    json.push('}');
+    json
 }
 
 enum Request {
@@ -519,6 +783,51 @@ mod tests {
             read_frame(&mut server, &mut Vec::new()),
             Err(Error::Protocol)
         ));
+    }
+
+    #[test]
+    fn parses_a_mosh_menu() {
+        let menu = parse_mosh_menu(
+            "manager",
+            b"noise\nMOSH1\tmenu\tManager\nMOSH1\titem\tmanager.shell\tShell\ttext\tshell\t1\n",
+        )
+        .unwrap();
+        assert_eq!(menu.title, "Manager");
+        assert_eq!(menu.items[0].id, "manager.shell");
+        assert!(menu.items[0].enabled);
+    }
+
+    #[test]
+    fn decodes_action_fields() {
+        assert_eq!(
+            decode_field("CrOSmium%2Fmodmium").unwrap(),
+            "CrOSmium/modmium"
+        );
+        assert!(decode_field("bad%2").is_err());
+    }
+
+    #[test]
+    fn accepts_the_gui_action_arguments() {
+        assert!(validate_action_arguments("shell.set", &["/bin/bash".into()]).is_ok());
+        assert!(
+            validate_action_arguments(
+                "repository.set",
+                &["https://github.com/CrOSmium/modmium".into(), "true".into()]
+            )
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn rejects_shell_words_and_non_github_repositories() {
+        assert!(validate_action_arguments("shell.set", &["bash -c id".into()]).is_err());
+        assert!(
+            validate_action_arguments(
+                "repository.set",
+                &["https://example.com/owner/repo".into(), "true".into()]
+            )
+            .is_err()
+        );
     }
 
     fn tcp_pair() -> (TcpStream, TcpStream) {
