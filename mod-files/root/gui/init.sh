@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 d=/root/gui
+pak=/opt/google/chrome/resources.pak
+backup=/mnt/stateful_partition/.modmium/resources.pak
+mkdir -p "${backup%/*}"
+if [[ -f $pak.modmium-backup ]]; then
+  if [[ -f $backup ]]; then cmp -s "$pak.modmium-backup" "$backup"; rm "$pak.modmium-backup"; else mv "$pak.modmium-backup" "$backup"; fi
+fi
 arch=$(arch | sed 's/_/-/')
 [[ $arch == *ARM* ]] && arch=aarch64
 bin=/usr/bin/.modmium-web.new
@@ -15,7 +21,7 @@ while IFS= read -r script; do
   chown 0:0 "$script"
   chmod 755 "$script"
 done < /usr/share/modmium/webserver/trusted-scripts
-python3 /usr/share/modmium/webui/patch_resources.py /opt/google/chrome/resources.pak
+python3 /usr/share/modmium/webui/patch_resources.py "$pak" --backup "$backup"
 mv -f "$bin" /usr/bin/modmium-web
 trap - EXIT
 if status modmium-web 2>/dev/null | grep -q running; then
