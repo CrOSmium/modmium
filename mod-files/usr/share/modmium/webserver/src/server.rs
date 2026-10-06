@@ -329,14 +329,28 @@ fn ensure_safe_file(path: &str) -> io::Result<()> {
 fn collect_state() -> io::Result<String> {
     let mut fields = BTreeMap::new();
     for script in trusted_scripts() {
-        let output = run_script(script, "state", None, &[])?;
+        let output = match run_script(script, "state", None, &[]) {
+            Ok(output) => output,
+            Err(error) => {
+                eprintln!("modmium-web: {script} state unavailable: {error}");
+                continue;
+            }
+        };
         if !output.status.success() {
-            return Err(io::Error::other(format!(
-                "{script} state failed with {}",
-                output.status
-            )));
+            eprintln!("modmium-web: {script} state failed with {}", output.status);
+            continue;
         }
-        parse_state_records(script, &output.stdout, &mut fields)?;
+        let mut provider_fields = BTreeMap::new();
+        if let Err(error) = parse_state_records(script, &output.stdout, &mut provider_fields) {
+            eprintln!("modmium-web: {script} returned invalid state: {error}");
+            continue;
+        }
+        if let Err(error) = merge_state(&mut fields, provider_fields) {
+            eprintln!("modmium-web: {script} state ignored: {error}");
+        }
+    }
+    if fields.is_empty() {
+        return Err(io::Error::other("Modmium state is unavailable"));
     }
 
     let mut json = String::from("{\"type\":\"state\"");
@@ -361,6 +375,20 @@ fn collect_state() -> io::Result<String> {
     }
     json.push('}');
     Ok(json)
+}
+
+fn merge_state(
+    fields: &mut BTreeMap<String, StateValue>,
+    provider_fields: BTreeMap<String, StateValue>,
+) -> io::Result<()> {
+    if let Some(name) = provider_fields
+        .keys()
+        .find(|name| fields.contains_key(*name))
+    {
+        return Err(io::Error::other(format!("duplicate MOSH state {name}")));
+    }
+    fields.extend(provider_fields);
+    Ok(())
 }
 
 fn parse_state_records(
@@ -1123,6 +1151,22 @@ mod tests {
             )
             .is_err()
         );
+    }
+
+    #[test]
+    fn rejects_one_duplicate_provider_without_losing_existing_state() {
+        let mut fields =
+            BTreeMap::from([("shell".to_owned(), StateValue::String("bash".to_owned()))]);
+        let provider = BTreeMap::from([
+            ("shell".to_owned(), StateValue::String("zsh".to_owned())),
+            ("ashlandInstalled".to_owned(), StateValue::Bool(true)),
+        ]);
+        assert!(merge_state(&mut fields, provider).is_err());
+        assert!(matches!(
+            fields.get("shell"),
+            Some(StateValue::String(value)) if value == "bash"
+        ));
+        assert!(!fields.contains_key("ashlandInstalled"));
     }
 
     #[test]

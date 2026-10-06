@@ -1446,7 +1446,10 @@ class ModmiumSettingsMainElement extends PolymerElement {
     return cards;
   }
   _applyState(cards, page, detail, state) {
-    if (!state?.repository) return;
+    if (state?.type !== 'state') return;
+    const stableVersions = state.stableVersions || [];
+    const bootsplashes = state.bootsplashes || [];
+    const savedEnrollmentKeys = state.savedEnrollmentKeys || [];
     const rows = cards.flatMap(card => card.rows);
     const row = label => rows.find(candidate => candidate.label === label);
     if (!detail && page === 'manager') {
@@ -1459,7 +1462,7 @@ class ModmiumSettingsMainElement extends PolymerElement {
       row('Installed version').sublabel = `Modmium ${state.modmiumVersion} ${state.branch}`;
       row('Branch').value = state.branch;
     } else if (detail === 'version') {
-      row('Milestone').options = state.stableVersions;
+      row('Milestone').options = stableVersions;
       row('Milestone').value = state.chromeosVersion;
     } else if (detail === 'shell') {
       row('Shell executable').value = state.shell;
@@ -1482,19 +1485,19 @@ class ModmiumSettingsMainElement extends PolymerElement {
       rows.find(candidate => candidate.kind === 'textarea').value = state.appsConfig;
     } else if (detail === 'bootsplash') {
       const installed = row('Modmium image');
-      installed.options = state.bootsplashes;
-      installed.value = state.bootsplashes[0] || '';
-      if (!state.bootsplashes.length) {
+      installed.options = bootsplashes;
+      installed.value = bootsplashes[0] || '';
+      if (!bootsplashes.length) {
         cards[0].rows = cards[0].rows.filter(candidate => candidate !== installed);
       }
     } else if (detail === 'cr3nroll') {
       const saved = row('Saved keys');
-      saved.options = state.savedEnrollmentKeys;
-      saved.value = state.savedEnrollmentKeys[0] || '';
+      saved.options = savedEnrollmentKeys;
+      saved.value = savedEnrollmentKeys[0] || '';
     } else if (detail === 'revert') {
-      row('Factory ChromeOS milestone').options = state.stableVersions;
+      row('Factory ChromeOS milestone').options = stableVersions;
       row('Factory ChromeOS milestone').value = state.chromeosVersion;
-      row('ChromeOS milestone').options = state.stableVersions;
+      row('ChromeOS milestone').options = stableVersions;
       row('ChromeOS milestone').value = state.chromeosVersion;
     } else if (detail === 'nix') {
       row('Nix').sublabel = state.nixInstalled ? 'Installed' : 'Not installed';
