@@ -459,6 +459,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
         }
         .secondary:empty { display: none; }
         .actions { align-items: center; display: flex; gap: 8px; }
+        .settings-box > .actions { margin-inline-start: 8px; }
         cr-input {
           --cr-input-background-color: var(--cros-sys-input_field_on_shaded);
           --cr-input-error-display: none;
@@ -472,10 +473,24 @@ class ModmiumSettingsRowElement extends PolymerElement {
         }
         .textarea .settings-box-text { padding-inline-end: 0; }
         .textarea cr-textarea { box-sizing: border-box; margin: 0 0 12px; }
-        .textarea .actions { justify-content: flex-end; padding-bottom: 12px; }
+        .textarea .actions {
+          justify-content: flex-end;
+          margin-inline-start: 0;
+          padding-bottom: 12px;
+        }
         select { --md-select-width: 180px; }
         cr-button.danger { color: var(--cros-sys-error); }
         cr-link-row { min-height: var(--settings-row-min-height); }
+        @media (max-width: 680px) {
+          .input, .password, .select { flex-wrap: wrap; padding-bottom: 12px; }
+          .input .start, .password .start, .select .start { flex-basis: 100%; }
+          .input cr-input, .password cr-input {
+            --cr-input-width: auto;
+            flex: 1;
+            margin-inline-start: 0;
+            min-width: 0;
+          }
+        }
       </style>
 
       <template is="dom-if" if="[[_isLink(item)]]">
@@ -530,7 +545,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
   _isSelect(item) { return item?.kind === 'select'; }
   _isToggle(item) { return item?.kind === 'toggle'; }
   _isTextarea(item) { return item?.kind === 'textarea'; }
-  _rowClass(item) { return item?.kind === 'textarea' ? 'textarea' : ''; }
+  _rowClass(item) { return item?.kind || ''; }
   _selected(option, value) { return option === value; }
   _buttonClass(action) {
     return [action.primary ? 'action-button' : '', action.danger ? 'danger' : '']
@@ -707,8 +722,10 @@ class ModmiumPolicyEditorElement extends PolymerElement {
           padding: 0 var(--cr-section-padding);
         }
         cr-button.danger { color: var(--cros-sys-error); }
-        #jsonEditor { min-width: min(560px, 80vw); }
-        #jsonError { color: var(--cros-sys-error); min-height: 20px; }
+        .json-body { width: min(440px, calc(100vw - 80px)); }
+        #jsonEditor { box-sizing: border-box; width: 100%; }
+        #jsonError { color: var(--cros-sys-error); padding-top: 8px; }
+        #jsonError:empty { display: none; }
         @media (max-width: 680px) {
           .controls { align-items: stretch; flex-direction: column; }
           select { --md-select-width: 100%; width: 100%; }
@@ -757,7 +774,7 @@ class ModmiumPolicyEditorElement extends PolymerElement {
 
       <cr-dialog id="jsonDialog">
         <div slot="title">[[editingPolicy.name]]</div>
-        <div slot="body">
+        <div class="json-body" slot="body">
           <cr-textarea id="jsonEditor" value="{{jsonValue}}" aria-label="JSON value"></cr-textarea>
           <div id="jsonError">[[jsonError]]</div>
         </div>
@@ -1488,6 +1505,8 @@ class ModmiumSettingsMainElement extends PolymerElement {
       ashland.actions = state.ashlandInstalled ? ashland.actions.slice(1) : ashland.actions.slice(0, 1);
       row('Run Ashland').checked = state.ashlandRunning;
       row('Autostart on reboot').checked = state.ashlandAutostart;
+      row('Layout').sublabel = state.ashlandLayout;
+      row('Window gaps').sublabel = state.ashlandGaps;
       if (!state.ashlandInstalled) cards[0].rows = [ashland];
     }
   }

@@ -233,6 +233,14 @@ fn modmium_state() -> String {
     let apps = fs::read_to_string("/usr/local/config/apps.conf").unwrap_or_default();
     let policies =
         fs::read_to_string("/usr/local/share/policy-test-tool/dump.json").unwrap_or_default();
+    let ashland_config =
+        fs::read_to_string("/home/chronos/user/.config/ashland/ashland.conf").unwrap_or_default();
+    let ashland_layout = config_value(&ashland_config, "layout").unwrap_or("dwindle");
+    let ashland_gaps = format!(
+        "{}/{}",
+        config_value(&ashland_config, "gaps_in").unwrap_or("0"),
+        config_value(&ashland_config, "gaps_out").unwrap_or("0"),
+    );
 
     let mut json = String::from("{\"type\":\"state\",\"branch\":");
     push_json_string(&mut json, &branch);
@@ -298,8 +306,22 @@ fn modmium_state() -> String {
     push_bool(
         &mut json,
         "ashlandRunning",
-        command_succeeds("pgrep", &["-x", "ashland"]),
+        command_succeeds(
+            "sudo",
+            &[
+                "-u",
+                "chronos",
+                "env",
+                "HOME=/home/chronos/user",
+                "/usr/local/bin/ashland",
+                "state",
+            ],
+        ),
     );
+    json.push_str(",\"ashlandLayout\":");
+    push_json_string(&mut json, ashland_layout);
+    json.push_str(",\"ashlandGaps\":");
+    push_json_string(&mut json, &ashland_gaps);
     json.push('}');
     json
 }
@@ -375,6 +397,20 @@ fn command_succeeds(program: &str, arguments: &[&str]) -> bool {
         .stderr(Stdio::null())
         .status()
         .is_ok_and(|status| status.success())
+}
+
+fn config_value<'a>(contents: &'a str, name: &str) -> Option<&'a str> {
+    contents.lines().find_map(|line| {
+        let (key, value) = line.split_once('=')?;
+        if key.trim() != name {
+            return None;
+        }
+        value
+            .split('#')
+            .next()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+    })
 }
 
 fn read_trimmed(path: &str) -> Option<String> {
@@ -1350,6 +1386,14 @@ mod tests {
         let state = modmium_state();
         assert!(state.starts_with("{\"type\":\"state\""));
         assert!(state.contains("\"repository\":\"https://github.com/"));
+    }
+
+    #[test]
+    fn reads_ashland_config_values() {
+        let config = "layout = grid\ngaps_in = 6 # pixels\ngaps_out = 12\n";
+        assert_eq!(config_value(config, "layout"), Some("grid"));
+        assert_eq!(config_value(config, "gaps_in"), Some("6"));
+        assert_eq!(config_value(config, "gaps_out"), Some("12"));
     }
 
     fn tcp_pair() -> (TcpStream, TcpStream) {
