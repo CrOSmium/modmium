@@ -32,6 +32,79 @@ const MENU_ITEMS = [
   {path: 'misc', label: 'Misc', icon: 'modmium:system-preferences'},
 ];
 
+const POLICY_CATEGORIES = [
+  {name: 'Restrictions', keys: `
+    DeviceGuestModeEnabled DeviceShowUserNamesOnSignin DeviceAllowNewUsers DeviceBlockDevmode
+    DeviceUnaffiliatedCrostiniAllowed PluginVmAllowed DeviceUserAllowlist DeviceUserWhitelist
+    DeviceFamilyLinkAccountsAllowed DeviceBorealisAllowed VirtualMachinesAllowed UnaffiliatedArcAllowed
+    SupervisedUsersEnabled DeviceAllowRedeemChromeOsRegistrationOffers DeviceRestrictedManagedGuestSessionEnabled DeviceCrostiniArcAdbSideloadingAllowed
+    DeviceLoginScreenExtensionManifestV2Availability DeviceExtensionsSystemLogEnabled DeviceEphemeralUsersEnabled DeviceDebugPacketCaptureAllowed
+  `.trim().split(/\s+/)},
+  {name: 'Reporting', keys: `
+    ReportDeviceVersionInfo ReportDeviceActivityTimes ReportDeviceBootMode ReportDeviceNetworkInterfaces
+    ReportDeviceUsers ReportDeviceHardwareStatus ReportDeviceSessionStatus ReportDeviceOsUpdateStatus
+    ReportDeviceRunningKioskApp ReportDevicePowerStatus ReportDeviceStorageStatus ReportDeviceBoardStatus
+    ReportDeviceCpuInfo ReportDeviceGraphicsStatus ReportDeviceCrashReportInfo ReportDeviceTimezoneInfo
+    ReportDeviceMemoryInfo ReportDeviceBacklightInfo ReportDeviceBluetoothInfo ReportDeviceFanInfo
+    ReportDeviceVpdInfo ReportDeviceSystemInfo ReportDevicePrintJobs ReportDeviceLoginLogout
+    ReportDeviceAudioStatus ReportDeviceNetworkConfiguration ReportDeviceNetworkStatus ReportDeviceSecurityStatus
+    ReportCRDSessions ReportDevicePeripherals DeviceReportNetworkEvents DeviceReportRuntimeCounters
+    ReportUploadFrequency ReportDeviceNetworkTelemetryCollectionRateMs ReportDeviceAudioStatusCheckingRateMs ReportDeviceAppInfo
+    ReportDeviceLocation ReportDeviceNetworkTelemetryEventCheckingRateMs ReportDeviceSignalStrengthEventDrivenTelemetry DeviceReportRuntimeCountersCheckingRateMs
+    DeviceReportXDREvents EnableDeviceGranularReporting HeartbeatFrequency DeviceActivityHeartbeatCollectionRateMs
+    DeviceActivityHeartbeatEnabled HeartbeatEnabled LogUploadEnabled
+  `.trim().split(/\s+/)},
+  {name: 'Enterprise', keys: `
+    DeviceOpenNetworkConfiguration DevicePrinters DevicePrintersAccessMode DeviceLocalAccounts
+    AllowKioskAppControlChromeVersion KioskCRXManifestUpdateURLIgnored DeviceLoginScreenDomainAutoComplete DeviceNativePrinters
+    DeviceNativePrintersAccessMode DeviceNativePrintersBlacklist DeviceNativePrintersWhitelist DevicePrintersAllowlist
+    DevicePrintersBlocklist DevicePrintingClientNameTemplate DeviceExternalPrintServers DeviceExternalPrintServersAllowlist
+    DeviceHostnameTemplate DeviceHostnameUserConfigurable RequiredClientCertificateForDevice SystemProxySettings
+    DeviceAllowEnterpriseRemoteAccessConnections DeviceWebBasedAttestationAllowedUrls DeviceLoginScreenAutoSelectCertificateForUrls DeviceLoginScreenSecurityKeyPermitAttestation
+    DeviceLoginScreenContextAwareAccessSignalsAllowlist DeviceAuthenticationURLAllowlist DeviceAuthenticationURLBlocklist DeviceGpoCacheLifetime
+    DeviceKerberosEncryptionTypes DeviceMachinePasswordChangeRate LoginVideoCaptureAllowedUrls DeviceLoginScreenExtensions
+    DeviceLoginScreenInputMethods DeviceLoginScreenLocales ManagedGuestSessionPrivacyWarningsEnabled DeviceLocalAccountAutoLoginId
+    DeviceLocalAccountAutoLoginDelay DeviceLocalAccountAutoLoginBailoutEnabled DeviceLocalAccountPromptForNetworkWhenOffline
+  `.trim().split(/\s+/)},
+  {name: 'Misc', keys: `
+    DeviceDataRoamingEnabled DeviceMetricsReportingEnabled ChromeOsReleaseChannel ChromeOsReleaseChannelDelegated
+    SystemTimezone SystemTimezoneAutomaticDetection SystemUse24HourClock UptimeLimit
+    AttestationEnabledForDevice AttestationForContentProtectionEnabled NetworkThrottlingEnabled DeviceEcryptfsMigrationStrategy
+    DeviceWiFiFastTransitionEnabled DeviceAutoUpdateDisabled DeviceTargetVersionPrefix DeviceUpdateScatterFactor
+    DeviceUpdateAllowedConnectionTypes DeviceUpdateHttpDownloadsEnabled RebootAfterUpdate DeviceRollbackToTargetVersion
+    DeviceAutoUpdateTimeRestrictions DeviceWiFiAllowed DeviceAutoUpdateP2PEnabled DeviceUpdateStagingSchedule
+    DeviceScheduledUpdateCheck DeviceTargetVersionSelector DeviceReleaseLtsTag DeviceRollbackAllowedMilestones
+    DeviceChannelDowngradeBehavior DeviceExtendedAutoUpdateEnabled DeviceQuickFixBuildToken DeviceMinimumVersion
+    DeviceMinimumVersionAueMessage MinimumRequiredChromeVersion DeviceScheduledReboot DeviceRebootOnShutdown
+    DeviceRebootOnUserSignout DevicePowerwashAllowed DeviceRunAutomaticCleanupOnLogin AutoCleanUpStrategy
+    DeviceShowLowDiskSpaceNotification DeviceAllowMGSToStoreDisplayProperties DeviceSecondFactorAuthentication DeviceLoginScreenGeolocationAccessLevel
+    DeviceEphemeralNetworkPoliciesEnabled DeviceEncryptedReportingPipelineEnabled DeviceSystemWideTracingEnabled DevicePolicyRefreshRate
+    DeviceVariationsRestrictParameter DeviceChromeVariations DeviceUserPolicyLoopbackProcessingMode DeviceKeylockerForStorageEncryptionEnabled
+    DevicePciPeripheralDataAccessEnabled DeviceNativeClientForceAllowed DeviceQuirksDownloadEnabled DeviceHardwareVideoDecodingEnabled
+    DeviceUserInitiatedFirmwareUpdatesEnabled DeviceUserInitiatedFlexSystemFirmwareUpdatesEnabled DeviceFlexArcPreloadEnabled DeviceFlexHwDataForProductImprovementEnabled
+    DeviceArcDataSnapshotHours ChromadToCloudMigrationEnabled DeviceTransferSAMLCookies DeviceAutofillSAMLUsername
+    DeviceLoginScreenIsolateOrigins DeviceLoginScreenSitePerProcess DeviceLoginScreenPreferSlowCiphers DeviceLoginScreenPreferSlowKexAlgorithms
+    DeviceLoginScreenWebHidAllowDevicesForUrls DeviceLoginScreenWebUsbAllowDevicesForUrls DeviceLoginScreenPowerManagement DeviceWeeklyScheduledSuspend
+    DeviceRestrictionSchedule DevicePowerPeakShiftEnabled DevicePowerPeakShiftBatteryThreshold DevicePowerPeakShiftDayConfig
+    DeviceAdvancedBatteryChargeModeEnabled DeviceAdvancedBatteryChargeModeDayConfig DeviceBatteryChargeMode DeviceBatteryChargeCustomStartCharging
+    DeviceBatteryChargeCustomStopCharging DevicePowerBatteryChargingOptimization DeviceBootOnAcEnabled DeviceUsbPowerShareEnabled
+    DeviceChargingSoundsEnabled DeviceLowBatterySoundEnabled DeviceAllowBluetooth DeviceAllowedBluetoothServices
+    DeviceBluetoothJustWorksPairingEnabled DeviceWilcoDtcAllowed DeviceWilcoDtcConfiguration DeviceSystemAecEnabled
+    DeviceDisplayResolution DisplayRotationDefault DeviceDockMacAddressSource DeviceWallpaperImage
+    CastReceiverName DeviceScreensaverLoginScreenEnabled DeviceScreensaverLoginScreenIdleTimeoutSeconds DeviceScreensaverLoginScreenImageDisplayIntervalSeconds
+    DeviceScreensaverLoginScreenImages DeviceLoginScreenShowOptionsInSystemTrayMenu DeviceLoginScreenSystemInfoEnforced DeviceDlcPredownloadList
+    ExtensionCacheSize DevicePostQuantumKeyAgreementEnabled DeviceHindiInscriptLayoutEnabled DeviceSwitchFunctionKeysBehaviorEnabled
+    DeviceExtendedFkeysModifier DeviceI18nShortcutsEnabled DeviceKeyboardBacklightColor DeviceLoginScreenAccessibilityShortcutsEnabled
+    DeviceLoginScreenDefaultHighContrastEnabled DeviceLoginScreenDefaultLargeCursorEnabled DeviceLoginScreenDefaultScreenMagnifierType DeviceLoginScreenDefaultSpokenFeedbackEnabled
+    DeviceLoginScreenDefaultVirtualKeyboardEnabled DeviceLoginScreenHighContrastEnabled DeviceLoginScreenLargeCursorEnabled DeviceLoginScreenMonoAudioEnabled
+    DeviceLoginScreenSpokenFeedbackEnabled DeviceLoginScreenStickyKeysEnabled DeviceLoginScreenAutoclickEnabled DeviceLoginScreenCaretHighlightEnabled
+    DeviceLoginScreenCursorHighlightEnabled DeviceLoginScreenDictationEnabled DeviceLoginScreenFaceGazeEnabled DeviceLoginScreenKeyboardFocusHighlightEnabled
+    DeviceLoginScreenPrivacyScreenEnabled DeviceLoginScreenSelectToSpeakEnabled DeviceLoginScreenTouchVirtualKeyboardEnabled DeviceLoginScreenVirtualKeyboardEnabled
+    DeviceLoginScreenScreenMagnifierType DeviceLoginScreenPrimaryMouseButtonSwitch DeviceLoginScreenPromptOnMultipleMatchingCertificates DeviceShowNumericKeyboardForPassword
+    DeviceAuthDataCacheLifetime DeviceAuthenticationFlowAutoReloadInterval PluginVmLicenseKey LoginAuthenticationBehavior
+  `.trim().split(/\s+/)},
+];
+
 const GUI_PAGE_OVERRIDES = {
   manager: [
     {
@@ -158,18 +231,7 @@ const DETAIL_DATA = {
     ]}],
   },
   'device-policies': {
-    page: 'policies', title: 'Device policies', cards: [{rows: [
-      {name: 'devicePolicies', label: 'Policy JSON', kind: 'textarea', value: '', actions: [
-        {label: 'Save', primary: true, message: 'Policy changes saved', moshAction: 'policies.save'},
-      ]},
-      {actions: [
-        {label: 'Load from device', message: 'Policies loaded', moshAction: 'policies.load'},
-        {label: 'Reset changes', danger: true, prompt: 'Restore the original device policy?',
-          message: 'Policies reset', moshAction: 'policies.reset'},
-        {label: 'Apply policies', primary: true, confirm: true, prompt: 'Apply these device policies?',
-          message: 'Policies applied', moshAction: 'policies.apply'},
-      ]},
-    ]}],
+    page: 'policies', title: 'Device policies', cards: [],
   },
   'apps-config': {
     page: 'apps', title: 'Apps', cards: [{header: 'apps.conf', rows: [
@@ -404,6 +466,13 @@ class ModmiumSettingsRowElement extends PolymerElement {
           margin-inline-start: 16px;
         }
         cr-textarea { margin: 12px 0; width: 100%; }
+        .textarea {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .textarea .settings-box-text { padding-inline-end: 0; }
+        .textarea cr-textarea { box-sizing: border-box; margin: 0 0 12px; }
+        .textarea .actions { justify-content: flex-end; padding-bottom: 12px; }
         select { --md-select-width: 180px; }
         cr-button.danger { color: var(--cros-sys-error); }
         cr-link-row { min-height: var(--settings-row-min-height); }
@@ -416,7 +485,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
       </template>
 
       <template is="dom-if" if="[[!_isLink(item)]]">
-        <div class="settings-box">
+        <div class$="settings-box [[_rowClass(item)]]">
           <div class="start settings-box-text">
             <div class="label">[[item.label]]</div>
             <div class="secondary">[[item.sublabel]]</div>
@@ -461,6 +530,7 @@ class ModmiumSettingsRowElement extends PolymerElement {
   _isSelect(item) { return item?.kind === 'select'; }
   _isToggle(item) { return item?.kind === 'toggle'; }
   _isTextarea(item) { return item?.kind === 'textarea'; }
+  _rowClass(item) { return item?.kind === 'textarea' ? 'textarea' : ''; }
   _selected(option, value) { return option === value; }
   _buttonClass(action) {
     return [action.primary ? 'action-button' : '', action.danger ? 'danger' : '']
@@ -491,6 +561,315 @@ class ModmiumSettingsRowElement extends PolymerElement {
   }
 }
 customElements.define(ModmiumSettingsRowElement.is, ModmiumSettingsRowElement);
+
+class ModmiumPolicyRowElement extends PolymerElement {
+  static get is() { return 'modmium-policy-row'; }
+  static get properties() { return {policy: Object}; }
+  static get template() {
+    return html`
+      <style include="cr-shared-style cros-color-overrides">
+        :host { display: block; }
+        .row {
+          align-items: center;
+          border-top: var(--cr-separator-line);
+          display: flex;
+          gap: 16px;
+          min-height: var(--settings-row-min-height);
+          padding: 0 var(--cr-section-padding);
+        }
+        .name {
+          color: var(--cros-sys-on_surface);
+          flex: 1;
+          min-width: 0;
+          overflow-wrap: anywhere;
+          padding-block: var(--cr-section-vertical-padding);
+        }
+        .category {
+          color: var(--cr-secondary-text-color);
+          font: var(--cros-body-2-font);
+        }
+        cr-input {
+          --cr-input-background-color: var(--cros-sys-input_field_on_shaded);
+          --cr-input-error-display: none;
+          --cr-input-width: min(320px, 40vw);
+        }
+        @media (max-width: 680px) {
+          .row { align-items: stretch; flex-direction: column; gap: 0; padding-bottom: 12px; }
+          .name { padding-bottom: 4px; width: 100%; }
+          cr-input { --cr-input-width: 100%; width: 100%; }
+          cr-toggle, cr-button { align-self: flex-end; }
+        }
+      </style>
+      <div class="row">
+        <div class="name">
+          [[policy.name]]
+          <div class="category" hidden$="[[!policy.showCategory]]">[[policy.category]]</div>
+        </div>
+        <template is="dom-if" if="[[_isBoolean(policy.type)]]">
+          <cr-toggle checked="[[policy.value]]" on-change="_toggle"
+              aria-label$="[[policy.name]]"></cr-toggle>
+        </template>
+        <template is="dom-if" if="[[_isString(policy.type)]]">
+          <cr-input value="[[policy.value]]" on-input="_input"
+              aria-label$="[[policy.name]]"></cr-input>
+        </template>
+        <template is="dom-if" if="[[_isNumber(policy.type)]]">
+          <cr-input type="number" value="[[policy.value]]" on-input="_number"
+              aria-label$="[[policy.name]]"></cr-input>
+        </template>
+        <template is="dom-if" if="[[_isJson(policy.type)]]">
+          <cr-button on-click="_edit">[[_jsonLabel(policy.value)]]</cr-button>
+        </template>
+      </div>
+    `;
+  }
+  _isBoolean(type) { return type === 'boolean'; }
+  _isString(type) { return type === 'string'; }
+  _isNumber(type) { return type === 'number'; }
+  _isJson(type) { return type === 'json'; }
+  _jsonLabel(value) {
+    if (value === null || value === undefined) return 'Not set';
+    if (Array.isArray(value)) return `${value.length} items`;
+    if (typeof value === 'object') return `${Object.keys(value).length} fields`;
+    return 'Edit JSON';
+  }
+  _change(value) {
+    this.dispatchEvent(new CustomEvent('modmium-policy-change', {
+      bubbles: true,
+      composed: true,
+      detail: {name: this.policy.name, value, storedAsString: this.policy.storedAsString},
+    }));
+  }
+  _toggle(event) { this._change(event.target.checked); }
+  _input(event) { this._change(event.target.value); }
+  _number(event) {
+    const value = Number(event.target.value);
+    if (Number.isFinite(value)) this._change(value);
+  }
+  _edit() {
+    this.dispatchEvent(new CustomEvent('modmium-policy-edit-json', {
+      bubbles: true, composed: true, detail: this.policy,
+    }));
+  }
+}
+customElements.define(ModmiumPolicyRowElement.is, ModmiumPolicyRowElement);
+
+class ModmiumPolicyEditorElement extends PolymerElement {
+  static get is() { return 'modmium-policy-editor'; }
+  static get properties() {
+    return {
+      policies: {type: String, observer: '_loadPolicies'},
+      categories: {type: Array, value: () => POLICY_CATEGORIES},
+      category: {type: String, value: 'Restrictions'},
+      rows: {type: Array, value: () => []},
+      query: {type: String, value: ''},
+      dirty: {type: Boolean, value: false},
+      loaded: {type: Boolean, value: false},
+      jsonValue: String,
+      jsonError: String,
+      editingPolicy: Object,
+    };
+  }
+  static get template() {
+    return html`
+      <style include="cr-shared-style cros-color-overrides md-select">
+        :host { display: block; }
+        .controls {
+          align-items: center;
+          display: flex;
+          gap: 12px;
+          padding: 12px var(--cr-section-padding);
+        }
+        .controls cr-input {
+          --cr-input-background-color: var(--cros-sys-input_field_on_shaded);
+          --cr-input-error-display: none;
+          flex: 1;
+        }
+        select { --md-select-width: 180px; }
+        .note {
+          color: var(--cr-secondary-text-color);
+          padding: 12px var(--cr-section-padding);
+        }
+        .empty {
+          align-items: center;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding: 40px 16px;
+        }
+        .actions {
+          align-items: center;
+          border-top: var(--cr-separator-line);
+          display: flex;
+          gap: 8px;
+          justify-content: flex-end;
+          min-height: 64px;
+          padding: 0 var(--cr-section-padding);
+        }
+        cr-button.danger { color: var(--cros-sys-error); }
+        #jsonEditor { min-width: min(560px, 80vw); }
+        #jsonError { color: var(--cros-sys-error); min-height: 20px; }
+        @media (max-width: 680px) {
+          .controls { align-items: stretch; flex-direction: column; }
+          select { --md-select-width: 100%; width: 100%; }
+          .actions { flex-wrap: wrap; padding-block: 8px; }
+        }
+      </style>
+
+      <settings-card>
+        <template is="dom-if" if="[[!loaded]]">
+          <div class="empty">
+            <div>No device policy has been loaded.</div>
+            <cr-button class="action-button" on-click="_load">Load policies</cr-button>
+          </div>
+        </template>
+        <template is="dom-if" if="[[loaded]]">
+          <div class="controls">
+            <select class="md-select" aria-label="Policy category" on-change="_categoryChanged">
+              <template is="dom-repeat" items="[[categories]]" as="item">
+                <option value$="[[item.name]]"
+                    selected$="[[_selectedCategory(item.name, category)]]">
+                  [[item.name]] ([[item.keys.length]])
+                </option>
+              </template>
+            </select>
+            <cr-input placeholder="Search policies" aria-label="Search policies"
+                on-input="_search"></cr-input>
+          </div>
+          <div class="note" hidden$="[[_hideReportingNote(category, query)]]">
+            Changing device policies stops reporting to the Google Admin Console.
+            Changes to reporting policies have no effect after that.
+          </div>
+          <template is="dom-repeat" items="[[rows]]" as="policy">
+            <modmium-policy-row policy="[[policy]]"
+                on-modmium-policy-change="_policyChanged"
+                on-modmium-policy-edit-json="_editJson">
+            </modmium-policy-row>
+          </template>
+          <div class="note" hidden$="[[rows.length]]">No matching policies.</div>
+          <div class="actions">
+            <cr-button disabled$="[[!dirty]]" on-click="_discard">Discard edits</cr-button>
+            <cr-button class="danger" on-click="_reset">Reset all changes</cr-button>
+            <cr-button class="action-button" on-click="_apply">Apply policies</cr-button>
+          </div>
+        </template>
+      </settings-card>
+
+      <cr-dialog id="jsonDialog">
+        <div slot="title">[[editingPolicy.name]]</div>
+        <div slot="body">
+          <cr-textarea id="jsonEditor" value="{{jsonValue}}" aria-label="JSON value"></cr-textarea>
+          <div id="jsonError">[[jsonError]]</div>
+        </div>
+        <div slot="button-container">
+          <cr-button class="cancel-button" on-click="_cancelJson">Cancel</cr-button>
+          <cr-button class="action-button" on-click="_saveJson">Save</cr-button>
+        </div>
+      </cr-dialog>
+    `;
+  }
+  _loadPolicies(policies) {
+    try {
+      const parsed = JSON.parse(policies || '');
+      if (!parsed.device || typeof parsed.device !== 'object' || Array.isArray(parsed.device)) {
+        throw new Error();
+      }
+      this.document = parsed;
+      this.loaded = true;
+      this.dirty = false;
+      this._refreshRows();
+    } catch {
+      this.document = null;
+      this.loaded = false;
+      this.rows = [];
+    }
+  }
+  _selectedCategory(name, category) { return name === category; }
+  _categoryChanged(event) {
+    this.category = event.target.value;
+    this._refreshRows();
+  }
+  _search(event) {
+    this.query = event.target.value.trim().toLocaleLowerCase();
+    this._refreshRows();
+  }
+  _hideReportingNote(category, query) { return Boolean(query) || category !== 'Reporting'; }
+  _refreshRows() {
+    if (!this.document) return;
+    const selected = this.query ? POLICY_CATEGORIES :
+      POLICY_CATEGORIES.filter(item => item.name === this.category);
+    this.rows = selected.flatMap(item => item.keys
+      .filter(name => !this.query || name.toLocaleLowerCase().includes(this.query))
+      .map(name => this._policy(name, item.name, Boolean(this.query))));
+  }
+  _policy(name, category, showCategory) {
+    let value = this.document.device[name];
+    let storedAsString = false;
+    if (typeof value === 'string' && /^[\[{]/.test(value.trim())) {
+      try {
+        value = JSON.parse(value);
+        storedAsString = true;
+      } catch {}
+    }
+    const type = ['boolean', 'string', 'number'].includes(typeof value) ? typeof value : 'json';
+    return {name, category, showCategory, type, value, storedAsString};
+  }
+  _policyChanged(event) {
+    const {name, value, storedAsString} = event.detail;
+    this.document.device[name] = storedAsString ? JSON.stringify(value) : value;
+    this.dirty = true;
+  }
+  _editJson(event) {
+    this.editingPolicy = event.detail;
+    this.jsonValue = JSON.stringify(event.detail.value, null, 2) ?? 'null';
+    this.jsonError = '';
+    this.$.jsonDialog.showModal();
+  }
+  _cancelJson() { this.$.jsonDialog.cancel(); }
+  _saveJson() {
+    try {
+      const value = JSON.parse(this.jsonValue);
+      this.document.device[this.editingPolicy.name] = this.editingPolicy.storedAsString ?
+        JSON.stringify(value) : value;
+      this.dirty = true;
+      this.jsonError = '';
+      this.$.jsonDialog.close();
+      this._refreshRows();
+    } catch {
+      this.jsonError = 'Enter a valid JSON value.';
+    }
+  }
+  _action(detail) {
+    this.dispatchEvent(new CustomEvent('modmium-action', {
+      bubbles: true, composed: true, detail,
+    }));
+  }
+  _load() {
+    this._action({moshAction: 'policies.load', message: 'Policies loaded'});
+  }
+  _discard() { this._loadPolicies(this.policies); }
+  _reset() {
+    this._action({
+      moshAction: 'policies.reset',
+      danger: true,
+      prompt: 'Restore the original device policy?',
+      message: 'Policies reset',
+    });
+  }
+  _apply() {
+    const contents = `${JSON.stringify(this.document, null, 2)}\n`;
+    this.dirty = false;
+    this._action({
+      moshAction: 'policies.save',
+      args: [contents],
+      confirm: true,
+      prompt: 'Apply these device policies?',
+      message: 'Policies applied',
+      nextAction: {moshAction: 'policies.apply', message: 'Policies applied'},
+    });
+  }
+}
+customElements.define(ModmiumPolicyEditorElement.is, ModmiumPolicyEditorElement);
 
 class OsSettingsMenuItemElement extends PolymerElement {
   static get is() { return 'os-settings-menu-item'; }
@@ -1020,12 +1399,18 @@ class ModmiumSettingsMainElement extends PolymerElement {
           </cr-icon-button>
           <h1 id="subpageTitle">[[title]]</h1>
         </div>
-        <template is="dom-repeat" items="[[cards]]" as="card">
-          <settings-card header-text="[[card.header]]">
-            <template is="dom-repeat" items="[[card.rows]]" as="row">
-              <modmium-settings-row item="[[row]]"></modmium-settings-row>
-            </template>
-          </settings-card>
+        <template is="dom-if" if="[[_isPolicyEditor(detail)]]">
+          <modmium-policy-editor policies="[[modmiumState.devicePolicies]]">
+          </modmium-policy-editor>
+        </template>
+        <template is="dom-if" if="[[_showCards(detail)]]">
+          <template is="dom-repeat" items="[[cards]]" as="card">
+            <settings-card header-text="[[card.header]]">
+              <template is="dom-repeat" items="[[card.rows]]" as="row">
+                <modmium-settings-row item="[[row]]"></modmium-settings-row>
+              </template>
+            </settings-card>
+          </template>
         </template>
       </div>
     `;
@@ -1076,8 +1461,6 @@ class ModmiumSettingsMainElement extends PolymerElement {
       row('Chromebook Plus features').checked = state.chromebookPlus;
       row('Studio Mic').checked = state.studioMic;
       row('System Blur').checked = state.systemBlur;
-    } else if (detail === 'device-policies') {
-      row('Policy JSON').value = state.devicePolicies;
     } else if (detail === 'apps-config') {
       rows.find(candidate => candidate.kind === 'textarea').value = state.appsConfig;
     } else if (detail === 'bootsplash') {
@@ -1109,6 +1492,8 @@ class ModmiumSettingsMainElement extends PolymerElement {
     }
   }
   _title(detail) { return DETAIL_DATA[detail]?.title || ''; }
+  _isPolicyEditor(detail) { return detail === 'device-policies'; }
+  _showCards(detail) { return !this._isPolicyEditor(detail); }
   fieldValues(names) {
     const rows = [...this.shadowRoot.querySelectorAll('modmium-settings-row')];
     return names.map(name => {
@@ -1396,9 +1781,16 @@ class ModmiumSettingsUiElement extends PolymerElement {
       } else if (response.type === 'state') {
         this.modmiumState = response;
       } else if (response.type === 'action' && response.ok) {
-        this._showToast(this._pendingMoshAction?.successMessage ||
-          this._pendingMoshAction?.message || 'Done');
+        const completedAction = this._pendingMoshAction;
         this._pendingMoshAction = null;
+        if (completedAction?.nextAction) {
+          this._runAction({
+            ...completedAction.nextAction,
+            successMessage: completedAction.successMessage || completedAction.message,
+          });
+          return;
+        }
+        this._showToast(completedAction?.successMessage || completedAction?.message || 'Done');
         event.source.postMessage({type: 'request', body: 'state'}, event.origin);
       } else if (response.error) {
         this._showToast(response.error);
