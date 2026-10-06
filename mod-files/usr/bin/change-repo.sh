@@ -3,6 +3,17 @@
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
+owner=$(cat /usr/share/.gitowner 2>/dev/null)
+repo=$(cat /usr/share/.gitrepo 2>/dev/null)
+[[ -n $owner && -n $repo ]] && repository="https://github.com/${owner}/${repo}"
+originalRepository="https://github.com/CrOSmium/modmium"
+
+mosh_gui_action repository.set changeRepo 2 2 validateGuiRepoChange
+mosh_gui_action repository.reset resetRepo 1 1 validateGuiRepoReset
+mosh_gui_state repository string "${repository:-$originalRepository}"
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 if [[ -d /usr/local/nix/store ]]; then
   if ! mountpoint -q /nix; then
     sudo mkdir -p /nix
@@ -11,10 +22,6 @@ if [[ -d /usr/local/nix/store ]]; then
   source /nix/var/nix/profiles/default/etc/profile.d/nix.sh
   unset LD_LIBRARY_PATH
 fi
-owner=$(cat /usr/share/.gitowner)
-repo=$(cat /usr/share/.gitrepo)
-[[ ( -n $owner ) && ( -n $repo ) ]] && repository="https://github.com/${owner}/${repo}"
-originalRepository="https://github.com/CrOSmium/modmium"
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
@@ -23,6 +30,14 @@ fail(){
   echo -e "$1"
   sleep 3
   exit 1
+}
+
+validateGuiRepoChange() {
+  mosh_gui_is_github_url "$(mosh_gui_arg 0)" && [[ $(mosh_gui_arg 1) == true ]]
+}
+
+validateGuiRepoReset() {
+  [[ $(mosh_gui_arg 0) == true ]]
 }
 
 parseUrl(){
@@ -103,6 +118,7 @@ EOF
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

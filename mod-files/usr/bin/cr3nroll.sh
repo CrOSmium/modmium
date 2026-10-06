@@ -1138,6 +1138,40 @@ selector() {
 if [[ $MOSH_FRONTEND == gui ]]; then
 	source /usr/lib/libmosh.sh
 
+	validateGuiSavedKey() {
+		mosh_gui_is_name "$(mosh_gui_arg 0)" 64
+	}
+
+	validateGuiSaveKey() {
+		validateGuiSavedKey && [[ $(mosh_gui_arg 1) == y ]]
+	}
+
+	validateGuiGenerateKey() {
+		[[ $(mosh_gui_arg 0) == y && $(mosh_gui_arg 1) == a && $(mosh_gui_arg 2) == y ]] &&
+			mosh_gui_is_name "$(mosh_gui_arg 3)" 64
+	}
+
+	validateGuiDevicePath() {
+		mosh_gui_is_device_path "$(mosh_gui_arg 0)"
+	}
+
+	mosh_gui_action cr3nroll.save savecurrentkeys 2 2 validateGuiSaveKey
+	mosh_gui_action cr3nroll.load loadsavedkeysForGui 1 1 validateGuiSavedKey
+	mosh_gui_action cr3nroll.generate genkeys 4 4 validateGuiGenerateKey
+	mosh_gui_action cr3nroll.import importkeys 1 1 validateGuiDevicePath
+	mosh_gui_action cr3nroll.backup backupvpd 1 1 validateGuiDevicePath
+	if [[ $MOSH_GUI_MODE == state ]]; then
+		mosh_gui_state_list savedEnrollmentKeys
+		while IFS= read -r line; do
+			key=${line#*saved_}
+			key=${key%%_*}
+			key=${key//\"/}
+			mosh_gui_is_name "$key" 64 && mosh_gui_state_item savedEnrollmentKeys "$key"
+		done < <(vpd -i RW_VPD -l 2>/dev/null | grep saved_ | sort)
+	fi
+	mosh_gui_metadata_done
+	mosh_gui_state_done
+
 	loadsavedkeysForGui() {
 		local key serial secret
 		mosh_input key ""
@@ -1153,11 +1187,7 @@ if [[ $MOSH_FRONTEND == gui ]]; then
 		vpd -i RO_VPD -s stable_device_secret_DO_NOT_SHARE="$secret"
 	}
 
-	mosh_gui_run_action cr3nroll.save savecurrentkeys
-	mosh_gui_run_action cr3nroll.load loadsavedkeysForGui
-	mosh_gui_run_action cr3nroll.generate genkeys
-	mosh_gui_run_action cr3nroll.import importkeys
-	mosh_gui_run_action cr3nroll.backup backupvpd
+	mosh_gui_dispatch
 fi
 
 clear

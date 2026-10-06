@@ -224,7 +224,7 @@ installCros() {
       mkdir -p $dir
       cp $file $oldFile
       chown 0:0 $oldFile
-      chmod 777 $oldFile
+      chmod --reference="$file" "$oldFile"
     fi
   done
   arch=$(file mnt/bin/bash | awk -F', ' '{print $2}')

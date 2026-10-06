@@ -3,6 +3,17 @@
 
 source /usr/lib/libmosh.sh
 
+validateGuiAccount() {
+  mosh_gui_is_name "$(mosh_gui_arg 0)" 64 &&
+    mosh_gui_is_domain "$(mosh_gui_arg 1)" &&
+    [[ -n $(mosh_gui_arg 2) && ${#MOSH_GUI_ARG_2} -le 256 && $(mosh_gui_arg 2) == "$(mosh_gui_arg 3)" ]] &&
+    [[ -n ${MOSH_GUI_ARG_4//[[:space:]]/} && ${#MOSH_GUI_ARG_4} -le 128 ]]
+}
+
+mosh_gui_entrypoint account.create 5 5 validateGuiAccount
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 fail(){
   echo -e "$1"
   sleep 3

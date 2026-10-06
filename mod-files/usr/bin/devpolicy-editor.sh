@@ -19,6 +19,20 @@ clear
 
 source /usr/lib/libmosh.sh
 
+validateGuiPolicySave() {
+  [[ $MOSH_GUI_ARG_COUNT == 1 && ${#MOSH_GUI_ARG_0} -le 524288 ]]
+}
+
+mosh_gui_action policies.save savePoliciesForGui 1 1 validateGuiPolicySave
+mosh_gui_action policies.load loadPoliciesForGui 0 0
+mosh_gui_action policies.apply applyPoliciesForGui 0 0
+mosh_gui_action policies.reset resetPoliciesForGui 0 0
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  mosh_gui_state devicePolicies string "$(cat "$jsonFile" 2>/dev/null)"
+fi
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   mkdir -p /usr/local/share
   rm -rf /usr/local/share/policy-test-tool
@@ -461,8 +475,5 @@ full_menu(){
   done
 }
 
-mosh_gui_run_action policies.save savePoliciesForGui
-mosh_gui_run_action policies.load loadPoliciesForGui
-mosh_gui_run_action policies.apply applyPoliciesForGui
-mosh_gui_run_action policies.reset resetPoliciesForGui
+mosh_gui_dispatch
 full_menu
