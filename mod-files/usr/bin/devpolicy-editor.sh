@@ -84,7 +84,7 @@ RESTRICTIONS=(
   "SupervisedUsersEnabled" "DeviceAllowRedeemChromeOsRegistrationOffers"
   "DeviceRestrictedManagedGuestSessionEnabled" "DeviceCrostiniArcAdbSideloadingAllowed"
   "DeviceLoginScreenExtensionManifestV2Availability" "DeviceExtensionsSystemLogEnabled"
-  "DeviceEphemeralUsersEnabled" "DeviceDebugPacketCaptureAllowed"
+  "DeviceEphemeralUsersEnabled" "DeviceDebugPacketCaptureAllowed" "IsolatedWebAppUserInstallationEnabled"
 )
 
 REPORTING=(
