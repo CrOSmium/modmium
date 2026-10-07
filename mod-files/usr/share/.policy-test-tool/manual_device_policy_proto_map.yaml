@@ -244,3 +244,4 @@ SystemUse24HourClock: use_24hour_clock.use_24hour_clock
 UnaffiliatedArcAllowed: unaffiliated_arc_allowed.unaffiliated_arc_allowed
 UptimeLimit: uptime_limit.uptime_limit
 VirtualMachinesAllowed: virtual_machines_allowed.virtual_machines_allowed
+IsolatedWebAppUserInstallationEnabled: isolated_web_apps_enabled.isolated_web_apps_enabled
