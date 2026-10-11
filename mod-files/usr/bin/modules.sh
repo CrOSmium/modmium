@@ -44,8 +44,9 @@ remote(){
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
+menuText="\nModmium Modules\n"
 menu_reset() {
-  options=("TBD" "TBD" "TBD" "Exit")
+  options=("System" "Featured" "Remote" "Exit")
   functions=("core" "featured" "remote" "quit")
   num_options=${#options[@]}
 }
