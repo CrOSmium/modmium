@@ -203,7 +203,7 @@ full_menu() {
   while true; do
     display_menu "${voffset:-0}"
     if [[ "$center_menu" == "1" ]]; then
-      while ! read -rsn1 key 2>/dev/null; do
+      while ! read -rsn1 -t 1 key 2>/dev/null; do
         if [[ $resize -eq 1 ]]; then 
           resize=0
           clear
