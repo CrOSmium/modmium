@@ -3,6 +3,8 @@
 center_menu=1
 voffset=5
 # -- Pre TUI init --
+source /usr/lib/libmosh.sh
+
 stty -echo
 if [[ -d /usr/local/nix/store ]]; then
   # issues can get caused if a user has a custom shell.
