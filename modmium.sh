@@ -150,17 +150,22 @@ installCros() {
   installKern=${intdis_prefix}$(opposite_num $(get_booted_kernnum))
   installRoot=${intdis_prefix}$(opposite_num $(get_booted_rootnum))
   echo -e "${G}Installing ChromeOS to disk...${N}"
+  if ! touch /root/.areyouwritable 2>/dev/null;  then
+    [[ $QUICKINSTALL == $FLAGS_TRUE ]] || echo -e "${R}Weird, / is not writable. fixing...${N}" # if quickinstall is being used, this can be safely ignored.
+    /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --force --partitions $(get_booted_kernnum) --keys ${keydir} &>/dev/null
+    sync;sync;sync;sync # for good luck
+    [[ $QUICKINSTALL == $FLAGS_TRUE ]] || echo -e "${R}If you run into problems, please ask for support in the discord and provide the error above.${N}"
+  fi
   cd /usr/local
   python -m venv .venv
   source .venv/bin/activate
   pip install requests &>/dev/null
-  streamdir=/root/ # might as well if rootfs verification is already off ig, im keeping this as default just because i don't want to break anything - dmd
-  [[ $QUICKINSTALL == $FLAGS_TRUE ]] && streamdir=/usr/local/
+  streamdir=/usr/local/
   curl -Lo ${streamdir}stream.py "https://modmium.dev/tools/stream.py"
   python ${streamdir}stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}" keepflag
   rm -rf .venv
   # thanks lxrd for that python script btw
-  echo -e "${G}Removing verity from ChromeOS...${N}"
+  echo -e "${G}Removing ${Y}verity${G} from ChromeOS...${N}"
   # keydir gets defined in installModmium()
   /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(opposite_num $(get_booted_kernnum)) --keys ${keydir} &>/dev/null
   futility dump_kernel_config ${installKern} > config.txt
