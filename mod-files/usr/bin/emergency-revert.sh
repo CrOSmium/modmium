@@ -101,10 +101,10 @@ revertMPkeys(){
 
     echo "Flashing new bios, ${R}do not power off your device!${N}"
     flashrom -w image.bin || fail "Uh oh, flash failed. Join https://discord.crosbreaker.com for support" restore
-    vpd -d dev_firmware
+    vpd -i RO_VPD -d dev_firmware
     echo "Firmware flashed successfully!"
 
-    if [[ $board =~ ^corsola|^dedede|^nissa ]]; then
+    if [[ $BOARD =~ ^corsola|^dedede|^nissa ]]; then
       echo -e "${B}Do you want to unkeyroll? [y/N]"
       read -re
       if [[ $REPLY =~ ^[Yy]$ ]]; then
