@@ -81,8 +81,8 @@ lbox() {
 
 centermenu() {
   if [[ "$listmenu" != "1" ]]; then
-    og_centermenu
-    return
+    og_centermenu "$@"
+    return 
   fi
   local content="$1" voffset="${2:-0}"
   local rows cols line stripped w start_row start_col row halfcols
