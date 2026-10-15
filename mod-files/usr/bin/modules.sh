@@ -1,9 +1,8 @@
 #!/bin/bash
 # written by DMD
-center_menu=1
-voffset=5
 # -- Pre TUI init --
 source /usr/lib/libmosh.sh
+source /usr/lib/libmosh-lists.sh
 
 stty -echo
 if [[ -d /usr/local/nix/store ]]; then
@@ -20,6 +19,7 @@ if [[ -d /usr/local/nix/store ]]; then
 fi
 menu_logo() {
   echo -ne "\033]0;Modules\007"
+  if [[ $displaydefaultlogo -eq 1 ]]; then
   cat << 'EOF'
 +-----------------------------------------------------------------------------+
 |       .       *       .            .      *        .       *          .     |
@@ -35,13 +35,40 @@ menu_logo() {
 +-----------------------------------------------------------------------------+
 -- Modmium Modules --
 EOF
+  else
+    echo -e "$logo"
+  fi
   displaymilestone=0
 }
 # -- FUNCTIONS --
 
-core(){
-  echo "core"
+corefconfirm(){
+  echo -e ":whale:"
   sleep 1
+}
+
+test(){
+  echo -e "thank you for helping test features early :D"
+  sleep 1
+  coref
+}
+
+coref(){
+  options=("Confirm" "Exit")
+  functions=("corefconfirm" "quit")
+  num_options=${#options[@]}
+  listmenu=1
+  listnames=("TBD1" "TBD2")
+  listdescs=("a placeholder" "another placeholder")
+  listcmds=("test" "test")
+  listboxtitle="System Modules"
+  displaydefaultlogo=0
+  logo="-- Manage --"
+  menuText=""
+  full_menu
+}
+core(){
+  employ coref
   menu_reset
   full_menu
 }
@@ -62,8 +89,13 @@ remote(){
 
 # -- MAIN SCRIPT --
 tput civis # :whale:
-menuText="${D}Modules can be used to select and add specific Modmium features outside of the core project. ${N}(${B}${modver}-${branch}${N})\n"
 menu_reset() {
+  menuText="${D}Modules can be used to select and add specific Modmium features outside of the core project. ${N}(${B}${modver}-${branch}${N})\n"
+  center_menu=1
+  voffset=5
+  listmenu=0
+  displaydefaultlogo=1
+  selected_index=0
   options=("System" "Featured" "Remote" "Exit")
   functions=("core" "featured" "remote" "quit")
   num_options=${#options[@]}
