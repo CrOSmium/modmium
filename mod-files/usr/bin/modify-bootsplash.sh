@@ -4,6 +4,32 @@
 
 source /usr/lib/libmosh.sh
 
+validateGuiBootsplashName() {
+  mosh_gui_is_filename "$(mosh_gui_arg 0)"
+}
+
+validateGuiBootsplashPath() {
+  mosh_gui_is_relative_path "$(mosh_gui_arg 0)"
+}
+
+validateGuiBootsplashRemove() {
+  [[ $(mosh_gui_arg 0) == y ]]
+}
+
+mosh_gui_action bootsplash.replace replace 1 1 validateGuiBootsplashName
+mosh_gui_action bootsplash.custom replace_custom 1 1 validateGuiBootsplashPath
+mosh_gui_action bootsplash.restore restore 0 0
+mosh_gui_action bootsplash.download download_backup 0 0
+mosh_gui_action bootsplash.remove remove 1 1 validateGuiBootsplashRemove
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  mosh_gui_state_list bootsplashes
+  for image in /bootsplash/*.png; do
+    [[ -f $image ]] && mosh_gui_state_item bootsplashes "${image##*/}"
+  done
+fi
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 fail() {
   echo -e "$1"
   for downloadsDir in $(find /home/user/*/MyFiles/Downloads -maxdepth 0 2>/dev/null); do
@@ -157,6 +183,7 @@ EOF
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu
