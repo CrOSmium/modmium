@@ -205,7 +205,7 @@ installCros() {
   rm -rf .venv
   echo -e "${G}Syncing filesystem (may take a while)...${N}"
   if [[ $factoryreset == 1 ]]; then
-    echo -e "Your device ${R}will${N} powerwash on next boot. \n${D}(This is forced because the GAC can detect when policies have been modified and you aren't actively booted in Modmium.)"
+    echo -e "Your device ${R}will${N} powerwash on next boot. \n${D}(This is forced because the GAC can detect when policies have been modified and you aren't actively booted in a Modmium install.)${N}"
     echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
     sync
   fi
