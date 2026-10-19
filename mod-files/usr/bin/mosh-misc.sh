@@ -50,6 +50,9 @@ prenix(){
 tilingWm(){
   runscript /usr/bin/ashland.sh
 }
+installnano(){
+  runscript /usr/bin/nano-install.sh
+}
 credits(){
   runscriptnoroot creditsMenu
 }
@@ -57,8 +60,8 @@ credits(){
 tput civis # :whale:
 
 menu_reset() {
-  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Credits" "Go back")
-  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "tilingWm" "credits" "quit")
+  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Install Nano" "Credits" "Go back")
+  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "tilingWm" "installnano" "credits" "quit")
   num_options=${#options[@]}
 }
 
