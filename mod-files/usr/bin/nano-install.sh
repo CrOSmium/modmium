@@ -21,7 +21,7 @@ if [[ ${ec} == 130 ]]; then
 elif [[ ${ec} -ne 0 ]]; then
     echo -e "${R}nano install failed!${N}"
 else
-    echo -e "${G}Success!"
+    echo -e "${G}Success!${N}"
 fi
 unset ec
 sleep 3
