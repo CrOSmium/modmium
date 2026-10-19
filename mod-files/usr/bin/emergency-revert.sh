@@ -203,7 +203,12 @@ installCros() {
   pip install requests &>/dev/null
   /usr/bin/stream.py --recovery-url "${recoveryUrl}" --kern-output "${installKern}" --root-output "${installRoot}" || fail "${R}Failed to install ChromeOS, refusing to change boot order, exiting...${N}"
   rm -rf .venv
-   echo -e "${G}Syncing filesystem (may take a while)...${N}"
+  echo -e "${G}Syncing filesystem (may take a while)...${N}"
+  if [[ $factoryreset == 1 ]]; then
+    echo -e "Your device ${R}will${N} powerwash on next boot. \n${D}(This is forced because the GAC can detect when policies have been modified and you aren't actively booted in Modmium.)"
+    echo "fast safe keepimg" > /mnt/stateful_partition/factory_install_reset
+    sync
+  fi
   sync
   echo -e "${G}Done, reboot to return to factory ChromeOS!${N}"
   activekern=$(get_booted_kernnum)
