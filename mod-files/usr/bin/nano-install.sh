@@ -5,6 +5,13 @@
 source /usr/lib/libmosh.sh
 
 # main thing
+source /etc/profile # emerge breaks without this
+if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
+    printf 'y\n\nn' | dev_install --reinstall || fail "${R}Could not install dependencies. Connect to the internet first.${N}"
+    touch /mnt/stateful_partition/.devinstall_complete
+fi
+ldconfig # emerge breaks without this too
+
 echo -e "${G}Installing nano...${N}"
 emerge nano
 ec=$?
