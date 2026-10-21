@@ -41,14 +41,14 @@ dispolf(){
     echo "--device-management-url=http://localhost:9999" >> /etc/chrome_dev.conf 
     echo -e "${R}Disabled${N} policy syncing!\n${D}THIS WILL BREAK ENROLLMENT, RE ENABLE SYNCING IF YOU NEED TO RE-ENROLL${N}"
     sleep 2
-    echo -e "\nOnce again, please remember to ${UN}re-enable policy syncing when you need to re-enroll ${D}(or add a new account)${N}${RUN}, otherwise you will be 'unable to reach Google'.\nThis is your final reminder."
+    echo -e "\nOnce again, please remember to ${UN}re-enable policy syncing when you need to re-enroll${RUN} ${D}(or add a new account)${N}, otherwise you will be 'unable to reach Google'.\nThis is your final reminder."
     sleep 3
-    echo -e "\nRestarting ui..."
+    echo -e "Restarting ui..."
     sleep 2
     initctl restart ui
   else
-    sed -i '/^[^#]*--device-management-url[=[:space:]]\+\S+/d' /etc/chrome_dev.conf
-    echo -e "${G}Enabled${N} policy syncing!\n"
+    sed -i '/^[^#]*--device-management-url[=[:space:]]\+[^[:space:]]\+/d' /etc/chrome_dev.conf
+    echo -e "${G}Enabled${N} policy syncing!"
     sleep 1
     echo -e "Restarting ui..."
     sleep 2
