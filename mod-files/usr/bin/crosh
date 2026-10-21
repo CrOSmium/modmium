@@ -83,8 +83,8 @@ crosh(){
 update(){
   runscript /usr/bin/update-modmium.sh
 }
-devpol(){
-  runscript /usr/bin/devpolicy-editor.sh
+policy(){
+  runscript /usr/bin/policy-editors.sh
 }
 apps(){
   runscript /usr/bin/mosh-apps.sh
@@ -97,8 +97,8 @@ misc(){
 tput civis # :whale:
 [[ $CRITUPD == 1 ]] && menuText="\n${R}Warning: There is a critical Modmium update available, please update Modmium whenever possible.${N}\n"
 menu_reset() {
-  options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Device Policies" "Apps" "Misc" "Exit")
-  functions=("rootsh" "chronosh" "crosh" "update" "devpol" "apps" "misc" "quit")
+  options=("Root Shell" "Chronos Shell" "Crosh" "Manage Modmium" "Edit Policies" "Apps" "Misc" "Exit")
+  functions=("rootsh" "chronosh" "crosh" "update" "policy" "apps" "misc" "quit")
   num_options=${#options[@]}
 }
 
