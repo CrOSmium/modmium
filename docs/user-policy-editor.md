@@ -7,10 +7,11 @@ We use a set of Google tools named policy-test-tool and fake_dmserver (see [the 
 1. Install and boot modmium in verified (see [./installation.md](./installation.md).)
 2. Obtain your enterprise's policy.json (see [obtaining your policy file after install](#obtaining-your-policy-file-after-install))
 3. Open VT2 once you've finished enrollment, a good place to enter is the "Enrollment is complete." screen. <br> __DO NOT SIGN IN. IF YOU DID AND WANT TO EDIT USER POLICIES, POWERWASH AND TRY AGAIN.__
-4. Navigate to `Edit User Policies`.
-5. Select `Run Policy Editor` and enter your enterprise email when prompted.
-6. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
-7. After you're logged in, return to VT2 and hit Ctrl+C
+4. Navigate to `Edit Policies`.
+5. Press `User Policy Editor`.
+6. Select `Run Policy Editor` and enter your enterprise email when prompted.
+7. When the fake device management server starts, go **back** to VT1 and **sign in with the same email**.
+8. After you're logged in, return to VT2 and hit Ctrl+C
 - Only ever run `Reinstall` if you want to edit policies for a different account, or update them for the same one with a new file.
 
 ## Obtaining your policy file after install
