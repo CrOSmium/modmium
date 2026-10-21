@@ -68,12 +68,12 @@ dispol(){
 tput civis # :whale:
 
 menu_reset() {
-  menuText="\n-- Policies --\n"
+  menuText="\nPolicies\n"
   if [[ $vtmosh -eq 1 ]]; then
     options=("${G}Device${N} Policy Editor" "${Y}User${N} Policy Editor")
     functions=("device" "user" "dispol" "quit")
   else
-    options=("${G}Device${N} Policy Editor")
+    options=("Device Policy Editor")
     functions=("device" "dispol" "quit")
   fi
   
