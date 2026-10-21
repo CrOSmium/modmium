@@ -45,7 +45,7 @@
 
 1. Flash the image (see crosbreaker docs' [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) for a how-to).
 Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, boot devmode as normal (i.e. not enrolled, powerwash if necessary).
-2. Connect to the internet by pressing the wifi icon in the bottom right (don't press "Get Started").
+2. Connect to the internet by pressing the Wifi icon in the bottom right (don't press "Get Started").
 3. open VT2 **[Ctrl+Alt+F2]** and login as `root` then run `bash <(curl -SLk modmium.dev/fwmp.sh)` to clear Firmware Management Parameters.
 4. Run `cd /usr/local; curl -LOsk modmium.dev/modmium.sh && bash modmium.sh <flags>` to install developer firmware (devfw) & backup your firmware to a drive or directory easily. 
 5. If WP is disabled, the script will prompt you to select either to backup your firmware to a drive or directory, (DRIVE IS RECOMMENDED [seriously, pick drive if you don't know what you're doing, please.], ALL DATA ON IT WILL BE WIPED). Select the USB (or directory) you want to back up to, then press enter, if everything succeeds, it will automatically reboot.
@@ -56,7 +56,7 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 10. After it reboots, go through OOBE as normal and you'll be enrolled.
 
 > [!NOTE]
-> You still have access to VT's even in verified, and rootFS verification is disabled in verified. This is thanks to devfw allowing us to use resigned kernels and unverified root filesystems.
+> You still have access to VT2 (VT-MOSH) even in verified, and RootFS verification is disabled in verified. This is thanks to devfw allowing us to use resigned kernels and unverified root filesystems.
 
 ## Flags (ADVANCED USERS ONLY)
 * `modmium.sh` flags:
