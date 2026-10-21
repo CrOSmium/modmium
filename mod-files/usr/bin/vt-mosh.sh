@@ -53,11 +53,8 @@ chronosh(){
 update(){
   runscript /usr/bin/update-modmium.sh
 }
-devpol(){
-  runscript /usr/bin/devpolicy-editor.sh
-}
-userpol(){
-    runscript /usr/bin/mosh-upol.sh
+policy(){
+  runscript "/usr/bin/policy-editors.sh -v"
 }
 misc(){
   runscript /usr/bin/mosh-misc.sh
@@ -74,8 +71,8 @@ menu_logo() {
 
 menu_reset() {
     menuText="\n${D}If you'd like skip this menu by default, run 'touch /usr/local/.defaultvt'${N}\n"
-  options=("Root Shell" "Chronos Shell" "Manage Modmium" "Edit ${Y}Device Policies${N}" "Edit ${G}User Policies${N}" "Apps" "Misc" "Exit")
-  functions=("rootsh" "chronosh" "update" "devpol" "userpol" "apps" "misc" "quit")
+  options=("Root Shell" "Chronos Shell" "Manage Modmium" "Edit ${Y}Policies${N}" "Apps" "Misc" "Exit")
+  functions=("rootsh" "chronosh" "update" "policy" "apps" "misc" "quit")
   num_options=${#options[@]}
 }
 
