@@ -1,0 +1,14 @@
+/usr/bin/update-modmium.sh
+/usr/bin/change-shell.sh
+/usr/bin/change-repo.sh
+/usr/bin/toggle-enrollment.sh
+/usr/bin/localacc.sh
+/usr/bin/features.sh
+/usr/bin/devpolicy-editor.sh
+/usr/bin/mosh-apps.sh
+/usr/bin/modify-bootsplash.sh
+/usr/bin/cr3nroll.sh
+/usr/bin/emergency-revert.sh
+/usr/bin/nix-preinstall.sh
+/usr/bin/ashland.sh
+/usr/bin/mosh-misc.sh

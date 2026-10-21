@@ -489,7 +489,7 @@ importkeys() {
 			sleep 1
 			echo -e "Importing RW_VPD..."
 			sudo vpd -i RW_VPD -O
-			while IFS= read -r line; do
+			while IFS= builtin read -r line; do
 				clean_line=$(echo "$line" | tr -d '"')
 				sudo vpd -i RW_VPD -s "$clean_line"
 			done <"$impdirec/RW.vpd"
@@ -497,7 +497,7 @@ importkeys() {
 			sleep 1.6
 			echo -e "Importing RO_VPD..."
 			sudo vpd -i RO_VPD -O
-			while IFS= read -r line; do
+			while IFS= builtin read -r line; do
 				clean_line=$(echo "$line" | tr -d '"')
 				sudo vpd -i RO_VPD -s "$clean_line"
 			done <"$impdirec/RO.vpd"
@@ -1134,6 +1134,62 @@ selector() {
             return ;;
     esac
 }
+
+if [[ $MOSH_FRONTEND == gui ]]; then
+	source /usr/lib/libmosh.sh
+
+	validateGuiSavedKey() {
+		mosh_gui_is_name "$(mosh_gui_arg 0)" 64
+	}
+
+	validateGuiSaveKey() {
+		validateGuiSavedKey && [[ $(mosh_gui_arg 1) == y ]]
+	}
+
+	validateGuiGenerateKey() {
+		[[ $(mosh_gui_arg 0) == y && $(mosh_gui_arg 1) == a && $(mosh_gui_arg 2) == y ]] &&
+			mosh_gui_is_name "$(mosh_gui_arg 3)" 64
+	}
+
+	validateGuiDevicePath() {
+		mosh_gui_is_device_path "$(mosh_gui_arg 0)"
+	}
+
+	mosh_gui_action cr3nroll.save savecurrentkeys 2 2 validateGuiSaveKey
+	mosh_gui_action cr3nroll.load loadsavedkeysForGui 1 1 validateGuiSavedKey
+	mosh_gui_action cr3nroll.generate genkeys 4 4 validateGuiGenerateKey
+	mosh_gui_action cr3nroll.import importkeys 1 1 validateGuiDevicePath
+	mosh_gui_action cr3nroll.backup backupvpd 1 1 validateGuiDevicePath
+	if [[ $MOSH_GUI_MODE == state ]]; then
+		mosh_gui_state_list savedEnrollmentKeys
+		while IFS= read -r line; do
+			key=${line#*saved_}
+			key=${key%%_*}
+			key=${key//\"/}
+			mosh_gui_is_name "$key" 64 && mosh_gui_state_item savedEnrollmentKeys "$key"
+		done < <(vpd -i RW_VPD -l 2>/dev/null | grep saved_ | sort)
+	fi
+	mosh_gui_metadata_done
+	mosh_gui_state_done
+
+	loadsavedkeysForGui() {
+		local key serial secret
+		mosh_input key ""
+		[[ $key =~ ^[A-Za-z0-9.-]+$ ]] || return 1
+		serial=$(vpd -i RW_VPD -g "saved_${key}_serial_number")
+		secret=$(vpd -i RW_VPD -g "saved_${key}_stable_device_secret")
+		[[ -n $serial && -n $secret ]] || return 1
+		[[ -n $(vpd -i RO_VPD -g factory_serial_number) ]] ||
+			vpd -i RO_VPD -s factory_serial_number="$(vpd -i RO_VPD -g serial_number)"
+		[[ -n $(vpd -i RO_VPD -g factory_stable_device_secret) ]] ||
+			vpd -i RO_VPD -s factory_stable_device_secret="$(vpd -i RO_VPD -g stable_device_secret_DO_NOT_SHARE)"
+		vpd -i RO_VPD -s serial_number="$serial"
+		vpd -i RO_VPD -s stable_device_secret_DO_NOT_SHARE="$secret"
+	}
+
+	mosh_gui_dispatch
+fi
+
 clear
 full_menu
 tput cnorm
