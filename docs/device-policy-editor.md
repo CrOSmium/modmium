@@ -17,9 +17,9 @@ With verification disabled, we can dump the device policy to a JSON file, make t
   - `DeviceAllowNewUsers` — Allows you to add new accounts.
   - `DeviceUnaffiliatedCrostiniAllowed` — Enables Crostini (the Linux container/VM).
   - `DeviceUserAllowlist` — Allows users outside of your district domain to be on the Chromebook. Usually you can just add `"*@*"` or `"@gmail.com"` here.
-  - `DeviceBorealisAllowed` — Enables Steam for Chromebook beta. (You also need to enable `#borealis-enable-unsupported-hardware` in `chrome://flags` if you want to use steam on unsupported hardware!
+  - `DeviceBorealisAllowed` — Enables Steam for Chromebook beta. (You also need to enable `#borealis-enable-unsupported-hardware` in `chrome://flags` if you want to use steam on unsupported hardware!)
   - `VirtualMachinesAllowed` — Required for Borealis (Steam) and Crostini.
   - `UnaffiliatedArcAllowed` — Enables the Play Store.
 
 - **Enterprise Settings**
-  - `DeviceOpenNetworkConfiguration` — Disables VPN or cellular connections. Usually setting `"DisableNetworkTypes": []` allows them.
+  - `DeviceOpenNetworkConfiguration` — Disables VPN or cellular connections. You can set `"DisableNetworkTypes": []` to allow them.
