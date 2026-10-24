@@ -56,7 +56,7 @@ Of note, __before__ flashing the image FWMP must be disabled. To be sure it is, 
 10. After it reboots, go through OOBE as normal and you'll be enrolled.
 
 > [!NOTE]
-> You still have access to VT2 (VT-MOSH) even in verified, and RootFS verification is disabled in verified. This is thanks to devfw allowing us to use resigned kernels and unverified root filesystems.
+> You still have access to VT2 (VT-MOSH) even in verified, and RootFS verification is disabled in verified. This is thanks to devFW allowing us to use resigned kernels and unverified root filesystems.
 
 ## Flags (ADVANCED USERS ONLY)
 * `modmium.sh` flags:
