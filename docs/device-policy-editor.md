@@ -11,6 +11,9 @@ With verification disabled, we can dump the device policy to a JSON file, make t
    
 > [!Caution]
 > If you modify *any* device policies, verified access through kiosk apps will fail, you will need to powerwash and set device policies after you're done using it. If you don't want your device to report to the GAC whatsoever, press `Disable Policy Syncing` in the `Edit Policies` menu.
+>
+> (TLDR; Kiosk apps brick themselves if you edit device policy.)
+>
 > Use `Reset All Changes` to send reports to the GAC again.
 
 - **Restrictions**
