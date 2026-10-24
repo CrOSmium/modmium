@@ -10,7 +10,7 @@ With verification disabled, we can dump the device policy to a JSON file, make t
 4. When done, go back and select "Apply All Changes", your Chromebook will reboot and your new policies will be applied!
    
 > [!Caution]
-> If you modify *any* device policies, it'll stop sending new reports to the GAC and appear as offline. 
+> If you modify *any* device policies, verified access through kiosk apps will fail, you will need to powerwash and set device policies after you're done using it. If you don't want your device to report to the GAC whatsoever, press `Disable Policy Syncing` in the `Edit Policies` menu.
 > Use `Reset All Changes` to send reports to the GAC again.
 
 - **Restrictions**
