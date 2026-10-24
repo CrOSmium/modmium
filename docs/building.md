@@ -1,5 +1,5 @@
 > [!CAUTION]
-> Don't use pre-built recovery images. Modmium is meant to be built from source and you risk the image being outdated or having malware. If you do not want to build a recovery image, use the [VT-2 installer](./installation.md/#vt2-installation)
+> Do not use prebuilt Modmium recovery images, as they may be outdated or contain malicious scripts, if you do not want to build a recovery image, use the [VT-2 installer]
 ## Build instructions
 ```sh
 git clone https://github.com/CrOSmium/modmium -b <branch> && cd modmium # branches are "stable" and "nightly" 
