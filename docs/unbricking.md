@@ -1,7 +1,7 @@
 ## The problem
 If you enroll a Chromebook while using Modmium and your installation later becomes corrupted to the point that it can no longer boot, recovering with the Modmium recovery image will no longer be possible because FWMP (Firmware Management Parameters) can restrict booting developer images.
 
-If you obtain code execution, it's fairly trivial to clear FWMP and restore the ability to boot the recovery image.
+If you obtain code execution (non dev+reco), it's fairly trivial to clear FWMP and restore the ability to boot the recovery image.
 ## Getting code execution
 Thanks to the GBB flags set by `modmium.sh`, shims can be booted with **[Ctrl+U]** from the Developer mode boot screen, regardless of the recovery key (meaning they will also work on boards that are typically keyrolled*).
 1. Download the shim for your board from [crosbreaker's download site](https://dl.crosbreaker.com/).
