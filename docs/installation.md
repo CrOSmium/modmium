@@ -24,7 +24,7 @@
 
 ## VT2 Installation
 > [!TIP]
-> F2 is usually the key ***to the right of*** the (←)Backward/Left arrow key, usually being either (→)Forward/Right arrow or (↻)Refresh key.
+> F2 is usually the key ***to the right of*** the (←)Backward/Left arrow key on the top of the keyboard, usually being either (→)Forward/Right arrow or (↻)Refresh key.
 >
 > *This varies across devices.*
 1. Boot [developer mode](https://docs.crosbreaker.com/quickstart/exploits/misc/developer-mode/).
