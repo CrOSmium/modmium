@@ -74,7 +74,7 @@ lbox() {
   printf '\e[%d;%dH' $(( by + bh - 1 )) $bx
   [[ $Lf -eq 1 ]] && printf "${B}" || printf "${D}"
   printf '└' # haha └oser!
-  printf -v hline '%*s' $(( bw - 2 )) ''; hline=${hline// /─}
+  printf -v hline '%*s' $(( bw - 2 )) ''; printf '%s' "${hline// /─}"
   printf "┘${N}"
 }
 
