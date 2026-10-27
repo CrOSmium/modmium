@@ -38,6 +38,9 @@ exit 0
 modsplash(){
   runscript /usr/bin/modify-bootsplash.sh
 }
+macaddr(){
+  runscript /usr/bin/mac-config.sh
+}
 cr3nroll(){
   runscript /usr/bin/cr3nroll.sh
 }
@@ -57,8 +60,8 @@ credits(){
 tput civis # :whale:
 
 menu_reset() {
-  options=("Modify Bootsplash" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Credits" "Go back")
-  functions=("modsplash"  "cr3nroll" "erevert" "prenix" "tilingWm" "credits" "quit")
+  options=("Modify Bootsplash" "Change MAC Address" "Open Cr3nroll" "${R}Emergency Revert${N}" "Manage Nix" "Manage Ashland" "Credits" "Go back")
+  functions=("modsplash" "macaddr" "cr3nroll" "erevert" "prenix" "tilingWm" "credits" "quit")
   num_options=${#options[@]}
 }
 
