@@ -15,8 +15,7 @@ eval "og_centermenu() $(declare -f centermenu | tail -n +2)"
 # also no, i am never adding real hooks for libmosh extensions.
 lbox() {
   local cols rows bx by bw bh inner_h inner_w i idx ncol ccol n c tl tlen lpad rpad r
-  cols=$(tput cols)
-  rows=$(tput lines)
+  IFS=' ' read -r rows cols < <(stty size)
   bx=$(( cols / 7 ))
   by=2
   bw=$(( cols - bx ))
@@ -35,27 +34,27 @@ lbox() {
     fi
   fi
 
-  tput cup $by $bx
+  printf '\e[%d;%dH' $by $bx
   [[ $Lf -eq 1 ]] && printf "${B}" || printf "${D}"
   if [[ -n "$tl" ]] && (( ${#tl} + 6 < bw )); then
     tlen=${#tl}
     lpad=$(( (bw - tlen - 6) / 2 ))
     rpad=$(( bw - tlen - 6 - lpad ))
     printf '┌'
-    (( lpad > 0 )) && printf '─%.0s' $(seq 1 $lpad)
+    (( lpad > 0 )) && { printf -v lline '%*s' $lpad ''; printf '%s' "${lline// /─}"; }
     printf "[ %s ]" "$tl"
-    (( rpad > 0 )) && printf '─%.0s' $(seq 1 $rpad)
+    (( rpad > 0 )) && { printf -v rline '%*s' $rpad ''; printf '%s' "${rline// /─}"; }
     printf "┐${N}"
   else
     printf '┌'
-    printf '─%.0s' $(seq 1 $(( bw - 2 )))
+    printf -v hline '%*s' $(( bw - 2 )) ''; printf '%s' "${hline// /─}"
     printf "┐${N}" # thank you anomalous unicode characters!
   fi
 
   for (( i = 0; i < inner_h; i++ )); do
     idx=$(( i + sl ))
     r=$(( by + 1 + i ))
-    tput cup $r $bx
+    printf '\e[%d;%dH' $r $bx
     [[ $Lf -eq 1 ]] && printf "${B}│${N}" || printf "${D}│${N}"
     if (( idx < ${#listnames[@]} )); then
       n="${listnames[$idx]}"
@@ -68,14 +67,14 @@ lbox() {
     else
       printf "%-$(( inner_w + 2 ))s" ""
     fi
-    tput cup $r $(( bx + bw - 1 ))
+    printf '\e[%d;%dH' $r $(( bx + bw - 1 ))
     [[ $Lf -eq 1 ]] && printf "${B}│${N}" || printf "${D}│${N}"
   done
 
-  tput cup $(( by + bh - 1 )) $bx
+  printf '\e[%d;%dH' $(( by + bh - 1 )) $bx
   [[ $Lf -eq 1 ]] && printf "${B}" || printf "${D}"
   printf '└' # haha └oser!
-  printf '─%.0s' $(seq 1 $(( bw - 2 )))
+  printf -v hline '%*s' $(( bw - 2 )) ''; hline=${hline// /─}
   printf "┘${N}"
 }
 
@@ -87,23 +86,23 @@ centermenu() {
   local content="$1" voffset="${2:-0}"
   local rows cols line stripped w start_row start_col row halfcols
   local -a lines
-  rows=$(tput lines)
-  cols=$(tput cols)
+  IFS=' ' read -r rows cols < <(stty size)
   halfcols=$(( cols / 2 ))
   mapfile -t lines <<< "$content"
   start_row=$(( (rows - ${#lines[@]}) / 2 - voffset ))
   (( start_row < 0 )) && start_row=0
   row=$start_row
   tput rmam
+  shopt -s extglob
   for line in "${lines[@]}"; do
     (( row >= rows )) && break
-    stripped=$(printf '%s' "$line" | sed 's/\x1b\[[^a-zA-Z]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g')
+    stripped="${line//$'\e['*([0-9;])[a-zA-Z]/}"
     w=${#stripped}
     start_col=$(( (halfcols - w) / 16 ))
     (( start_col < 0 )) && start_col=0
-    tput cup "$row" 0
+    printf '\e[%d;%dH' "$row" 0
     printf "%-${halfcols}s" ""
-    tput cup "$row" "$start_col"
+    printf '\e[%d;%dH' "$row" "$start_col"
     printf '%s' "$line"
     (( row++ ))
   done
