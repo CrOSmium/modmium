@@ -138,20 +138,18 @@ centermenu() {
   local content="$1" voffset="${2:-0}"
   local rows cols line stripped w start_row start_col row
   local -a lines
-  rows=$(tput lines)
-  cols=$(tput cols)
+  IFS=' ' read -r rows cols < <(stty size)
   mapfile -t lines <<< "$content"
   start_row=$(( (rows - ${#lines[@]}) / 2 - voffset ))
   (( start_row < 0 )) && start_row=0
   row=$start_row
+  shopt -s extglob
   for line in "${lines[@]}"; do
-    stripped=$(printf '%s' "$line" | sed 's/\x1b\[[^a-zA-Z]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g') # colors aren't words bash!
+    stripped="${line//$'\e['*([0-9;])[a-zA-Z]/}" # colors aren't words bash!
     w=${#stripped}
     start_col=$(( (cols - w) / 2 ))
     (( start_col < 0 )) && start_col=0
-    tput cup "$row" "$start_col"
-    printf '%s' "$line"
-    tput el
+    printf '\e[%d;%dH%s\e[K' "$row" "$start_col" "$line"
     (( row++ ))
   done
 }
