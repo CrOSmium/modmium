@@ -12,17 +12,37 @@ if [[ "$passwd" ]]; then
   read -r auth
   stty echo
   echo ""
-  salt=$(echo "$hash" | cut -d'$' -f3)
-  hashin=$(openssl passwd -1 -salt "$salt" "$auth")
-  if [[ "$hashin" != "$hash" ]]; then
-    echo -e "Incorrect password, please try again."
-    sleep "$(awk 'BEGIN {srand(); printf "%.2f", 0.6 + (rand() * 0.4)}')" # tuff random sleep to make brute forcing harder
-    echo -e "Exiting.."
-    exit 1
-  else
-    echo -e "Login successful!"
+  
+  # check for emergency and then normal hash
+  if [[ "$auth" == "emergency" ]]; then
     trap - SIGINT
     sleep 0.67
+    
+    # emregency revert func
+    emergency_revert() {
+      runscript /usr/bin/emergency-revert.sh
+    }
+
+    menu_reset() {
+      menuText=""
+      options=("Emergency Revert" "Exit")
+      functions=("emergency_revert" "quit")
+      num_options=${#options[@]}
+    }
+    
+  else
+    salt=$(echo "$hash" | cut -d'$' -f3)
+    hashin=$(openssl passwd -1 -salt "$salt" "$auth")
+    if [[ "$hashin" != "$hash" ]]; then
+      echo -e "Incorrect password, please try again."
+      sleep "$(awk 'BEGIN {srand(); printf "%.2f", 0.6 + (rand() * 0.4)}')" # tuff random sleep to make brute forcing harder
+      echo -e "Exiting.."
+      exit 1
+    else
+      echo -e "Login successful!"
+      trap - SIGINT
+      sleep 0.67
+    fi
   fi
 fi
 
