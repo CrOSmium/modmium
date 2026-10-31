@@ -24,7 +24,9 @@ for i in $(seq 1 32); do
 done
 
 curl -L https://nixos.org/nix/install -o /usr/local/tmp/install.sh && cp /usr/bin/.mix /usr/bin/mix
-TMPDIR=/usr/local/tmp sh /usr/local/tmp/install.sh
+installArgs=()
+[[ $MOSH_FRONTEND == gui ]] && installArgs+=(--yes)
+TMPDIR=/usr/local/tmp sh /usr/local/tmp/install.sh "${installArgs[@]}"
 sync
 
 touch "$MARKER"

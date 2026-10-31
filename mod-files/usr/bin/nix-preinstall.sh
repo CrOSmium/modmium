@@ -6,6 +6,13 @@ stty -echo
 source /usr/lib/libmosh.sh
 MARKER="/usr/local/.nix_install_done"
 
+mosh_gui_action nix.install installNix 0 0
+mosh_gui_action mix.update updateMix 0 0
+[[ -f $MARKER ]] && nixInstalled=true || nixInstalled=false
+mosh_gui_state nixInstalled bool "$nixInstalled"
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 # -- MAIN SCRIPT --
 tput civis # :whale:
 
@@ -43,6 +50,7 @@ EOF
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

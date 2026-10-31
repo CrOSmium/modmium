@@ -5,6 +5,12 @@
 stty -echo
 source /usr/lib/libmosh.sh
 
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == describe ]]; then
+  printf 'MOSH1\tmenu-owner\tmisc\n'
+fi
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 # -- FUNCTIONS --
 creditsMenu(){
     cat <<EOF | xargs -0 echo -ne
