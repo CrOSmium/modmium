@@ -104,7 +104,7 @@ download_backup() {
   tempdir=$(mktemp -d)
   cd $tempdir
   echo -e "${G}Downloading stock bootsplash...${N}"
-  curl -LO https://dl.xz8f.gay/chromeos_bootsplash.zip
+  curl -LO https://modmium.dev/chromeos_bootsplash.zip
   echo -e "${Y}Unzipping...${N}"
   bsdtar -xf chromeos_bootsplash.zip
   echo -e "${Y}Creating backup...${N}"
