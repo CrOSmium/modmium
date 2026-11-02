@@ -29,7 +29,11 @@ if [[ "$passwd" ]]; then
       functions=("emergency_revert" "quit")
       num_options=${#options[@]}
     }
-    
+    menu_reset
+    clear
+    full_menu
+    tput cnorm
+    selector
   else
     salt=$(echo "$hash" | cut -d'$' -f3)
     hashin=$(openssl passwd -1 -salt "$salt" "$auth")
