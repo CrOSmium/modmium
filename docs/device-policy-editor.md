@@ -4,7 +4,7 @@ Device policies are signed using a private key, and the corresponding public key
 With verification disabled, we can dump the device policy to a JSON file, make the selected edits, and use the modified JSON to generate a new device policy file!
 
 ## Device policy editor instructions
-1. Enroll into your district and sign in
+1. Enroll into your enterprise and sign in
 2. Open MOSH or VT-MOSH and press the Edit Device Policies button
 3. Make your desired edits to device policy
 4. When done, go back and select "Apply All Changes", your Chromebook will reboot and your new policies will be applied!
@@ -19,7 +19,7 @@ With verification disabled, we can dump the device policy to a JSON file, make t
 - **Restrictions**
   - `DeviceAllowNewUsers` — Allows you to add new accounts.
   - `DeviceUnaffiliatedCrostiniAllowed` — Enables Crostini (the Linux container/VM).
-  - `DeviceUserAllowlist` — Allows users outside of your district domain to be on the Chromebook. Usually you can just add `"*@*"` or `"@gmail.com"` here.
+  - `DeviceUserAllowlist` — Allows users outside of your enterprise's domain to be on the Chromebook. Usually you can just add `"*@*"` or `"@gmail.com"` here.
   - `DeviceBorealisAllowed` — Enables Steam for Chromebook beta. (You also need to enable `#borealis-enable-unsupported-hardware` in `chrome://flags` if you want to use steam on unsupported hardware!)
   - `VirtualMachinesAllowed` — Required for Borealis (Steam) and Crostini.
   - `UnaffiliatedArcAllowed` — Enables the Play Store.
