@@ -2,7 +2,7 @@
 We use a set of Google tools named policy-test-tool and fake_dmserver (see [the Chromium docs](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/policy/tools/fake_dmserver/chromeos_instructions.md#8_testing-a-new-unlanded_policy) on them for more information) to serve our modified policies to the user account on login. We hardcode the user policies to be as unrestrictive as possible, but you can modify them if you like (see mod-files/usr/bin/mosh-upol.sh).
 
 ## Obtaining your policy file after install
-1. Enroll into your district and login to your enterprise account
+1. Enroll into your enterprise and login to your (enterprise) account
 2. Open `chrome://policy`, go to the "More options" button and select "Export as JSON" to put it in your Downloads folder. Do not rename the file.
 > [!NOTE]
 > If `chrome://policy` is blocked, instead of downloading the policy file, just press `Extract policies from current account`, and skip to step 5.
