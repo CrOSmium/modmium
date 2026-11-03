@@ -79,11 +79,11 @@ replace_custom() {
   echo -e "${G}Enter the relative path to the custom image (from the root of the Files app).${N}"
   read -rep " > " custom_img_path
   custom_img_path=$(find /home/user/*/MyFiles -maxdepth 0 | head -n 1)/${custom_img_path}
-  if [[ -f $custom_img_path ]]; then
+  if [[ -f $custom_img_path && "${custom_img_path,,}" =~ \.png$ ]]; then
     move_images $custom_img_path
     echo -e "${B}Replaced bootsplash!${N}"
   else
-    fail "${R}The image $custom_img_path does not exist! Make sure you have the path right!${N}"
+    fail "${R}The image $custom_img_path does not exist or is not a PNG! Make sure you have the path right!${N} \n ${D}Please run your file through a proper coverter if it is not a PNG, just renaming the file and applying may brick your device!${N}"
   fi
   fail
   stty -echo
@@ -151,6 +151,7 @@ ${P}+##############################################+
 | -------------------------------------------- |
 | Replaces the stock ChromeOS bootsplash       |
 +##############################################+${N}
+${R}Warning:${D} Make sure your bootsplash images are the correct size!${N}
 ${D}(Hit Ctrl+C to return to MOSH)${N}
 EOF
   )
