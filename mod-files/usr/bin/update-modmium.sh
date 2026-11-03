@@ -342,13 +342,19 @@ installCros() {
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
-  sync
+  sync;sync;sync;sync
   echo -e "${G}Done! Would you like to reboot now? [Y/n]${N}"
   read -n1 -r
-  [[ $REPLY =~ ^[Nn]$ ]] && ( echo -e "${B}Reboot when ready! Exiting...${N}"; sleep 2; start powerd &>/dev/null; exit 0 )
-  echo -e "${B}Rebooting!${N}"
-  reboot
-  sleep infinity
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
+    echo -e "${B}Reboot when ready! Exiting...${N}"
+    sleep 2
+    start powerd &>/dev/null
+    exit 0
+  else
+    echo -e "${B}Rebooting!${N}"
+    reboot
+    sleep infinity
+  fi
 }
 
 # -- NON UPDATER FUNCTIONS --
