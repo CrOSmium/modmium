@@ -146,6 +146,7 @@ menu_reset(){
     done
   fi
   menuText=$(cat <<EOF
+
 ${P}+##############################################+
 | Bootsplash Replacer                          |
 | -------------------------------------------- |
@@ -153,6 +154,7 @@ ${P}+##############################################+
 +##############################################+${N}
 ${R}Warning:${D} Make sure your bootsplash images are the correct size!${N}
 ${D}(Hit Ctrl+C to return to MOSH)${N}
+
 EOF
   )
   num_options=${#options[@]}
