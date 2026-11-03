@@ -38,6 +38,8 @@ DEFAULTS = {
     "UserBorealisAllowed": True,
     "VpnConfigAllowed": True,
     "CrostiniAllowed": True,
+    "SystemTerminalSshAllowed": True,
+    "FastPairEnabled": True,
 }
 
 PASSTHROUGH_POLICIES = [
