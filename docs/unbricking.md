@@ -8,7 +8,7 @@ Thanks to the GBB flags set by `modmium.sh`, shims can be booted with **[Ctrl+U]
 2. Flash it to a USB drive, see the [flashing guide](https://docs.crosbreaker.com/quickstart/exploits/misc/flashing-guide/) if you don't know how.
 3. Plug in the USB, then do **[Ctrl+U]** to boot from it.
 
-Usually shims are the main way to get code execution, but you can use the shell in MiniOS (when on an eligible device like a nissa, modmium resigns MiniOS on them to enable said shell) if booting the shim somehow fails.
+Usually shims are the main way to get code execution, but you can use the shell in MiniOS (when on an eligible device like a nissa, Modmium resigns MiniOS on them to enable said shell) if booting the shim somehow fails.
 
 *(\*With devkeys, you are neither keyrolled nor unkeyrolled, since you are using completely different keys)*
 ## Clearing FWMP
