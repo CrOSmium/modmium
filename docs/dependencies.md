@@ -6,7 +6,7 @@ yay -S --needed acpica coreutils curl jq libarchive pv util-linux vboot-utils wg
 yay -S inkscape # Optional, only required for custom bootsplash
 ```
 
-###### If you're using Arch then vboot-utils will likely error. [Compile it yourself](./vboot-utils.md) to get it to work.
+###### If you're using Arch then installing vboot-utils will likely fail. [Compile it yourself](./vboot-utils.md) to get it to work.
 
 ## Debian (requires sid repo)
 ```bash
