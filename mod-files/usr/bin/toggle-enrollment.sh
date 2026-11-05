@@ -4,6 +4,13 @@
 
 source /usr/lib/libmosh.sh
 
+mosh_gui_action enrollment.enable yesenroll 2 2 validateGuiEnrollment
+mosh_gui_action enrollment.disable noenroll 2 2 validateGuiEnrollment
+[[ -f /.deprovision ]] && enrollmentEnabled=false || enrollmentEnabled=true
+mosh_gui_state enrollmentEnabled bool "$enrollmentEnabled"
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 # -- FUNCTIONS --
 
 fail() {
@@ -18,6 +25,10 @@ fail() {
     sleep 2.25
     exit 1
   fi
+}
+
+validateGuiEnrollment() {
+  [[ $(mosh_gui_arg 0) == y && $(mosh_gui_arg 1) == y ]]
 }
 
 promptPowerwash(){
@@ -81,6 +92,7 @@ menu_reset() {
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

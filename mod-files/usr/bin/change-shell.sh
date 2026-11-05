@@ -3,6 +3,11 @@
 # -- Pre TUI init --
 stty -echo
 source /usr/lib/libmosh.sh
+
+mosh_gui_action shell.set changeShell 1 1 validateGuiShell
+mosh_gui_state shell string "$(basename "${shell:-bash}")"
+mosh_gui_metadata_done
+mosh_gui_state_done
 if [[ -d /usr/local/nix/store ]]; then
   if ! mountpoint -q /nix; then
     sudo mkdir -p /nix
@@ -19,6 +24,10 @@ fail(){
   echo -e "$1"
   sleep 3
   exit 1
+}
+
+validateGuiShell() {
+  mosh_gui_is_shell "$(mosh_gui_arg 0)"
 }
 
 changeShell(){
@@ -54,6 +63,7 @@ EOF
   num_options=${#options[@]}
 }
 
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

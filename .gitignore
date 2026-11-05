@@ -9,6 +9,7 @@ policy.json
 id_rsa*
 *DS_Store*
 userkeys
+.local-build/
 .realuser
 tests/
 *.pyc

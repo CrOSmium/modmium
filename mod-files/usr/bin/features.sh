@@ -5,6 +5,34 @@
 stty -echo
 echo -ne "\033]0;MOSH\007"
 source /usr/lib/libmosh.sh
+
+checkStatus() {
+  [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
+  [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
+
+  if [[ -f /usr/lib64/libfakephysmem.so ]] && grep -q 'libfakephysmem.so' /etc/chrome_dev.conf 2>/dev/null; then
+    systemblur=1
+  else
+    systemblur=0
+  fi
+}
+
+validateGuiFeature() {
+  [[ $MOSH_GUI_ARG_COUNT == 0 ]]
+}
+
+mosh_gui_action feature.chromebook-plus chromebookPlus 0 0 validateGuiFeature
+mosh_gui_action feature.studio-mic studioMic 0 0 validateGuiFeature
+mosh_gui_action feature.system-blur systemBlur 0 0 validateGuiFeature
+mosh_gui_metadata_done
+
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  checkStatus
+  mosh_gui_state chromebookPlus bool "$chromebookplus"
+  mosh_gui_state studioMic bool "$studiomic"
+  mosh_gui_state systemBlur bool "$systemblur"
+fi
+mosh_gui_state_done
 if [[ -d /usr/local/nix/store ]]; then
   # issues can get caused if a user has a custom shell.
   # before, this code only ran if .bashrc was sourced,
@@ -25,16 +53,6 @@ quit() {
   exit 0
 }
 
-checkStatus() {
-  [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
-  [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
-
-  if [[ -f /usr/lib64/libfakephysmem.so ]] && grep -q 'libfakephysmem.so' /etc/chrome_dev.conf 2>/dev/null; then
-    systemblur=1
-  else
-    systemblur=0
-  fi
-}
 
 chromebookPlus(){
   if [[ $chromebookplus == 0 ]]; then
@@ -593,6 +611,8 @@ menu_reset() {
   num_options=${#options[@]}
 }
 
+[[ $MOSH_FRONTEND == gui ]] && checkStatus
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

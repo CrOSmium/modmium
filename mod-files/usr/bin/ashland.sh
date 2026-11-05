@@ -14,7 +14,16 @@ stty -echo
 echo -ne "\033]0;MOSH\007"
 source /usr/lib/libmosh.sh
 
-if ! which python3 &>/dev/null; then
+mosh_gui_action ashland.install installAshland 0 0
+mosh_gui_action ashland.update updateAshland 0 0
+mosh_gui_action ashland.uninstall uninstallAshland 0 0
+mosh_gui_action ashland.toggle toggleAshland 0 0
+mosh_gui_action ashland.autostart toggleAutostart 0 0
+mosh_gui_action ashland.layout cycleLayout 0 0
+mosh_gui_action ashland.gaps cycleGaps 0 0
+mosh_gui_metadata_done
+
+if [[ $MOSH_GUI_MODE != state ]] && ! which python3 &>/dev/null; then
   echo -e "${R}Dependencies not installed, installing...${N}"
   source /etc/profile # required to get emerge working in mosh
   if [[ ! -f /mnt/stateful_partition/.devinstall_complete ]]; then
@@ -61,6 +70,16 @@ checkStatus() {
   gapsIn=$(readOption gaps_in)
   gapsOut=$(readOption gaps_out)
 }
+
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  checkStatus
+  mosh_gui_state ashlandInstalled bool "$installed"
+  mosh_gui_state ashlandRunning bool "$running"
+  mosh_gui_state ashlandAutostart bool "$autostart"
+  mosh_gui_state ashlandLayout string "$layout"
+  mosh_gui_state ashlandGaps string "${gapsIn:-0}/${gapsOut:-0}"
+fi
+mosh_gui_state_done
 
 fetchAshland() {
   echo -e "Downloading ashland..."
@@ -243,6 +262,8 @@ menu_reset() {
   num_options=${#options[@]}
 }
 
+[[ $MOSH_FRONTEND == gui ]] && checkStatus
+mosh_gui_dispatch
 menu_reset
 clear
 full_menu

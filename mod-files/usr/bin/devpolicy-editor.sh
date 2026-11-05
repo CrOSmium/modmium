@@ -19,6 +19,20 @@ clear
 
 source /usr/lib/libmosh.sh
 
+validateGuiPolicySave() {
+  [[ $MOSH_GUI_ARG_COUNT == 1 && ${#MOSH_GUI_ARG_0} -le 524288 ]]
+}
+
+mosh_gui_action policies.save savePoliciesForGui 1 1 validateGuiPolicySave
+mosh_gui_action policies.load loadPoliciesForGui 0 0
+mosh_gui_action policies.apply applyPoliciesForGui 0 0
+mosh_gui_action policies.reset resetPoliciesForGui 0 0
+if [[ $MOSH_FRONTEND == gui && $MOSH_GUI_MODE == state ]]; then
+  mosh_gui_state devicePolicies string "$(cat "$jsonFile" 2>/dev/null)"
+fi
+mosh_gui_metadata_done
+mosh_gui_state_done
+
 if [[ ! -f $DEVPOL_FILE ]] || [[ ! -d /usr/local/share/policy-test-tool ]]; then
   mkdir -p /usr/local/share
   rm -rf /usr/local/share/policy-test-tool
@@ -383,6 +397,32 @@ mainMenuOptions=("1) Restrictions" "2) Reporting" "3) Enterprise Settings" "4) M
 mainSelectedIndex=0
 mainNumOptions=${#mainMenuOptions[@]}
 
+savePoliciesForGui(){
+  local policies
+  mosh_input policies ""
+  printf '%s\n' "$policies" | jq -e '.device | type == "object"' >/dev/null || fail "Invalid policy JSON."
+  printf '%s\n' "$policies" > "${jsonFile}.tmp" || fail "Could not save policies."
+  mv "${jsonFile}.tmp" "$jsonFile"
+}
+
+applyPoliciesForGui(){
+  python devpol.py "$jsonFile" || fail "Could not apply policies."
+}
+
+resetPoliciesForGui(){
+  pushd /var/lib/devicesettings &>/dev/null || fail "Device policy directory is missing."
+  mv owner.key.bak.enterprise owner.key &>/dev/null
+  policyBackup=$(ls policy.*.bak.enterprise 2>/dev/null)
+  [[ -n $policyBackup ]] && mv "$policyBackup" "${policyBackup%.bak.enterprise}" &>/dev/null
+  popd &>/dev/null || return 1
+  rm -f "$jsonFile"
+  restart ui
+}
+
+loadPoliciesForGui(){
+  :
+}
+
 full_menu(){
   while :; do
     tput cup 0 0
@@ -435,4 +475,5 @@ full_menu(){
   done
 }
 
+mosh_gui_dispatch
 full_menu
