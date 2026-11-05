@@ -1,5 +1,5 @@
 ## How it works
-Device policies are signed using a private key, and the corresponding public key is used to verify them. For testing new policies, Google provides the `--disable-policy-key-verification` flag, which Modmium adds to `/etc/chrome_dev.conf`.
+Device policies are signed using a private key, and the corresponding public key is used to verify them. For testing new policies, Google provides the [`--disable-policy-key-verification`](https://peter.sh/experiments/chromium-command-line-switches/#:~:text=%2D%2Ddisable%2Dpolicy%2Dkey%2Dverification) flag, which Modmium adds to `/etc/chrome_dev.conf`.
 
 With verification disabled, we can dump the device policy to a JSON file, make the selected edits, and use the modified JSON to generate a new device policy file!
 
