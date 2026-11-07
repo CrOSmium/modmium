@@ -241,3 +241,7 @@ quit(){
   clear
   command exit 0
 }
+
+if [[ -f /usr/lib/libmosh-mouse.sh ]]; then
+  source /usr/lib/libmosh-mouse.sh
+fi
