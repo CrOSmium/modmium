@@ -29,7 +29,7 @@ checkStatus() {
   [[ "$(cat /run/libsegmentation/feature_device_info 2>/dev/null)" == "CAMQAg==" ]] && chromebookplus=1 || chromebookplus=0
   [[ -f /usr/lib64/libforcefm.so ]] && grep -q 'libforcefm.so' /usr/share/cros/init/cras-env.sh && studiomic=1 || studiomic=0
 
-  if [[ -f /usr/lib64/libfakephysmem.so ]] && grep -q 'libfakephysmem.so' /etc/chrome_dev.conf 2>/dev/null; then
+  if [[ -f /usr/local/libfakephysmem.so ]] && grep -qFx 'LD_PRELOAD=/usr/local/libfakephysmem.so' /etc/chrome_dev.conf 2>/dev/null; then
     systemblur=1
   else
     systemblur=0
@@ -282,12 +282,6 @@ systemBlur(){
     echo -e "Enabling System Blur..."
     echo -e "Credits to pilot bell for making this toggle!"
     sleep 1
-    echo -e "${R}this toggle is broken :( \nit will be fixed when it is not broken.${N}"
-    sleep 2
-    exit 1 # generational fix
-
-    # hey, don't look below this ok? it is my flawless fix for this.
-    cat << MEOW > /dev/null
     RED=$(tput setaf 1)
     GREEN=$(tput setaf 2)
     YELLOW=$(tput setaf 3)
@@ -547,11 +541,10 @@ EOF
     touch /etc/chrome_dev.conf
     cp -a /etc/chrome_dev.conf /etc/chrome_dev.conf.bak.systemblur 2>/dev/null || true
     sed -i '/libfakephysmem.so/d; /--enable-low-end-device-mode/d; /--disable-low-end-device-mode/d; /DisableSystemBlur/d' /etc/chrome_dev.conf
-    printf '%s\n' 'LD_PRELOAD=libfakephysmem.so' >> /etc/chrome_dev.conf
+    printf '%s\n' 'LD_PRELOAD=/usr/local/libfakephysmem.so' >> /etc/chrome_dev.conf
 
     echo "${GREEN}System Blur enabled${RESET}"
     echo "${YELLOW}Restarting UI...${RESET}"
-MEOW
   else
     echo -e "Disabling System Blur..."
     sleep 1
