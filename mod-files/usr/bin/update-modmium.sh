@@ -62,22 +62,28 @@ askBranch(){
   branchfile="$(cat /.branch)"
   [[ $branchfile ]] || branchfile="stable"
   echo -e "[If you don't know what this means, just press enter]"
-  if [[ $branchfile == "stable" ]]; then
-    echo -ne "Branch of Modmium to install (${B}stable${N}, nightly): "
-  else
-    echo -ne "Branch of Modmium to install (stable, ${B}nightly${N}): "
-  fi
+  case $branchfile in 
+    stable)
+      echo -ne "Branch of Modmium to install (${B}stable${N}, nightly): "
+      ;;
+    nightly)
+      echo -ne "Branch of Modmium to install (stable, ${B}nightly${N}): "
+      ;;
+    *)
+      echo -ne "Branch of Modmium to install (stable, nightly, ${B}${branchfile}${N}): "
+      ;;
+  esac
   read -rep "" branchreq
   case $branchreq in
     nightly)
-    branch="nightly"
-    ;;
-  stable)
-    branch="stable"
+      branch="nightly"
       ;;
-  *)
-    branch="${branchfile}"
-    ;;
+    stable)
+      branch="stable"
+      ;;
+    *)
+      branch="${branchfile}"
+      ;;
   esac
   echo # weird UI glitch if this isn't here, idk man
 }
