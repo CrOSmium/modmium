@@ -40,7 +40,8 @@ BOARD="$(grep '^CHROMEOS_RELEASE_DESCRIPTION=' /etc/lsb-release | awk '{print $N
 getImageLink(){
   jsonLink="https://cdn.jsdelivr.net/gh/crosbreaker/chromeos-releases-data/data.json"
   echo -e "${G}Checking crosbreaker/chromeos-releases-data for recovery image URL...${N}"
-  recoveryUrl=$(curl -sL $jsonLink | jq -r --arg board $BOARD --arg ver $VERSION '
+  jsonData=$(curl -sL "$jsonLink")
+  recoveryUrl=$(echo "$jsonData" | jq -r --arg board "$BOARD" --arg ver "$VERSION" '
     .[$board].images // []
     | map(select(
     .channel == "stable-channel" and
@@ -53,6 +54,42 @@ getImageLink(){
   if [[ -n $recoveryUrl && $recoveryUrl =~ dl\.google\.com ]]; then
     echo -e "${G}Recovery URL found!${N}"
     sleep 1
+    return
+  fi
+  cresult=$(echo "$jsonData" | jq -r --arg board "$BOARD" --arg ver "$VERSION" '
+    (.[$board].images // [])
+    | map(select(.channel == "ltc-channel" or .channel == "lts-channel"))
+    | map({
+        url,
+        channel,
+        chrome_version,
+        diff: (
+          (.chrome_version | split(".")[0] | tonumber) -
+          ($ver        | split(".")[0] | tonumber)
+          | if . < 0 then -. else . end
+        )
+      })
+    | sort_by(.diff)
+    | first
+    | "\(.chrome_version)|\(.channel)|\(.url)"
+  ') # this is for lts/ltc fallback
+  if [[ -n $cresult && $cresult != "||" ]]; then
+    closever=$(cut -d'|' -f1 <<< "$cresult")
+    closechan=$(cut -d'|' -f2 <<< "$cresult") # ..H-Hey, Modmium-chan!~
+    closeurl=$(cut -d'|' -f3 <<< "$cresult")
+    [[ $closechan == "lts-channel" ]] && ltv="LTS" || ltv="LTC"
+    echo -e "${R}No stable version available for v${VERSION}, the closest available version is v${closever} (${ltv})${N}"
+    read -rp "Would you like to use this version instead? [y/N] " confirm
+    case "$confirm" in
+      [yY])
+        recoveryUrl="$closeurl"
+        echo -e "${G}Recovery URL found!${N}"
+        sleep 1
+        ;;
+      *)
+        fail "${R}No recovery image selected, exiting.${N}"
+        ;;
+    esac
   else
     fail "${R}Recovery URL not found or invalid :(${N}"
   fi
