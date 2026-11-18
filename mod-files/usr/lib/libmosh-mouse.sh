@@ -219,7 +219,6 @@ mouse_read_latest() {
     x=$mouse_x y=$mouse_y button=$mouse_button mods=$mouse_mods
     if ! mouse_read "$fd"; then break; fi
     if [[ $mouse_key != mouse || $mouse_action != move ]]; then
-      # Save the first non-motion event without reading past it.
       mouse_pending=("$mouse_key" "$mouse_text" "$mouse_action"
         "${mouse_button:-0}" "${mouse_mods:-0}" "${mouse_x:-0}" "${mouse_y:-0}")
       break
@@ -270,7 +269,6 @@ mouse_read() {
         '[Z') mouse_key=backtab ;;
         '[200~')
           seq=""
-          # Paste is text, even when it looks like terminal input.
           while IFS= read -rsn1 -u "$fd" -t 1 ch; do
             seq+=$ch
             if [[ $seq == *$'\e[201~' ]]; then
