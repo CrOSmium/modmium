@@ -152,7 +152,6 @@ rich_line() {
   rich_tail=""
   (( y >= 1 && y <= rich_rows && x >= 1 && w > 0 )) || return 0
   (( w > rich_cols - x + 1 )) && w=$((rich_cols - x + 1))
-  # Leave the last cell alone. Some terminals scroll even with wrap disabled.
   (( y == rich_rows && x + w > rich_cols )) && (( w-- ))
   (( w > 0 )) || return 0
   while [[ -n $text ]] && (( n < w )); do
@@ -273,7 +272,6 @@ rich_draw_choices() {
     rich_gridstamp[$i]=$stamp rich_gridpos[$i]=$pos
     rich_gridhover[$i]=-1
     [[ $i == "$rich_hover" ]] && rich_gridhover[$i]=${rich_hover_row:--1}
-    # A card paints its box rows, title, and description when there is room.
     grid_ops=$((cardheight+1))
     (( cardheight == 3 )) && grid_ops=$cardheight
     (( cardheight < 3 || cell < 4 )) && grid_ops=1
@@ -384,7 +382,7 @@ rich_present() {
 
 rich_draw() {
   local LC_ALL=C.UTF-8 viewport layout=0 rich_ansi=0
-  # frecon sets TERM=xterm and does not support RGB SGR sequences.
+  # frecon (vt[s]) sets TERM=xterm.
   case ${TERM:-dumb} in xterm|linux|vt*|dumb) rich_ansi=1 ;; esac
   printf -v viewport '%q|' "${rich_width:-70}" "${rich_height:-20}" "${rich_center:-${center_menu:-0}}" "${voffset:-0}" "${TERM:-dumb}"
   if [[ ${#rich_lastpaint[@]} == 0 || $viewport != "$rich_lastviewport" || ${1:-} != hover && ${1:-} != update ]]; then
