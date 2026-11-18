@@ -81,8 +81,11 @@ askBranch(){
     stable)
       branch="stable"
       ;;
-    *)
+    "")
       branch="${branchfile}"
+      ;;
+    *) 
+      branch="${branchreq}"
       ;;
   esac
   echo # weird UI glitch if this isn't here, idk man
