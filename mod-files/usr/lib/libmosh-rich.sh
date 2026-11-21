@@ -9,6 +9,8 @@ rich_reset() {
   rich_text=() rich_value=() rich_choices=() rich_descs=() rich_cmds=()
   rich_disabled=() rich_hidden=() rich_tip=() rich_align=() rich_columns=() rich_cardheight=() rich_shortcuts=()
   rich_caret=() rich_scroll=() rich_left=() rich_group=()
+  rich_flow_rows=() rich_flow_widths=() rich_flow_grow=() rich_flow_vgrow=() rich_flow_boxh=()
+  rich_stack_row=-1 rich_stack_frame=-1 rich_fullscreen=0
   rich_layer_w=() rich_layer_h=()
   rich_lastpaint=() rich_lastrect=() rich_laststart=() rich_lastcache=()
   rich_gridstamp=() rich_gridpos=() rich_gridhover=()
@@ -18,7 +20,7 @@ rich_reset() {
 
 rich_trim() {
   local field j
-  for field in ids types x y w h text value choices descs cmds disabled hidden tip align columns cardheight shortcuts caret scroll left group; do
+  for field in ids types x y w h text value choices descs cmds disabled hidden tip align columns cardheight shortcuts caret scroll left group flow_rows flow_widths flow_grow flow_vgrow flow_boxh; do
     local -n prop="rich_$field"
     for (( j=${#prop[@]}-1; j>=$1; j-- )); do unset 'prop[j]'; done
   done
@@ -53,10 +55,126 @@ rich_add() {
   rich_w[$i]=$w rich_h[$i]=$h rich_text[$i]=$text rich_cmds[$i]=$cmd
   rich_value[$i]=0 rich_caret[$i]=0 rich_scroll[$i]=0 rich_left[$i]=0
   rich_disabled[$i]=0 rich_hidden[$i]=0 rich_group[$i]=$rich_layer
+  rich_flow_rows[$i]=-1 rich_flow_widths[$i]=0 rich_flow_grow[$i]=0 rich_flow_vgrow[$i]=0 rich_flow_boxh[$i]=''
   rich_choices[$i]="" rich_descs[$i]="" rich_tip[$i]="" rich_align[$i]=left rich_columns[$i]=0 rich_cardheight[$i]=6 rich_shortcuts[$i]=""
   case "$type" in
     textbox|password|textarea) rich_value[$i]=$text; rich_caret[$i]=${#text} ;;
   esac
+}
+
+rich_stack() {
+  if (( rich_stack_row >= 0 || rich_layer != 0 )); then
+    echo 'Use one stack per rich screen' >&2
+    return 1
+  fi
+  case ${2:-} in
+    ''|full) ;;
+    *) echo 'Use full to fill the terminal' >&2; return 1 ;;
+  esac
+  if [[ -n ${1:-} ]]; then
+    rich_add panel rich_stack_frame 1 1 1 1 "$1" || return
+    rich_stack_frame=$((${#rich_ids[@]}-1))
+  fi
+  rich_stack_row=0
+  [[ ${2:-} == full ]] && rich_fullscreen=1
+  return 0
+}
+
+rich_row() {
+  (( rich_stack_row >= 0 && rich_layer == 0 )) || { echo 'Start a rich stack first' >&2; return 1; }
+  (( ++rich_stack_row ))
+}
+
+rich_control() {
+  local type=$1 id=$2 width=$3 height=$4 i
+  (( rich_stack_row >= 0 && rich_layer == 0 )) || { echo 'Start a rich stack first' >&2; return 1; }
+  [[ $width =~ ^[1-9][0-9]*[+]?$ && $height =~ ^[1-9][0-9]*[+]?$ ]] || {
+    echo 'Use a positive width and height for automatic layout' >&2; return 1;
+  }
+  i=${#rich_ids[@]}
+  rich_add "$type" "$id" 1 1 "${width%+}" "${height%+}" "${@:5}" || return
+  rich_flow_rows[$i]=$rich_stack_row rich_flow_widths[$i]=${width%+}
+  [[ $width == *+ ]] && rich_flow_grow[$i]=1
+  [[ $height == *+ ]] && rich_flow_vgrow[$i]=1
+  return 0
+}
+
+rich_reflow() {
+  local pad=2 gap=1 top=2 row_gap=1 i row width line=0 last_row=-1
+  local -a control_line used height floor grow stretch
+  (( rich_screenw <= 2*pad )) && pad=0
+  local inner=$((rich_screenw-2*pad))
+  for i in "${!rich_ids[@]}"; do
+    row=${rich_flow_rows[$i]}
+    (( row >= 0 && !rich_hidden[i] )) || continue
+    width=${rich_flow_widths[$i]}
+    (( width > inner )) && width=$inner
+    if (( used[line] && (row != last_row || used[line]+gap+width > inner) )); then
+      (( ++line ))
+    fi
+    (( used[line] += width + (used[line] ? gap : 0), grow[line] += rich_flow_grow[i] ))
+    if (( rich_h[i] > height[line] )); then height[$line]=${rich_h[$i]}; fi
+    if (( rich_flow_vgrow[i] )); then
+      stretch[$line]=1
+    elif (( rich_h[i] > floor[line] )); then
+      floor[$line]=${rich_h[$i]}
+    fi
+    rich_w[$i]=$width control_line[$i]=$line last_row=$row
+  done
+
+  local total=0 flexible=0 shrinkable=0 minimum gaps spare cut extra
+  for line in "${!height[@]}"; do
+    (( total+=height[line] ))
+    if (( stretch[line] )); then
+      (( ++flexible, shrinkable+=height[line]-${floor[line]:-1} ))
+    fi
+  done
+  gaps=$((${#height[@]} ? (${#height[@]}-1)*row_gap : 0))
+  if (( rich_fullscreen )); then
+    minimum=$((total-shrinkable))
+    if (( minimum+gaps+2*top > rich_rows )); then
+      top=$(( (rich_rows-minimum-gaps)/2 ))
+      (( top < 0 )) && top=0
+      if (( minimum+gaps > rich_rows )); then row_gap=0 gaps=0; fi
+    fi
+    spare=$((rich_rows-total-gaps-2*top))
+    (( spare < -shrinkable )) && spare=$((-shrinkable))
+    for line in "${!stretch[@]}"; do
+      if (( spare >= 0 )); then
+        extra=$(((spare+flexible-1)/flexible))
+        (( height[line]+=extra, spare-=extra, flexible-- ))
+      else
+        cut=$((height[line]-${floor[line]:-1}))
+        extra=$((-spare*cut/shrinkable))
+        (( height[line]-=extra, spare+=extra, shrinkable-=cut ))
+      fi
+    done
+    rich_screenh=$rich_rows
+  else
+    rich_view_height "$((total+gaps+2*top))"
+  fi
+
+  local x y=$((top+1)) free columns
+  last_row=-1
+  for i in "${!control_line[@]}"; do
+    line=${control_line[$i]}
+    if (( line != last_row )); then
+      (( last_row >= 0 )) && (( y+=height[last_row]+row_gap ))
+      x=$((pad+1)) free=$((inner-used[line])) columns=${grow[$line]}
+      last_row=$line
+    fi
+    rich_flow_boxh[$i]=''
+    if (( rich_flow_grow[i] )); then
+      extra=$(((free+columns-1)/columns))
+      (( rich_w[i]+=extra, free-=extra, columns-- ))
+    fi
+    (( rich_flow_vgrow[i] )) && rich_flow_boxh[$i]=${height[$line]}
+    rich_x[$i]=$x rich_y[$i]=$y
+    (( x+=rich_w[i]+gap ))
+  done
+  if (( rich_stack_frame >= 0 )); then
+    rich_w[$rich_stack_frame]=$rich_screenw rich_h[$rich_stack_frame]=$rich_screenh
+  fi
 }
 
 rich_set() {
@@ -72,6 +190,10 @@ rich_set() {
         cardheight) (( text >= 3 )) || return 1 ;;
         disabled|hidden) [[ $text == 0 || $text == 1 ]] || return 1 ;;
       esac
+      if [[ $field == h ]] && (( rich_flow_rows[i] >= 0 && text < 0 )); then
+        echo 'Use a positive height for automatic layout' >&2
+        return 1
+      fi
       ;;
     value)
       case "${rich_types[$i]}" in
@@ -110,13 +232,23 @@ rich_get() {
 rich_measure() {
   IFS=' ' read -r rich_rows rich_cols < <(stty size)
   (( rich_rows > 0 && rich_cols > 0 )) || return 1
+  if (( rich_fullscreen )); then
+    rich_screenw=$rich_cols rich_screenh=$rich_rows rich_originx=0 rich_originy=0
+    return 0
+  fi
   rich_screenw=${rich_width:-70}
-  rich_screenh=${rich_height:-20}
   (( rich_screenw > rich_cols )) && rich_screenw=$rich_cols
-  (( rich_screenh > rich_rows )) && rich_screenh=$rich_rows
-  rich_originx=0 rich_originy=0
+  rich_originx=0
   if [[ ${rich_center:-${center_menu:-0}} == 1 ]]; then
     rich_originx=$(( (rich_cols - rich_screenw) / 2 ))
+  fi
+  rich_view_height "${rich_height:-20}"
+}
+
+rich_view_height() {
+  rich_screenh=$1 rich_originy=0
+  (( rich_screenh > rich_rows )) && rich_screenh=$rich_rows
+  if [[ ${rich_center:-${center_menu:-0}} == 1 ]]; then
     rich_originy=$(( (rich_rows - rich_screenh) / 2 - ${voffset:-0} ))
     (( rich_originy < 0 )) && rich_originy=0
   fi
@@ -131,7 +263,7 @@ rich_bounds() {
     (( ch > rich_rows )) && ch=$rich_rows
     ox=$(( (rich_cols - cw) / 2 )) oy=$(( (rich_rows - ch) / 2 ))
   fi
-  bw=${rich_w[$i]} bh=${rich_h[$i]}
+  bw=${rich_w[$i]} bh=${rich_flow_boxh[$i]:-${rich_h[$i]}}
   (( bw < 0 )) && bw=$((cw + bw))
   (( bh < 0 )) && bh=$((ch + bh))
   (( bw > cw )) && bw=$cw
@@ -384,13 +516,14 @@ rich_draw() {
   local LC_ALL=C.UTF-8 viewport layout=0 rich_ansi=0
   # frecon (vt[s]) sets TERM=xterm.
   case ${TERM:-dumb} in xterm|linux|vt*|dumb) rich_ansi=1 ;; esac
-  printf -v viewport '%q|' "${rich_width:-70}" "${rich_height:-20}" "${rich_center:-${center_menu:-0}}" "${voffset:-0}" "${TERM:-dumb}"
+  printf -v viewport '%q|' "${rich_width:-70}" "${rich_height:-20}" "${rich_center:-${center_menu:-0}}" "${voffset:-0}" "${TERM:-dumb}" "$rich_fullscreen"
   if [[ ${#rich_lastpaint[@]} == 0 || $viewport != "$rich_lastviewport" || ${1:-} != hover && ${1:-} != update ]]; then
     rich_measure || return
     layout=1
   fi
   rich_lastviewport=$viewport
   if [[ -n ${rich_layout:-} && ( ${1:-} != hover || $layout == 1 ) ]]; then "$rich_layout"; fi
+  if (( rich_stack_row >= 0 )) && [[ ${1:-} != hover || $layout == 1 ]]; then rich_reflow; fi
   local i j x y w h bx by bw bh text style line pos start count rows n caret prefix stamp
   # rich_line appends to this frame while buffering is enabled.
   local rich_buffering=1 cursor=""
@@ -721,6 +854,7 @@ rich_restore() {
   if (( rich_saved_mouse > 0 )); then mouse_start "$rich_saved_mouse"; else mouse_stop; fi
   printf '\e[0m\e[?25h'
   (( rich_depth == 1 )) && printf '\e[?2004l'
+  if (( rich_depth == 1 && rich_outer_alt )); then printf '\e[?1049l'; fi
   trap - INT TERM HUP WINCH EXIT
   [[ -n $rich_traps ]] && eval "$rich_traps"
   return 0
@@ -731,6 +865,7 @@ rich_onexit() {
   stty "$rich_outer_tty" <&"$rich_outer_fd"
   mouse_stop
   printf '\e[0m\e[?25h\e[?2004l'
+  if (( rich_outer_alt )); then printf '\e[?1049l'; fi
   trap - EXIT
   if [[ -n $rich_outer_exit ]]; then
     ( eval "$rich_outer_exit"; exit "$status" )
@@ -744,6 +879,7 @@ rich_exec() {
   if "$@"; then status=0; else status=$?; fi
   eval "$active_traps"
   stty -echo -icanon min 1 time 0 <&"$rich_fd"
+  if (( rich_depth == 1 && rich_outer_alt )); then printf '\e[?1049h'; fi
   printf '\e[?2004h'
   (( active_mouse > 0 )) && mouse_start "$active_mouse"
   rich_lastpaint=() rich_lastrect=()
@@ -759,7 +895,7 @@ rich_run() {
   rich_tty=$(stty -g <&"$rich_fd") || { exec {rich_fd}<&-; return 1; }
   rich_traps=$(trap -p INT TERM HUP WINCH EXIT)
   if (( rich_depth == 1 )); then
-    local rich_outer_tty=$rich_tty rich_outer_fd=$rich_fd rich_outer_exit
+    local rich_outer_tty=$rich_tty rich_outer_fd=$rich_fd rich_outer_alt=$rich_fullscreen rich_outer_exit
     rich_outer_exit=$(trap -p EXIT)
     trap 'rich_onexit' EXIT
   fi
@@ -768,6 +904,7 @@ rich_run() {
   trap 'rich_close 129; rich_signal=HUP' HUP
   trap 'resize=1' WINCH
   stty -echo -icanon min 1 time 0 <&"$rich_fd"
+  if (( rich_depth == 1 && rich_outer_alt )); then printf '\e[?1049h'; fi
   printf '\e[?2004h'
   if [[ ${rich_mouse:-1} == 1 ]]; then
     if ! mouse_start "${rich_mouse_mode:-1003}"; then
@@ -778,6 +915,10 @@ rich_run() {
   rich_draw || rich_close 1
   while (( rich_running )); do
     if mouse_read_latest "$rich_fd"; then
+      if (( resize )) && [[ $mouse_key == mouse ]]; then
+        resize=0
+        rich_draw || { rich_close 1; break; }
+      fi
       hover=$rich_hover hover_row=${rich_hover_row:--1}
       rich_input
       if (( rich_running )); then
