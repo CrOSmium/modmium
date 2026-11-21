@@ -54,6 +54,47 @@ test(){
   coref
 }
 
+managef(){
+  options=("Confirm" "Exit")
+  functions=("corefconfirm" "quit")
+  num_options=${#options[@]}
+  listmenu=1
+  listnames=()
+  listdescs=()
+  listcmds=()
+
+  for manifest in /mod/*/manifest.json; do
+    [ -f "$manifest" ] || continue
+    moddir=$(dirname "$manifest")
+    id=$(jq -r '.id // empty' "$manifest")
+    name=$(jq -r '.name // empty' "$manifest")
+    desc=$(jq -r '.description // empty' "$manifest")
+    internal=$(jq -r '.internal // false' "$manifest")
+    [ -n "$id" ]   || continue
+    [ -n "$name" ] || continue
+
+    if [ "$internal" = "true" ]; then
+      if [ -f "$moddir/.disabled" ]; then
+        listnames+=("$name ${Y}(core) ${R}[disabled]${N}")
+      else
+        listnames+=("$name ${Y}(core) ${G}[enabled]${N}")
+      fi
+    else
+      if [ -f "$moddir/.disabled" ]; then
+        listnames+=("$name ${R}[disabled]${N}")
+      else
+        listnames+=("$name ${G}[enabled]${N}")
+      fi
+    fi
+    listdescs+=("${desc:-No description}")
+  done
+  listboxtitle="Manage Modules"
+  displaydefaultlogo=0
+  logo="-- Manage --"
+  menuText=""
+  full_menu
+}
+
 coref(){
   options=("Confirm" "Exit")
   functions=("corefconfirm" "quit")
@@ -62,12 +103,19 @@ coref(){
   listnames=("TBD1" "TBD2")
   listdescs=("a placeholder" "another placeholder")
   listcmds=("test" "test")
-  listboxtitle="System Modules"
+  listboxtitle="Core Modules"
   displaydefaultlogo=0
   logo="-- Manage --"
   menuText=""
   full_menu
 }
+
+manage(){
+  employ managef
+  menu_reset
+  full_menu
+}
+
 core(){
   employ coref
   menu_reset
@@ -91,14 +139,14 @@ remote(){
 # -- MAIN SCRIPT --
 tput civis # :whale:
 menu_reset() {
-  menuText="${D}Modules can be used to select and add specific Modmium features outside of the core project. ${N}(${B}${modver}-${branch}${N})\n"
+  menuText="${D}Modules can be used to select and add specific Modmium features. ${N}(${B}${modver}-${branch}${N})\n"
   center_menu=1
   voffset=5
   listmenu=0
   displaydefaultlogo=1
   selected_index=0
-  options=("System" "Featured" "Remote" "Exit")
-  functions=("core" "featured" "remote" "quit")
+  options=("Manage" "System" "Featured" "Remote" "Exit")
+  functions=("manage" "core" "featured" "remote" "quit")
   num_options=${#options[@]}
 }
 

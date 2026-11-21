@@ -54,7 +54,7 @@ checkWP(){
 }
 
 unkeyroll(){
-  futility gbb -s --flash --recoverykey="/root/.recoverykeys/$board.vbpubk"
+  futility gbb -s --flash --recoverykey="/root/.recoverykeys/$BOARD.vbpubk"
   echo -e "Would you like to be unkeyrolled permanently? [y/N]"
   echo -e "${R}This will prevent you from reflashing devkeys until you re-disable FWWP fully${N}"
   read -re
@@ -73,7 +73,7 @@ revertMPkeys(){
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo -e "Restoring MPkeys, ${G}please connect your device to power (if you haven't already)${N}"
     sleep 2
-    echo "Modmium stock firmware restore script by codenerd87"
+    echo "Modmium stock firmware restore script by ${Y}codenerd87${N}"
     workdir=$(mktemp -d) || fail "Failed to make tmp dir"
     cd ${workdir}
     chromeos-firmwareupdate -m output --output_dir ${workdir} || fail "Failed to extract firmware shellball"
@@ -210,13 +210,15 @@ installCros() {
     sync
   fi
   sync
-  echo -e "${G}Done, reboot to return to factory ChromeOS!${N}"
   activekern=$(get_booted_kernnum)
   inactivekern=$(opposite_num "${activekern}")
   cgpt add -P 1 -T 0 -S 1 -i ${activekern} ${intdis}
   cgpt add -P 15 -T 6 -S 0 -i ${inactivekern} ${intdis}
   sleep 1
   stty -echo
+  sync
+  sleep 1.67
+  echo -e "${G}Done, reboot to return to factory ChromeOS!${N}"
   [[ $factoryreset == 1 ]] || fail "Exiting..."
   start powerd &>/dev/null
   exit 0
