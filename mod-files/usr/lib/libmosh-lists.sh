@@ -116,6 +116,10 @@ full_menu() { # oh how i hate making changes to my poor libmosh
     og_full_menu
     return
   fi
+  if [[ ${mouse_enabled:-1} != 0 ]] && declare -F mouse_read >/dev/null; then
+    mouse_menu_run list
+    return
+  fi
   local key keyseq prefix target_index runcmd
   keymap="1234567890-=qwertyuiopasdfghjklzxcvbnm"
   (( ${#listnames[@]} > 0 && li >= ${#listnames[@]} )) && li=$(( ${#listnames[@]} - 1 ))
